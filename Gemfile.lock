@@ -2,11 +2,13 @@ PATH
   remote: .
   specs:
     roded (0.1.0)
+      curses
 
 GEM
   remote: https://rubygems.org/
   specs:
     ast (2.4.2)
+    curses (1.4.7)
     date (3.4.1)
     diff-lcs (1.6.0)
     io-console (0.8.0)

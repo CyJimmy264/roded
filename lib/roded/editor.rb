@@ -3,25 +3,27 @@
 module Roded
   class Editor
     def initialize
-      # @buffer = Buffer.new
-      # @window = Window.new(@buffer)
-      # @status_bar = StatusBar.new(@buffer)
-      # @mini_buffer = MiniBuffer.new
+      @buffer = Buffer.new
+      @window = Window.new(@buffer)
+      @status_bar = StatusBar.new(@buffer)
+      @mini_buffer = MiniBuffer.new
     end
 
     def run
+      @curses_app = CursesApp.new
       loop do
-        puts "Hello"
-        # @window.display # Отображаем окно (буфер)
-        # @status_bar.display # Отображаем строку состояния
-        #
-        # command = @mini_buffer.get_command("M-x ") # Запрос команды (M-x аналог)
-        # process_command(command)
+        break
+
+        @window.display # Отображаем окно (буфер)
+        @status_bar.display # Отображаем строку состояния
+
+        command = @mini_buffer.get_command("M-x ") # Запрос команды (M-x аналог)
+        process_command(command)
 
         # TODO: Обработка обычного ввода текста (не команд)
         # Пока просто для теста:
-        # char = $stdin.getch # Для посимвольного ввода (может потребоваться gem 'io-console' или аналог)
-        # @buffer.insert_char(char)
+        char = $stdin.getch # Для посимвольного ввода (может потребоваться gem 'io-console' или аналог)
+        @buffer.insert_char(char)
         break
       end
     end
