@@ -1,7 +1,6 @@
 #!/usr/bin/env ruby
-# frozen_string_literal: true
 
 require "roded"
 
-editor = Roded::Editor.new
+editor = Roded::Application.new
 editor.run

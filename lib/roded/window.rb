@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 module Roded
   class Window
     attr_accessor :buffer

@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 require_relative "lib/roded/version"
 
 Gem::Specification.new do |spec|
@@ -13,7 +11,7 @@ Gem::Specification.new do |spec|
                      "The goal is to create a flexible and extensible development environment."
   spec.homepage = "https://roded.github.io/"
   spec.license = "MIT"
-  spec.required_ruby_version = ">= 3.1.0"
+  spec.required_ruby_version = ">= 3.4.2"
 
   spec.metadata["allowed_push_host"] = "TODO: Set to your gem server 'https://example.com'"
 
@@ -37,7 +35,7 @@ Gem::Specification.new do |spec|
 
   # Uncomment to register a new dependency of your gem
   # spec.add_dependency "example-gem", "~> 1.0"
-  spec.add_runtime_dependency "curses"
+  spec.add_dependency "curses"
 
   # For more information and examples about making a new gem, check out our
   # guide at: https://bundler.io/guides/creating_gem.html

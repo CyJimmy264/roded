@@ -1,30 +1,37 @@
-# frozen_string_literal: true
-
 module Roded
-  class Editor
+
+  # Main application class
+  #
+  # Creates all objects and dispatches commands from the user input through arbitrary platforms
+  class Application
     def initialize
       @buffer = Buffer.new
-      @window = Window.new(@buffer)
-      @status_bar = StatusBar.new(@buffer)
+      @curses_app = Frontends::Curses.new(@buffer)
+      @window = Window.new(@buffer) if defined?(Window)
+      @status_bar = StatusBar.new(@buffer) if defined?(StatusBar)
       @mini_buffer = MiniBuffer.new
     end
 
     def run
-      @curses_app = CursesApp.new
       loop do
-        break
+        event = @curses_app.get_event
+        break if event.type == :quit
+        handle_event(event)
+        @curses_app.render(@buffer)
+      end
+    end
 
-        @window.display # Отображаем окно (буфер)
-        @status_bar.display # Отображаем строку состояния
-
-        command = @mini_buffer.get_command("M-x ") # Запрос команды (M-x аналог)
-        process_command(command)
-
-        # TODO: Обработка обычного ввода текста (не команд)
-        # Пока просто для теста:
-        char = $stdin.getch # Для посимвольного ввода (может потребоваться gem 'io-console' или аналог)
-        @buffer.insert_char(char)
-        break
+    def handle_event(event)
+      case event.type
+      when :move_down
+        @buffer.move_cursor_down
+      when :move_up
+        @buffer.move_cursor_up
+      when :move_left
+        @buffer.move_cursor_left
+      when :move_right
+        @buffer.move_cursor_right
+      # Add more event handling as needed, using event.payload for additional data
       end
     end
 
