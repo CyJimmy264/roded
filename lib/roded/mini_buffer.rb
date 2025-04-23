@@ -1,5 +1,4 @@
 module Roded
-
   class MiniBuffer
 
     def initialize

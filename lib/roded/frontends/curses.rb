@@ -1,38 +1,39 @@
 require "curses"
-require_relative "../event"
 
 module Roded
   module Frontends
     class Curses
-      def initialize(buffer = nil)
-        @data_lines = ["Welcome to the Roded!", "Press 'q' to quit"]
+      def initialize
         @screen = nil
         @top = nil
         @current_x = 0
         @current_y = 0
-        @buffer = buffer
-        if @buffer
-          @buffer.add_observer(self)
-          update(@buffer)
-        end
         init_curses
-        load_file
+        initial_screen
       end
 
       def init_curses
-        Curses.init_screen
-        Curses.nonl
-        Curses.cbreak
-        Curses.noecho
+        ::Curses.init_screen
+        ::Curses.nonl
+        ::Curses.cbreak
+        ::Curses.noecho
+        ::Curses.timeout = 1
 
-        @screen = Curses.stdscr
+        @screen = ::Curses.stdscr
 
         @screen.scrollok(true)
         @screen.keypad(true)
       end
 
-      def load_file
+      def add_buffer(buffer)
+        @buffers << buffer
+        @buffer.add_observer(self)
+        update(@buffer)
+      end
+
+      def initial_screen
         @top = 0
+        @data_lines = 100.times.map { it.to_s }
         @data_lines[0..@screen.maxy - 1].each_with_index do |line, idx|
           @screen.setpos(idx, 0)
           @screen.addstr(line)
@@ -87,14 +88,14 @@ module Roded
       end
 
       def get_event
-        case Curses.getch
-        when Curses::KEY_DOWN, 'j'
+        case ::Curses.getch
+        when ::Curses::KEY_DOWN, 'j'
           Event.new(:move_down, {})
-        when Curses::KEY_UP, 'k'
+        when ::Curses::KEY_UP, 'k'
           Event.new(:move_up, {})
-        when Curses::KEY_LEFT, 'h'
+        when ::Curses::KEY_LEFT, 'h'
           Event.new(:move_left, {})
-        when Curses::KEY_RIGHT, 'l'
+        when ::Curses::KEY_RIGHT, 'l'
           Event.new(:move_right, {})
         when 'q', ?\C-c
           Event.new(:quit, {})
@@ -107,6 +108,16 @@ module Roded
         @data_lines = buffer.lines if buffer && buffer.respond_to?(:lines)
         @screen.clear
         load_file
+      end
+
+      # Add this method to handle Command objects
+      def handle_command(command)
+        case command.type
+        when :move_cursor
+          send("scroll_#{command.payload[:direction]}")
+        when :quit
+          ::Curses.close_screen
+        end
       end
     end
   end

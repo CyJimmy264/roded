@@ -1,12 +1,20 @@
 module Roded
+  # Roded::Buffer - Buffer class for the Roded text editor
+  #
+  # A Buffer is a container for text. It is the primary data structure
+  # used by the Roded text editor. It provides ways to manipulate the
+  # text, such as inserting and deleting characters, and allows other
+  # objects to observe its state.
   class Buffer
-    attr_accessor :lines, :filename, :cursor_pos
+    attr_accessor :lines, :filename, :cursor_pos, :readonly
 
-    def initialize(filename = nil)
-      @filename = filename
-      @lines = [""] # Начинаем с пустой строки
+    def initialize(name = nil)
+      @name = name
+      @filename = nil
+      @lines = [String.new("")] # Начинаем с пустой строки
       @cursor_pos = { row: 0, col: 0 } # Позиция курсора: строка и столбец
       @observers = []
+      @readonly = false
     end
 
     def add_observer(observer)

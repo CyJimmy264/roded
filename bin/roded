@@ -2,5 +2,10 @@
 
 require "roded"
 
-editor = Roded::Application.new
-editor.run
+app = Roded::Application.new
+app.welcome
+
+curses = Roded::Frontends::Curses.new
+app.add_frontend(curses)
+
+app.run

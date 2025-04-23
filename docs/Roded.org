@@ -1,0 +1,25 @@
+* Roded Overview
+
+Roded — Ruby Object-oriented Development Environment eDitor. Is a Ruby-based
+application designed to provide an interactive extensible live programmable
+development environment and editor.
+
+* Usage Perspective
+
+- **Platform and UI independent:** Roded supports a variety of frontends,
+  from terminal-based interface to modern editors like Monaco in a WebView. This
+  makes it usable on any platform and in any environment.
+- **Extensibility:** Roded is highly customizable and extendable through scripts
+  and have a rich base configuration. Users can adapt the environment to their
+  workflows and preferences.
+- **More than just an editor:** Roded is a full-featured development environment
+  that offers a wide range of features. It allows users to use plugins, automate
+  tasks, and integrate with various external services. With Roded, users can
+  browse the internet, access file system, read emails, interact with social
+  media, and many much more.
+- **Collaboration:** Enables collaborative editing and sharing of sessions
+  between users.
+- **Interactive programming:** Provides REPL support, live code execution, and
+  instant feedback.
+- **Integration with external tools:** Easily connects to version control
+  systems, build tools, test frameworks, and other developer utilities.
