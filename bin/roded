@@ -1,11 +1,23 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# This script is a bootstrap script that ensures that the application is
+# started with the correct environment variables set.
+
+RODED_RUBYOPT = "--enable=frozen_string_literal --yjit"
+
+unless ENV["RODED_BOOTSTRAPPED"]
+  ENV["RODED_BOOTSTRAPPED"] = "1"
+  ENV["RUBYOPT"] = [RODED_RUBYOPT, ENV.fetch("RUBYOPT", nil)].compact.join(" ")
+  exec($PROGRAM_NAME, *ARGV)
+end
 
 require "roded"
 
 app = Roded::Application.new
-app.welcome
 
 curses = Roded::Frontends::Curses.new
 app.add_frontend(curses)
+app.welcome
 
 app.run
