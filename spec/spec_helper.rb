@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 require "roded"
 
 RSpec.configure do |config|

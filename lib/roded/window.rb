@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 module Roded
   class Window
     attr_accessor :buffer
@@ -9,7 +7,7 @@ module Roded
     end
 
     def display
-      system "clear" # Очистка экрана консоли (работает в большинстве терминалов)
+      system "clear" # Clear the console screen (works in most terminals)
       puts @buffer
     end
   end
