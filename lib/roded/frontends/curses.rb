@@ -159,7 +159,6 @@ module Roded
           @minibuffer_view.clear
         when :quit
           wake_getch
-          logger.info("handle_command: sent wake")
         end
       end
 

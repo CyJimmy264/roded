@@ -94,16 +94,10 @@ module Roded
       main_thread = Thread.new { main_loop }
       main_thread.join
 
-      logger.info("send quit event to frontends")
       @frontends.each { |f| f.close if f.respond_to?(:close) }
-
-      logger.info("close event queue")
       @event_queue.close
 
-      logger.info("wait for frontend threads")
       @frontend_threads.each(&:join)
-
-      logger.info("application finished")
     end
 
     def handle_event(event)
