@@ -1,39 +1,48 @@
 # Roded
 
-TODO: Delete this and the text below, and describe your gem
+Roded (Ruby Object-oriented Development Environment eDitor) is a programmable
+editor and development environment in Ruby. The long-term goal is an editor that
+is fully scriptable from inside and outside (like Emacs with Elisp), but with
+Ruby as the extension language and a clean, frontend-agnostic core.
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/roded`. To experiment with that code, run `bin/console` for an interactive prompt.
+## Direction
 
-## Installation
+- **Frontend-agnostic core:** multiple frontends should exist (terminal, GUI,
+  web-based) with no hard limit on how many.
+- **Fully programmable:** the editor itself and all extensions are written in
+  Ruby and can be modified live.
+- **More than an editor:** intended to be a complete interactive development
+  environment with automation, tooling integration, and collaborative workflows.
 
-TODO: Replace `UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG` with your gem name right after releasing it to RubyGems.org. Please do not do it earlier due to security reasons. Alternatively, replace this section with instructions to install your gem from git if you don't plan to release to RubyGems.org.
+## Current State
 
-Install the gem and add to the application's Gemfile by executing:
+- Working curses frontend with a buffer model and minibuffer.
+- Keymap support with configurable bindings.
+- File open/save and basic editing commands.
+- Logging to `~/.cache/roded/roded.log`.
+
+## Getting Started
 
 ```bash
-bundle add UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
+bin/setup
+bundle exec bin/roded
 ```
 
-If bundler is not being used to manage dependencies, install the gem by executing:
+## Configuration
 
-```bash
-gem install UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
+Keymap is loaded from `~/.config/roded/keymap.yml` if present. Example:
+
+```yaml
+"C-x C-c":
+  type: quit
+"M-x":
+  type: start_command
 ```
-
-## Usage
-
-TODO: Write usage instructions here
-
-## Development
-
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
-
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and the created tag, and push the `.gem` file to [rubygems.org](https://rubygems.org).
-
-## Contributing
-
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/roded.
 
 ## License
 
-The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+Copyright (C) 2025 Maksim Veynberg <mv@cj264.ru>
+
+SPDX-License-Identifier: BSD-2-Clause
+
+See `LICENSE`.

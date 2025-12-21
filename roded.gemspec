@@ -7,10 +7,12 @@ Gem::Specification.new do |spec|
   spec.email = ["mv@cj264.ru"]
 
   spec.summary = "Ruby Object-oriented Development Environment eDitor"
-  spec.description = "An Emacs-inspired text editor written in Ruby. " \
-                     "The goal is to create a flexible and extensible development environment."
-  spec.homepage = "https://roded.github.io/"
-  spec.license = "MIT"
+  spec.description = "Roded (Ruby Object-oriented Development Environment eDitor) is a programmable " \
+                     "editor and development environment in Ruby. The long-term goal is an editor that " \
+                     "is fully scriptable from inside and outside (like Emacs with Elisp), but with " \
+                     "Ruby as the extension language and a clean, frontend-agnostic core."
+  spec.homepage = "https://roded.cj264.ru/"
+  spec.license = "BSD-2-Clause"
   spec.required_ruby_version = ">= 3.4.2"
 
   spec.metadata["allowed_push_host"] = "TODO: Set to your gem server 'https://example.com'"
