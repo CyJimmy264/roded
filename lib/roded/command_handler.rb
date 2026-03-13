@@ -27,9 +27,11 @@ module Roded
         @editor.current_buffer&.move_cursor_right
         @editor.broadcast_command(Command.new(:move_cursor, { direction: :right }))
       when :page_down
-        @editor.broadcast_command(Command.new(:scroll_page, { direction: :down }))
+        @editor.current_buffer&.move_cursor_page_down(@editor.page_size)
+        @editor.broadcast_command(Command.new(:render, {}))
       when :page_up
-        @editor.broadcast_command(Command.new(:scroll_page, { direction: :up }))
+        @editor.current_buffer&.move_cursor_page_up(@editor.page_size)
+        @editor.broadcast_command(Command.new(:render, {}))
       when :line_start
         @editor.current_buffer&.move_cursor_line_start
         @editor.broadcast_command(Command.new(:render, {}))

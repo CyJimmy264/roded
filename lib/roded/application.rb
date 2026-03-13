@@ -164,6 +164,13 @@ module Roded
       @current_buffer || @buffers.first
     end
 
+    def page_size
+      frontend = @frontends.first
+      return 1 unless frontend && frontend.respond_to?(:page_size)
+
+      [frontend.page_size.to_i, 1].max
+    end
+
     def start_minibuffer(kind, prompt)
       @minibuffer_kind = kind
       @focus = :minibuffer

@@ -102,6 +102,10 @@ module Roded
         redraw
       end
 
+      def page_size
+        [@screen.maxy - 1, 1].max
+      end
+
       # Add this method to handle Command objects
       def handle_command(command)
         logger.debug("handle_command: #{command.type}")
@@ -114,8 +118,6 @@ module Roded
             ensure_cursor_visible(direction)
             redraw
           end
-        when :scroll_page
-          scroll_page(command.payload[:direction])
         when :render
           redraw
         when :minibuffer_render
@@ -284,27 +286,6 @@ module Roded
         cursor_row = cursor_row.clamp(0, @screen.maxy - 1)
         cursor_col = cursor_col.clamp(0, @screen.maxx - 1)
         @screen.setpos(cursor_row, cursor_col)
-      end
-
-      def scroll_page(direction)
-        return unless @current_buffer
-
-        page = @screen.maxy - 1
-        max_start = [@current_buffer.lines.length - @screen.maxy, 0].max
-        if direction == :down
-          @top = [@top + page, max_start].min
-        else
-          @top = [@top - page, 0].max
-        end
-        clamp_cursor_into_view
-        redraw
-      end
-
-      def clamp_cursor_into_view
-        return unless @current_buffer
-
-        max_row = [@top + @screen.maxy - 1, @current_buffer.lines.length - 1].min
-        @current_buffer.cursor_pos[:row] = @current_buffer.cursor_pos[:row].clamp(@top, max_row)
       end
 
       def render_minibuffer_overlay

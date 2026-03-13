@@ -25,4 +25,8 @@ class FakeFrontend
   def render(buffer)
     renders << buffer
   end
+
+  def page_size
+    3
+  end
 end

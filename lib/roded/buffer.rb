@@ -126,6 +126,14 @@ module Roded
       notify_observers
     end
 
+    def move_cursor_page_up(page_size)
+      move_cursor_by_page(-page_size.to_i)
+    end
+
+    def move_cursor_page_down(page_size)
+      move_cursor_by_page(page_size.to_i)
+    end
+
     def to_s
       @lines.join("\n")
     end
@@ -156,6 +164,13 @@ module Roded
     end
 
     private
+
+    def move_cursor_by_page(delta)
+      @cursor_pos[:row] = [@cursor_pos[:row] + delta, 0].max
+      @cursor_pos[:row] = [@cursor_pos[:row], @lines.length - 1].min
+      clamp_cursor_col
+      notify_observers
+    end
 
     def clamp_cursor_col
       @cursor_pos[:col] = [@cursor_pos[:col], line_at_cursor.length].min

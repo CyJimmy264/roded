@@ -117,6 +117,14 @@ RSpec.describe Roded::Buffer do
       buffer.move_cursor_up
       expect(buffer.cursor_pos).to eq({ row: 1, col: 1 })
     end
+
+    it "moves by page while clamping rows and columns" do
+      buffer.move_cursor_page_down(2)
+      expect(buffer.cursor_pos).to eq({ row: 2, col: 1 })
+
+      buffer.move_cursor_page_up(5)
+      expect(buffer.cursor_pos).to eq({ row: 0, col: 1 })
+    end
   end
 
   describe "#kill_line" do

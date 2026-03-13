@@ -61,16 +61,16 @@ RSpec.describe Roded::Application do
     end
   end
 
-  it "treats page down in buffer focus as a frontend scroll command" do
+  it "moves the buffer cursor by a page in buffer focus" do
     buffer = Roded::Buffer.new("buffer")
-    buffer.lines = %w[a b c d]
+    buffer.lines = %w[a b c d e f]
     buffer.cursor_pos = { row: 1, col: 0 }
     application.add_buffer(buffer)
 
     application.handle_event(Roded::Event.new(:page_down, {}))
 
-    expect(application.current_buffer.cursor_pos).to eq({ row: 1, col: 0 })
-    expect(frontend.commands.last).to eq(Roded::Command.new(:scroll_page, { direction: :down }))
+    expect(application.current_buffer.cursor_pos).to eq({ row: 4, col: 0 })
+    expect(frontend.commands.last).to eq(Roded::Command.new(:render, {}))
   end
 
   it "treats page up and page down in minibuffer as cursor-to-start/end" do
@@ -88,6 +88,18 @@ RSpec.describe Roded::Application do
     expect(frontend.commands.last).to eq(
       Roded::Command.new(:minibuffer_render, { prompt: "M-x ", text: "abc", cursor: 3 })
     )
+  end
+
+  it "moves the buffer cursor up by a page and clamps at the top" do
+    buffer = Roded::Buffer.new("buffer")
+    buffer.lines = %w[a b c d e f]
+    buffer.cursor_pos = { row: 2, col: 0 }
+    application.add_buffer(buffer)
+
+    application.handle_event(Roded::Event.new(:page_up, {}))
+
+    expect(application.current_buffer.cursor_pos).to eq({ row: 0, col: 0 })
+    expect(frontend.commands.last).to eq(Roded::Command.new(:render, {}))
   end
 end
 # rubocop:enable Metrics/BlockLength
