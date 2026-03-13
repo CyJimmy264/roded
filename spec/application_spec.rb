@@ -60,5 +60,34 @@ RSpec.describe Roded::Application do
       expect(frontend.messages.last).to eq("File '#{file.path}' saved.")
     end
   end
+
+  it "treats page down in buffer focus as a frontend scroll command" do
+    buffer = Roded::Buffer.new("buffer")
+    buffer.lines = %w[a b c d]
+    buffer.cursor_pos = { row: 1, col: 0 }
+    application.add_buffer(buffer)
+
+    application.handle_event(Roded::Event.new(:page_down, {}))
+
+    expect(application.current_buffer.cursor_pos).to eq({ row: 1, col: 0 })
+    expect(frontend.commands.last).to eq(Roded::Command.new(:scroll_page, { direction: :down }))
+  end
+
+  it "treats page up and page down in minibuffer as cursor-to-start/end" do
+    application.start_minibuffer(:command, "M-x ")
+    %w[a b c].each do |char|
+      application.handle_event(Roded::Event.new(:insert_char, { char: char }))
+    end
+
+    application.handle_event(Roded::Event.new(:page_up, {}))
+    expect(frontend.commands.last).to eq(
+      Roded::Command.new(:minibuffer_render, { prompt: "M-x ", text: "abc", cursor: 0 })
+    )
+
+    application.handle_event(Roded::Event.new(:page_down, {}))
+    expect(frontend.commands.last).to eq(
+      Roded::Command.new(:minibuffer_render, { prompt: "M-x ", text: "abc", cursor: 3 })
+    )
+  end
 end
 # rubocop:enable Metrics/BlockLength
