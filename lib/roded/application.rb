@@ -3,6 +3,7 @@ module Roded
   # or the minibuffer depending on current focus.
   class Application
     include Logging
+    attr_reader :focus, :minibuffer, :kill_ring
 
     def initialize
       @buffers = []
@@ -17,9 +18,13 @@ module Roded
       @keymap = Keymap.load
       @kill_ring = KillRing.new
       @current_buffer = nil
+      @command_router = CommandRouter.new(@keymap)
+      @command_handler = CommandHandler.new(self)
       logger.info("Application initialized")
       trap_signals
     end
+
+
 
     def welcome
       welcome_buffer = Buffer.new("Welcome")
@@ -103,9 +108,13 @@ module Roded
     def handle_event(event)
       logger.debug("handle_event: #{event.type}")
       logger.debug("handle_event: focus: #{@focus}")
-      return handle_minibuffer_event(event) if @focus == :minibuffer
+      if event.type == :key
+        routed = @command_router.route(event.payload[:key])
+        return unless routed
 
-      handle_buffer_event(event)
+        return handle_event(routed)
+      end
+      @command_handler.handle(event)
     end
 
     def process_command(command)
@@ -149,116 +158,6 @@ module Roded
       display_message("File '#{filename}' saved.")
     rescue StandardError => e
       display_message("Error saving file: #{e.message}")
-    end
-
-    private
-
-    def main_loop
-      loop do
-        event = @event_queue.pop
-        next unless event
-
-        logger.debug("main_loop: event received: #{event.type} #{event.payload.inspect if event.respond_to?(:payload)}")
-        handle_event(event)
-
-        if event.type == :quit
-          logger.debug("main_loop: break on quit")
-          break
-        end
-      end
-    end
-
-    def handle_buffer_event(event)
-      case event.type
-      when :move_down
-        current_buffer&.move_cursor_down
-        broadcast_command(Command.new(:move_cursor, { direction: :down }))
-      when :move_up
-        current_buffer&.move_cursor_up
-        broadcast_command(Command.new(:move_cursor, { direction: :up }))
-      when :move_left
-        current_buffer&.move_cursor_left
-        broadcast_command(Command.new(:move_cursor, { direction: :left }))
-      when :move_right
-        current_buffer&.move_cursor_right
-        broadcast_command(Command.new(:move_cursor, { direction: :right }))
-      when :page_down
-        broadcast_command(Command.new(:scroll_page, { direction: :down }))
-      when :page_up
-        broadcast_command(Command.new(:scroll_page, { direction: :up }))
-      when :line_start
-        current_buffer&.move_cursor_line_start
-        broadcast_command(Command.new(:render, {}))
-      when :line_end
-        current_buffer&.move_cursor_line_end
-        broadcast_command(Command.new(:render, {}))
-      when :kill_line
-        current_buffer&.kill_line(@kill_ring)
-        broadcast_command(Command.new(:render, {}))
-      when :save_buffer
-        filename = current_buffer&.filename || "untitled"
-        save_file(filename)
-      when :render
-        broadcast_command(Command.new(:render, {}))
-      when :quit
-        broadcast_command(Command.new(:quit, {}))
-      when :start_command
-        start_minibuffer(:command, "M-x ")
-      when :cancel
-        broadcast_command(Command.new(:render, {}))
-      when :backspace
-        current_buffer&.backspace
-      when :delete
-        current_buffer&.delete_char
-      when :enter
-        current_buffer&.newline
-      when :insert_char
-        current_buffer&.insert_char(event.payload[:char])
-      when :noop
-        # nothing
-      else
-        # ignore unknown events for now
-      end
-    end
-
-    def handle_minibuffer_event(event)
-      case event.type
-      when :move_left
-        @minibuffer.move_left
-        render_minibuffer
-      when :move_right
-        @minibuffer.move_right
-        render_minibuffer
-      when :backspace
-        @minibuffer.backspace
-        render_minibuffer
-      when :delete
-        @minibuffer.delete_char
-        render_minibuffer
-      when :insert_char
-        @minibuffer.insert_char(event.payload[:char])
-        render_minibuffer
-      when :cancel
-        cancel_minibuffer
-      when :enter
-        submit_minibuffer
-      when :line_start
-        @minibuffer.move_to_start
-        render_minibuffer
-      when :line_end
-        @minibuffer.move_to_end
-        render_minibuffer
-      when :page_up
-        @minibuffer.move_to_start
-        render_minibuffer
-      when :page_down
-        @minibuffer.move_to_end
-        render_minibuffer
-      when :noop
-        # nothing
-      else
-        # ignore unsupported events in minibuffer
-      end
     end
 
     def current_buffer
@@ -307,6 +206,23 @@ module Roded
         save_file(text) if text && !text.empty?
       end
       broadcast_command(Command.new(:render, {}))
+    end
+
+    private
+
+    def main_loop
+      loop do
+        event = @event_queue.pop
+        next unless event
+
+        logger.debug("main_loop: event received: #{event.type} #{event.payload.inspect if event.respond_to?(:payload)}")
+        handle_event(event)
+
+        if event.type == :quit
+          logger.debug("main_loop: break on quit")
+          break
+        end
+      end
     end
 
     def display_message(message)

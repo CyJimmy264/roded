@@ -12,8 +12,6 @@ module Roded
         @buffers = []
         @current_buffer = nil
         @top = 0
-        @keymap = Keymap.load
-        @pending_prefix = nil
         @input_buffer = +"".b
         init_curses
         @stdin = STDIN
@@ -94,38 +92,7 @@ module Roded
         logger.debug("get_event: read_key: #{key.inspect}")
         return Event.new(:noop, {}) unless key
         return Event.new(:quit, {}) if key == :quit_signal
-
-        if @pending_prefix
-          prefix = @pending_prefix
-          @pending_prefix = nil
-          combined = prefix == "M" ? "M-#{key}" : "#{prefix} #{key}"
-          mapping = resolve_key_event(combined)
-          logger.debug("get_event: return mapping: #{mapping}")
-          return mapping if mapping
-        end
-
-        if key == "C-x"
-          @pending_prefix = "C-x"
-          logger.debug("get_event: return noop for pending_prefix: #{key}")
-          return Event.new(:noop, {})
-        end
-
-        if key == "Esc"
-          @pending_prefix = "M"
-          logger.debug("get_event: return noop for pending_prefix: #{key}")
-          return Event.new(:noop, {})
-        end
-
-        mapping = resolve_key_event(key) if key
-        logger.debug("get_event: return mapping: #{mapping}")
-        return mapping if mapping
-
-        char = extract_char(key)
-        logger.debug("get_event: return insert_char: #{char}")
-        return Event.new(:insert_char, { char: char }) if char
-
-        logger.debug("get_event: return end noop")
-        Event.new(:noop, {})
+        Event.new(:key, { key: })
       end
 
       def render(buffer = nil)
@@ -179,15 +146,6 @@ module Roded
           tagged_logger.progname = "curses"
           tagged_logger
         end
-      end
-
-      def resolve_key_event(key)
-        return unless key
-
-        mapping = @keymap&.resolve(key)
-        return unless mapping
-
-        Event.new(mapping[:type], mapping[:payload])
       end
 
       def read_key
@@ -291,17 +249,6 @@ module Roded
         return "C-#{(codepoint + 96).chr}" if codepoint.between?(1, 26)
 
         ch
-      end
-
-      def extract_char(ch)
-        return nil if ch.nil?
-        return ch if ch.is_a?(String) && ch.length == 1
-        return nil unless ch.is_a?(Integer)
-        return nil if ch < 32 || ch > 126
-
-        ch.chr
-      rescue StandardError
-        nil
       end
 
       def ensure_cursor_visible(_direction = nil)
