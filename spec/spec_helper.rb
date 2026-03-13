@@ -1,4 +1,10 @@
+require "tmpdir"
+
+ENV["RODED_LOG_PATH"] ||= File.join(Dir.tmpdir, "roded-test.log")
+ENV["RODED_LOG_LEVEL"] ||= "FATAL"
+
 require "roded"
+require_relative "support/fake_frontend"
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
