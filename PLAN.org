@@ -1,98 +1,166 @@
-- [ ] (P3) Упорядочить слои и ответственность ядра
-  Вынести состояние редактора (buffers/current/focus/minibuffer) из Application,
-  оставить в Application только оркестрацию и запуск.
+- [ ] (P0) Стабилизировать базовую ветку перед рефакторингом
+  До продолжения архитектурных изменений нужен минимальный safety net.
 
-  - [ ] (P3) Ввести EditorState
-    Хранить buffers/current_buffer/focus/minibuffer_kind/minibuffer_state.
+  - [ ] (P0) Убрать шаблонный падающий spec и добиться green `bundle exec rspec`
 
-  - [ ] (P3) Перенести управление focus и minibuffer в EditorState
+  - [ ] (P1) Добавить unit-тесты для Buffer
+    Вставка/удаление, курсор, newline, kill, readonly.
 
-  - [ ] (P3) Отделить менеджмент фронтендов от доменной логики
+  - [ ] (P1) Добавить unit-тесты для CommandRouter
+    Последовательности клавиш, префиксы `C-x`/`M-`, insertable keys, noop.
 
-    - [ ] (P3) Ввести FrontendManager
-      Запуск потоков, рассылка команд, закрытие фронтендов.
+  - [ ] (P1) Добавить frontend doubles / smoke specs
+    Проверить happy path без curses: welcome buffer, minibuffer, open/save, quit.
 
-- [X] (P1) Разделить ввод и маршрутизацию команд
-  Перенести обработку префиксов (C-x, M-) и Keymap resolution в core.
+  - [ ] (P1) Зафиксировать текущий happy path как baseline
+    Любой следующий шаг рефакторинга должен сохранять это поведение.
 
-  - [X] (P1) Ввести KeySequence/CommandRouter
-    Key tokens от фронтенда превращаются в команды в core.
+- [X] (P1) Разделить ввод и базовую маршрутизацию в core
+  Базовый перенос уже сделан и его не нужно переделывать с нуля.
 
-  - [X] (P1) Убрать загрузку Keymap из фронтенда
+  - [X] (P1) Frontend отдает сырые key events в core
 
-    - [X] (P1) Передавать Keymap только из Application
-      Фронтенды получают Keymap через setter и не читают файл сами.
+  - [X] (P1) Вынести обработку префиксов и Keymap resolution из frontend
+    Ввести `CommandRouter` в core.
 
-  - [ ] (P2) Сделать единый интерфейс событий
-    Frontend -> key token, core -> command/event.
+  - [X] (P1) Убрать загрузку Keymap из frontend
+    `Keymap` загружается в `Application` и передается frontend'ам извне.
 
-- [ ] (P2) Убрать мутацию модели из фронтенда
-  Фронтенд не должен менять курсор/буфер.
+  - [X] (P1) Ввести `CommandHandler`
+    `Application` больше не исполняет весь editor flow напрямую в одном case.
 
-  - [ ] (P2) Переместить clamp_cursor_into_view в core
-    Фронтенд только рисует, core отвечает за корректный курсор.
+- [-] (P1) Зафиксировать контракты сообщений и владение состоянием
+  До следующего большого переноса нужно формально определить, какие сообщения
+  ходят между слоями и кто владеет каким состоянием.
 
-  - [ ] (P3) Вынести логику скролла в слой представления
-    Отделить вычисление visible range от модели.
+  - [ ] (P1) Определить `Event`
+    `Event` = факт внешнего мира -> core (`:key`, `:signal`, позже при необходимости
+    другие input/system events). `Event` не описывает render/update instructions.
 
-- [ ] (P2) Отделить файловые операции от Application
-  File IO и ошибки должны жить в отдельном сервисе.
+  - [ ] (P1) Определить контракт editor commands
+    Это действие редактора внутри core (`move`, `insert`, `start_command`,
+    `save_buffer`, `quit` и т.п.), полученное после маршрутизации input.
 
-  - [ ] (P2) Ввести FileService
-    open/save + обработка ошибок.
+  - [ ] (P1) Определить отдельный контракт для core -> frontend
+    Render/focus/minibuffer/quit сообщения не должны смешиваться с
+    editor commands. В коде это либо отдельный `FrontendCommand`, либо
+    переименование текущего `Command`.
 
-  - [ ] (P3) Возвращать доменные события вместо прямого render
+  - [ ] (P1) Зафиксировать ownership доменного состояния
+    `EditorState` владеет buffers/current_buffer/focus/minibuffer/file session/
+    kill_ring и другой editor state.
 
-- [ ] (P4) Уточнить роли Window и StatusBar
-  Сейчас они печатают в stdout и не связаны с curses.
+  - [ ] (P1) Зафиксировать ownership состояния представления
+    Frontend владеет только viewport/top/visible range/кэшами отрисовки и не
+    мутирует `Buffer`, курсор или другое доменное состояние.
 
-  - [ ] (P4) Либо удалить, либо интегрировать с frontend
+- [ ] (P1) Зафиксировать семантику cursor vs viewport до переноса кода
+  Сейчас логика page scroll и cursor visibility двусмысленна; сначала описать,
+  потом переносить.
 
-  - [ ] (P4) Если оставлять, то сделать frontend-agnostic API
+  - [X] (P1) Решить, что делают `page_up` / `page_down`
+    `page_up` / `page_down` двигают cursor на страницу; viewport следует за
+    cursor и не является независимым источником истины для этих команд.
 
-- [ ] (P2) Привести Buffer к более чистому API
-  Минимизировать внешние зависимости и side effects.
+  - [ ] (P1) Определить правило visibility cursor
+    После cursor-moving commands cursor обязан оставаться в видимой области;
+    policy определяется в core/state, а frontend только применяет viewport.
 
-  - [ ] (P2) Убрать kill_ring из Buffer
-    Buffer возвращает killed text, Command применяет KillRing.
+  - [ ] (P1) Определить судьбу `scroll_page`
+    Либо убрать как самостоятельную команду, либо явно оставить как
+    производную frontend/view-команду, следующую из cursor movement policy.
 
-  - [ ] (P3) Определить единый способ уведомления observers
+- [ ] (P2) Ввести `EditorState` и очистить `Application`
+  `Application` должен остаться оркестратором запуска, wiring и main loop.
 
-- [-] (P1) Улучшить события и команды
-  Разделить input events и editor commands.
+  - [ ] (P2) Ввести `EditorState`
+    Хранить buffers/current_buffer/focus/minibuffer_kind/minibuffer_state/
+    kill_ring и связанный editor state.
 
-  - [X] (P1) Ввести CommandHandler
-    Command -> actions -> обновление state.
+  - [ ] (P2) Перенести focus/minibuffer/current_buffer management в `EditorState`
 
-  - [-] (P1) Уточнить типы событий
-    Event для input, Command для действий.
+  - [ ] (P2) Перенести decision-making над editor state из `Application`
+
+  - [ ] (P2) Критерий завершения
+    `Application` не хранит buffers/current_buffer/focus/minibuffer_kind/
+    kill_ring и не принимает доменные решения напрямую.
+
+- [ ] (P2) Отделить выполнение команд и файловые операции от `Application`
+  File IO и command side effects не должны жить в orchestration layer.
+
+  - [ ] (P2) Ввести `FileService`
+    open/save + structured result/errors без прямого `File.read`/`File.write`
+    в `Application`.
+
+  - [ ] (P2) Перевести open/save flow на commands/results
+    Вместо прямого render из `Application`.
+
+  - [ ] (P2) Свести `Application` к boot/main loop/shutdown/wiring
+
+- [ ] (P2) Привести `Buffer` к более чистому API
+  Минимизировать внешние зависимости, side effects и прямую мутацию извне.
+
+  - [ ] (P2) Убрать `kill_ring` из `Buffer`
+    `Buffer#kill_line` возвращает killed text или edit result; `KillRing`
+    обновляется снаружи.
+
+  - [ ] (P2) Убрать публичную запись в `cursor_pos`
+    Внешний код не должен менять cursor hash напрямую.
+
+  - [ ] (P3) Определить единый способ уведомления об изменениях
+    Либо observers, либо edit results/domain events, но не бесконтрольная смесь.
+
+- [ ] (P2) Убрать мутацию модели из frontend
+  Frontend только читает domain state и рисует.
+
+  - [ ] (P2) Переместить `clamp_cursor_into_view` из curses в core/state policy
+
+  - [ ] (P2) Оставить во frontend только viewport/visible range/render
+
+  - [ ] (P2) Проверить, что frontend не меняет `Buffer`, `cursor_pos`, `lines`
+    даже при page scroll и redraw.
+
+- [ ] (P3) Отделить lifecycle frontend'ов от доменной логики
+  Потоки, wake-up и shutdown должны жить отдельно от editor state.
+
+  - [ ] (P3) Ввести `FrontendManager`
+    Регистрация frontend'ов, запуск потоков, broadcast, wake/shutdown.
+
+  - [ ] (P3) Зафиксировать минимальный frontend contract
+    Инициализация view state, чтение input events, прием frontend-команд,
+    показ сообщений и корректное закрытие.
+
+  - [ ] (P3) Убрать управление frontend threads из `Application`
+
+- [ ] (P3) Разобраться с `Window` и `StatusBar`
+  Сейчас это legacy-артефакты, не встроенные в реальный curses flow.
+
+  - [ ] (P3) Либо удалить `Window` / `StatusBar`
+
+  - [ ] (P3) Либо переопределить их как frontend-agnostic view models
+
+  - [ ] (P3) Удалить пустые/неиспользуемые frontend wrappers
 
 - [ ] (P4) Нормализовать логирование
-  Логирование не должно быть разбросано по слоям.
+  Логи не должны быть размазаны по слоям без контракта.
 
-  - [ ] (P4) Логи в core для бизнес-событий
+  - [ ] (P4) Логи в core только про domain decisions/state transitions
 
-  - [ ] (P4) Логи во frontend только для input/render
+  - [ ] (P4) Логи во frontend только про input/render/frontend IO
 
-- [ ] (P2) Добавить тестовую стратегию на рефакторинг
-  Минимальные спецификации, чтобы не ломать поведение.
+- [ ] (P4) Обновить README / Docs после стабилизации архитектуры
+  Документация должна описывать реальное состояние и реальные роли модулей.
 
-  - [ ] (P2) Написать unit-тесты для Buffer
-    Вставка/удаление, курсор, newline, kill.
+  - [ ] (P4) Обновить README под текущую архитектуру
 
-  - [ ] (P2) Написать тесты для CommandRouter
-    Последовательности клавиш -> команды.
+  - [ ] (P4) Переписать docs так, чтобы они не обещали несделанные подсистемы
 
-  - [ ] (P3) Добавить тестовые doubles для frontend
+- [ ] (P1) Держать миграцию маленькими шагами
+  Это не отдельная фича, а правило выполнения плана.
 
-- [-] (P1) Сделать миграционный план
-  Переход по шагам без ломки текущей работы.
+  - [ ] (P1) Не смешивать `EditorState`, `FileService` и `FrontendManager`
+    в одном большом коммите
 
-  - [X] (P1) Сначала вынести KeySequence/CommandRouter
+  - [ ] (P1) После каждого этапа держать green `bundle exec rspec`
 
-  - [ ] (P2) Потом EditorState и FileService
-
-  - [ ] (P3) В конце FrontendManager и cleanup Application
-
-- [ ] (P4) Обновить README/Docs после рефакторинга
-  Описание архитектуры и ролей модулей.
+  - [ ] (P1) После каждого этапа обновлять статусы в этом файле
