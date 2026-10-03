@@ -4,26 +4,29 @@ module Roded
   module Frontends
     # Converts core character offsets to terminal display-cell geometry.
     class CursesTextGeometry
+      TAB_WIDTH = 2
       REGIONAL_INDICATOR = (0x1F1E6..0x1F1FF)
       EMOJI_MODIFIER = (0x1F3FB..0x1F3FF)
 
-      def self.width(text)
-        text.to_s.each_grapheme_cluster.sum { |cluster| cluster_width(cluster) }
+      def self.width(text, initial_column: 0)
+        column(text, text.to_s.length, initial_column:)
       end
 
-      def self.column(text, character_offset)
-        width(text.to_s[0, character_offset.to_i])
+      def self.column(text, character_offset, initial_column: 0)
+        text.to_s[0, character_offset.to_i].each_grapheme_cluster.reduce(0) do |occupied, cluster|
+          occupied + cluster_width(cluster, initial_column + occupied)
+        end
       end
 
-      def self.clip(text, cell_limit)
+      def self.clip(text, cell_limit, initial_column: 0)
         limit = [cell_limit.to_i, 0].max
         output = +""
         occupied = 0
         text.to_s.each_grapheme_cluster do |cluster|
-          cells = cluster_width(cluster)
+          cells = cluster_width(cluster, initial_column + occupied)
           break if occupied + cells > limit
 
-          output << cluster
+          output << (cluster == "\t" ? " " * cells : cluster)
           occupied += cells
         end
         output
@@ -34,7 +37,7 @@ module Roded
         offset = [origin.to_i, 0].max
         return [point.to_i, 0].max if point.to_i < offset
 
-        while cell_limit.positive? && width(line[offset...point.to_i]) >= cell_limit
+        while cell_limit.positive? && column(line, point) - column(line, offset) >= cell_limit
           cluster = line[offset..].to_s.each_grapheme_cluster.first
           break unless cluster
 
@@ -43,7 +46,9 @@ module Roded
         offset
       end
 
-      def self.cluster_width(cluster)
+      def self.cluster_width(cluster, column = 0)
+        return TAB_WIDTH - (column % TAB_WIDTH) if cluster == "\t"
+
         codepoints = cluster.codepoints
         regional_count = codepoints.count { |codepoint| REGIONAL_INDICATOR.cover?(codepoint) }
         return 2 if emoji_cluster?(cluster, codepoints, regional_count)

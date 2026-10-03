@@ -790,6 +790,17 @@ File save здесь сохраняет текстовое представле�
   reduces terminal output from the full visible buffer to at most two rows for
   ordinary navigation.
 
+## 2026-10-03 — curses tab stops
+
+- Curses now expands tabs to two-cell stops consistently in display clipping,
+  cursor columns, styled line segments, and horizontal-origin calculations.
+  Starting a clipped segment after an earlier tab preserves the source line's
+  tab alignment. This matches Qt's existing two-cell tab stops.
+- Geometry tests cover tabs after narrow text, viewport origins and clipping at
+  a nonzero visual column; a curses rendering spec confirms a row containing a
+  tab is written as expanded spaces. Curses geometry/render specs: **8 examples,
+  0 failures**.
+
 
 ## 2026-10-03 — табличная маршрутизация core input events
 

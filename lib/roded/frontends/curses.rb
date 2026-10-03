@@ -313,6 +313,7 @@ module Roded
 
       def draw_buffer_line(item, line, buffer_row, screen_row, x, width, left_column)
         text = line[left_column..].to_s
+        initial_column = CursesTextGeometry.column(line, left_column)
         tokens = item[:tokens]&.[](buffer_row).to_a
         selection = selection_columns(item, buffer_row, line.length)
         highlight = highlight_columns(item, buffer_row, line.length)
@@ -325,11 +326,12 @@ module Roded
         boundaries = boundaries.map { |column| column.clamp(0, text.length) }.uniq.sort
         boundaries.each_cons(2) do |first, last|
           write_styled_segment(item, screen_row, x, text, first, last, width,
-                               tokens, selection, highlight, left_column)
+                               tokens, selection, highlight, left_column, initial_column)
         end
       end
 
-      def write_styled_segment(_item, row, x, text, first, last, width, tokens, selection, highlight, left_column)
+      def write_styled_segment(_item, row, x, text, first, last, width, tokens, selection, highlight,
+                               left_column, initial_column)
         return if first >= last
 
         token = tokens.find do |span|
@@ -337,8 +339,11 @@ module Roded
         end
         selected = selection && first + left_column >= selection.first && last + left_column <= selection.last
         matched = highlight && first + left_column >= highlight.first && last + left_column <= highlight.last
-        cell_offset = CursesTextGeometry.width(text[0...first])
-        writer = proc { write_at(row, x + cell_offset, text[first...last], width - cell_offset) }
+        cell_offset = CursesTextGeometry.column(text, first, initial_column:)
+        writer = proc do
+          write_at(row, x + cell_offset, text[first...last], width - cell_offset,
+                   initial_column: initial_column + cell_offset)
+        end
         if selected
           @screen.attron(::Curses::A_REVERSE, &writer)
         elsif matched
@@ -383,12 +388,12 @@ module Roded
         origin
       end
 
-      def write_at(row, column, text, width)
+      def write_at(row, column, text, width, initial_column: 0)
         return unless row.between?(0, @screen.maxy - 1) && column.between?(0, @screen.maxx - 1)
         return unless width.positive?
 
         @screen.setpos(row, column)
-        @screen.addstr(CursesTextGeometry.clip(text, width))
+        @screen.addstr(CursesTextGeometry.clip(text, width, initial_column:))
       end
 
       def initialize_colors

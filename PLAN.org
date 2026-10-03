@@ -154,6 +154,8 @@ undo и modified state согласованы. FileService и edit history — �
 - [ ] Picker/completion, dirty-buffer save/discard/cancel, basename disambiguation.
 - [X] Horizontal/vertical split, other/delete/only window; последний view сохраняется.
 - [X] Один buffer в двух окнах: общий текст, независимые point/mark/positions.
+- [X] Curses tabs expand at two-cell stops in rendered text, caret columns and
+  horizontal viewport calculations.
 - [ ] Viewport follows point с горизонтальным scrolling; page size из text area.
 - [ ] Custom line/page scrolling с явно определённой core/view policy.
 - [ ] Resize/small screen, prompts/picker overlays, сохранение active view.
