@@ -18,3 +18,42 @@ RSpec.describe Roded::Application do
     expect(buffer.modified?).to be(false)
   end
 end
+
+RSpec.describe Roded::Application, "incomplete Ruby syntax snapshots" do
+  it "keeps incomplete multiline spans aligned across edit and undo" do
+    application = described_class.new
+    application.startup
+    buffer = application.current_buffer
+    buffer.filename = "sample.rb"
+    buffer.load_text("message = \"")
+    buffer.cursor_pos = { row: 0, col: buffer.line_at_cursor.length }
+    buffer.insert_text("unfinished\nстрока 🙂")
+
+    edited_tokens = application.editor_snapshot[:windows].first[:tokens]
+    expect(edited_tokens.last).to include(hash_including(start: 0, finish: 8, category: :string))
+    expect(application.undo).to be(true)
+
+    restored_tokens = application.editor_snapshot[:windows].first[:tokens]
+    expect(restored_tokens).to eq([[{ start: 10, finish: 11, category: :string }]])
+  end
+end
+
+RSpec.describe Roded::Application, "Unicode highlight snapshots" do
+  it "computes spans without mutating editor state" do
+    application = described_class.new
+    application.startup
+    buffer = application.current_buffer
+    buffer.filename = "sample.rb"
+    buffer.load_text("x = \"🙂\"; 42")
+    buffer.cursor_pos = { row: 0, col: 7 }
+    before = [buffer.to_s, buffer.cursor_pos, buffer.modified?]
+    history_size = buffer.instance_variable_get(:@undo_stack).length
+
+    snapshot = application.editor_snapshot
+
+    number = snapshot[:windows].first[:tokens].first.find { |span| span[:category] == :number }
+    expect(number).to include(start: 9, finish: 11)
+    expect([buffer.to_s, buffer.cursor_pos, buffer.modified?]).to eq(before)
+    expect(buffer.instance_variable_get(:@undo_stack).length).to eq(history_size)
+  end
+end

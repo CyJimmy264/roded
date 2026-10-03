@@ -30,3 +30,20 @@ RSpec.describe Roded::SyntaxHighlighter do
     expect(highlighter.spans(:unknown, %w[plain text])).to eq([[], []])
   end
 end
+
+RSpec.describe Roded::SyntaxHighlighter, "Ruby Unicode and incomplete source" do
+  subject(:highlighter) { described_class.new }
+
+  it "maps Ripper byte columns to character columns after non-ASCII text" do
+    spans = highlighter.spans(:ruby, ["x = \"🙂\"; 42"]).first
+    number = spans.find { |span| span[:category] == :number }
+
+    expect(number).to include(start: 9, finish: 11)
+  end
+
+  it "continues highlighting an incomplete multiline Ruby string" do
+    spans = highlighter.spans(:ruby, ["message = \"unfinished", "строка 🙂"])
+
+    expect(spans.last).to include(hash_including(start: 0, finish: 8, category: :string))
+  end
+end

@@ -4,9 +4,14 @@ module Roded
   # Maps Ripper lexical tokens to immutable per-line editor spans.
   class RubySyntaxTokenizer
     def spans(lines, rows)
-      Ripper.lex(Array(lines).join("\n")).each do |(position, event, token, _state)|
+      source_lines = Array(lines)
+      Ripper.lex(source_lines.join("\n")).each do |(position, event, token, _state)|
         category = category_for(event)
-        add_multiline_span(rows, position[0] - 1, position[1], token, category) if category
+        next unless category
+
+        row = position[0] - 1
+        column = character_column(source_lines[row], position[1])
+        add_multiline_span(rows, row, column, token, category)
       end
     end
 
@@ -31,6 +36,10 @@ module Roded
         start = offset.zero? ? column : 0
         rows[current_row] << { start:, finish: start + part.length, category: }
       end
+    end
+
+    def character_column(line, byte_column)
+      line.to_s.byteslice(0, byte_column).to_s.force_encoding(Encoding::UTF_8).length
     end
   end
 end

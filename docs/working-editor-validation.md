@@ -3,6 +3,20 @@
 Этот журнал содержит воспроизводимые результаты текущей ветки. Исторический
 отчёт ревизии остаётся в `architecture-review-2026-10-03.md`.
 
+## 2026-10-03 — Unicode offsets Ruby syntax spans
+
+- `Ripper.lex` отдаёт byte columns, тогда как snapshots и curses/Qt rendering
+  адресуют символы. `RubySyntaxTokenizer` теперь конвертирует byte offset начала
+  токена в Unicode character column до построения span.
+- Specs покрывают число после emoji, незакрытую многострочную строку с кириллицей,
+  обновление spans после edit/undo и отсутствие изменений текста, point, истории
+  и modified state при получении snapshot.
+- Проверки: `bundle exec rspec spec/syntax_highlighter_spec.rb
+  spec/syntax_snapshot_spec.rb` — **9 examples, 0 failures**; полный suite
+  проверен отдельно в текущей среде.
+- Это подтверждает core character offsets; UTF-16 offsets внутри Qt document и
+  реальные curses color/selection проверки остаются открытыми.
+
 ## 2026-10-03 — Qt clipboard paste через общий core event
 
 - Runtime probe qt 0.1.9 / Qt Widgets 6.11.2: `QApplication.clipboard`

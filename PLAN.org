@@ -179,9 +179,13 @@ replace обратимы. Provider/history/preview не становятся cur
 
 - [X] Plain text fallback и modes по filename, ручная смена mode.
 - [X] Ruby/JSON/YAML/Markdown token spans и theme mapping.
-- [ ] Multiline/incomplete Ruby и изменение tokens после edits/undo.
-- [ ] Rendering spans не изменяет text/history/point/modified state.
-- [ ] Tokenizer errors не рушат loop; geometry Unicode и highlights согласованы.
+- [X] Multiline/incomplete Ruby продолжает подсветку через newline; snapshots
+  обновляют tokens после edit и undo.
+- [X] Подсчёт highlight spans не изменяет text/history/point/modified state.
+- [X] Ripper byte columns преобразуются в core character columns; offsets после
+  emoji и кириллицы проверены.
+- [ ] Tokenizer errors не рушат loop; frontend Unicode geometry/highlights
+  согласованы; проверить реальные curses colors, region/search и monochrome.
 - [ ] Проверены реальные curses colors, region/search и monochrome fallback.
 
 Критерий: обязательные modes дают полезную устойчивую подсветку.
