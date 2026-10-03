@@ -735,11 +735,11 @@ File save здесь сохраняет текстовое представле�
   caret 2 px. Presentation HTML подчёркивает текущий символ контрастной синей
   линией; это остаётся заметно даже пока native caret мигает или окно теряет
   focus. Текст, syntax colors, region и search overlay сохраняют свои стили.
-- Offscreen widget проверяет cursorWidth, активный focus и HTML caret marker;
-  Qt editor window specs: **10 examples, 0 failures**; полный RSpec:
-  **212 examples, 0 failures**. Ручную видимость caret в пользовательском desktop
-  следует подтвердить после следующего запуска. Общий RuboCop пока сообщает
-  прежние **63 offenses**.
+- Offscreen widget проверяет cursorWidth, HTML underline marker, размер editor
+  и положение modeline. Assertion на `has_focus` удалён: headless Qt иногда не
+  назначает native focus даже при отрисованном layout/caret; результат зависел
+  от порядка запуска spec. Изолированный Xvfb smoke ранее подтвердил получение
+  настоящих `C-x C-c` и `C-n`.
 
 ## 2026-10-03 — Qt split ratio и Super arrows
 
@@ -778,6 +778,10 @@ File save здесь сохраняет текстовое представле�
 - Native X11 key and wheel events were also sent to the real Qt window in an
   isolated Xvfb display: two `C-n` events moved point to row 2; one wheel notch
   moved `top_line` to 3 and the scrollbar to 60. No user desktop input was used.
+- После этого полного suite: **220 examples, 0 failures**; Qt editor/input/
+  shortcut subset: **21 examples, 0 failures**. `bundle exec rake` пока падает
+  только на оставшихся **57 RuboCop offenses** в `buffer.rb`, curses frontend,
+  `window.rb` и одном spec.
 
 ## 2026-10-03 — curses cursor-only redraw
 
