@@ -106,6 +106,19 @@
 - Полный прогон после изменения: **171 examples, 0 failures**; RuboCop всё ещё
   сообщает **88 offenses в 97 files**, тот же общий debt count.
 
+## 2026-10-03 — Qt Super payload routing
+
+- Отдельный spec использует enum constants установленного Qt 6.11.2 и поля
+  `key`, `modifiers`, `text` из generated `QKeyEvent` payload schema. Он
+  прогоняет `M-s-j/k/c`, `s-w`, `s-Left/Right`, `s-,/.` через реальный
+  `QtKeyTranslator` и общий `CommandRouter`; проверяет различие Alt/Super и
+  Ctrl+Shift punctuation. Это проверка runtime constants/translation/routing,
+  не фактической доставки desktop keyboard events.
+- Targeted specs: **5 examples, 0 failures**; RuboCop на новом spec чистый.
+  Полный `bundle exec rake`: **173 examples, 0 failures**, затем общий RuboCop
+  gate сообщает **88 offenses в 98 files**. Physical Super keys и остальные
+  незакрытые Qt UI flows остаются обязательными.
+
 ## 2026-10-03 — Qt clipboard paste через общий core event
 
 - Runtime probe qt 0.1.9 / Qt Widgets 6.11.2: `QApplication.clipboard`
