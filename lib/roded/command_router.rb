@@ -32,8 +32,8 @@ module Roded
       mapped = resolve(combined)
       return mapped if mapped
 
-      if pending.first != "Esc" && @keymap&.prefix?(combined)
-        @pending_prefixes[source_id] = pending + [key]
+      if @keymap&.prefix?(combined)
+        @pending_prefixes[source_id] = pending.first == "Esc" ? [combined] : pending + [key]
         return Event.new(:prefix_pending, { prefix: combined })
       end
 

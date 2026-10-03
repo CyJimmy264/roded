@@ -72,6 +72,14 @@ module Roded
         @editor.yank
       when :yank_pop
         @editor.start_minibuffer(:kill_ring, "M-y ")
+      when :line_search
+        @editor.start_minibuffer(:line_search, "Find line: ")
+      when :goto_line
+        @editor.start_minibuffer(:goto_line, "Goto line: ")
+      when :query_replace
+        @editor.begin_query_replace
+      when :project_files
+        @editor.start_minibuffer(:open, "Project file: ")
       when :shrink_window_horizontally
         @editor.resize_window(-0.05)
       when :enlarge_window_horizontally

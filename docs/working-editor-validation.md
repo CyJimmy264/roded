@@ -270,6 +270,23 @@ File save здесь сохраняет текстовое представле�
   picker resize/scroll ещё не готовы. Полный RuboCop не зелёный; новые picker
   и file-path provider files lint чистые.
 
+## 2026-10-03 — поиск, goto-line и query-replace
+
+- `C-s` открывает строковый picker и Enter перемещает point к совпавшей строке;
+  `C-g` закрывает его без перемещения point. Добавлены forward/backward search
+  через M-x, `M-g g` и `M-%` с skip, replace, replace-all и cancel. Replace
+  обратим через undo, replace-all записывается одной undo-группой.
+- Исправлена маршрутизация multi-key Meta prefix: теперь `Esc g g` разрешает
+  binding `M-g g` так же, как обычные multi-key prefixes.
+- File picker умеет переходить в выбранную директорию и дальше фильтровать её
+  содержимое. Git project paths получают `git ls-files` exclusions и доступны
+  через `C-c p f`. Поиск, query-replace, and picker logic вынесены из
+  Application в общие core operations modules.
+- Полный RSpec: **129 examples, 0 failures**. Реальный curses PTY прошёл
+  интерактивный `C-s` и `M-%`: после skip/replace-all на экране появился
+  `fox dog fox`; quit/discard завершил приложение с exit code 0. Desktop Qt и
+  полный RuboCop остаются открытыми проверками.
+
 ## 2026-10-03 — этап 2, подэтап: source routing и загрузка core
 
 - `bundle exec rspec`: **45 examples, 0 failures**.

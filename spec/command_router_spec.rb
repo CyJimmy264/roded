@@ -87,5 +87,15 @@ RSpec.describe Roded::CommandRouter do
   def route_sequence(*keys)
     keys.map { |key| router.route(key) }.last
   end
+
+  it "resolves multi-key Meta sequences" do
+    expect(router.route("Esc").type).to eq(:prefix_pending)
+    expect(router.route("g").type).to eq(:prefix_pending)
+    expect(router.route("g").type).to eq(:goto_line)
+  end
+
+  it "routes the project-file picker sequence" do
+    expect(route_sequence("C-c", "p", "f")).to eq(Roded::Event.new(:project_files, {}))
+  end
 end
 # rubocop:enable Metrics/BlockLength

@@ -21,7 +21,7 @@ RSpec.describe Roded::Application do
       Roded::Command.new(:minibuffer_render, { prompt: "M-x ", text: "", cursor: 0 })
     )
     expect(frontend.commands.last.type).to eq(:picker_render)
-    expect(frontend.commands.last.payload[:candidates]).to include("quit", "redo")
+    expect(frontend.commands.last.payload[:candidates]).to include("quit", "open")
   end
 
   it "submits M-x quit through routed key events" do
@@ -781,6 +781,103 @@ RSpec.describe Roded::Application do
     expect(application.current_window.top_line).to eq(7)
     application.handle_event(Roded::Event.new(:key, { key: "M-N" }))
     expect(application.current_window.top_line).to eq(7)
+  end
+
+  it "uses C-s as a line picker and moves point to the selected match" do
+    application.startup
+    application.current_buffer.lines = ["first", "needle row", "last"]
+    application.current_window.point = { row: 0, col: 0 }
+    %w[C-s n e e d l e Enter].each do |key|
+      application.handle_event(Roded::Event.new(:key, { key: }))
+    end
+
+    expect(application.current_window.point).to eq({ row: 1, col: 0 })
+  end
+
+  it "cancels line search without moving the view point" do
+    application.startup
+    application.current_buffer.lines = ["needle", "other"]
+    application.current_window.point = { row: 1, col: 2 }
+
+    %w[C-s n e e d l e C-g].each do |key|
+      application.handle_event(Roded::Event.new(:key, { key: }))
+    end
+
+    expect(application.current_window.point).to eq({ row: 1, col: 2 })
+  end
+
+  it "searches forward from M-x and goes to a requested line" do
+    application.startup
+    application.current_buffer.lines = ["alpha", "needle", "omega"]
+    application.current_window.point = { row: 0, col: 0 }
+    application.process_command("isearch-forward")
+    "needle".each_char { |character| application.minibuffer.insert_char(character) }
+    application.submit_minibuffer
+    expect(application.current_window.point).to eq({ row: 1, col: 0 })
+
+    %w[Esc g g].each { |key| application.handle_event(Roded::Event.new(:key, { key: })) }
+    "3".each_char { |character| application.minibuffer.insert_char(character) }
+    application.submit_minibuffer
+    expect(application.current_window.point).to eq({ row: 2, col: 0 })
+  end
+
+  it "supports query replace, skip, replace all, and undo" do
+    application.startup
+    buffer = application.current_buffer
+    buffer.load_text("cat dog cat cat")
+    application.handle_event(Roded::Event.new(:key, { key: "Esc" }))
+    application.handle_event(Roded::Event.new(:key, { key: "%" }))
+    "cat".each_char { |character| application.minibuffer.insert_char(character) }
+    application.submit_minibuffer
+    "fox".each_char { |character| application.minibuffer.insert_char(character) }
+    application.submit_minibuffer
+    application.confirm_query_replace("n")
+    application.confirm_query_replace("y")
+    application.confirm_query_replace("!")
+
+    expect(buffer.to_s).to eq("cat dog fox fox")
+    expect(buffer.undo).to be(true)
+    expect(buffer.to_s).to eq("cat dog fox cat")
+    expect(buffer.undo).to be(true)
+    expect(buffer.to_s).to eq("cat dog cat cat")
+  end
+
+  it "restores point when query replace is canceled" do
+    application.startup
+    application.current_buffer.lines = ["cat"]
+    application.current_window.point = { row: 0, col: 2 }
+    application.begin_query_replace
+    "cat".each_char { |character| application.minibuffer.insert_char(character) }
+    application.submit_minibuffer
+    "fox".each_char { |character| application.minibuffer.insert_char(character) }
+    application.submit_minibuffer
+
+    application.handle_event(Roded::Event.new(:key, { key: "C-g" }))
+
+    expect(application.current_window.point).to eq({ row: 0, col: 2 })
+  end
+
+  it "completes a directory path before opening a file" do
+    require "tmpdir"
+    Dir.mktmpdir("roded-open-picker") do |root|
+      FileUtils.mkdir_p(File.join(root, "src"))
+      File.write(File.join(root, "src", "note.rb"), "content")
+      Dir.chdir(root) do
+        application.startup
+        application.instance_variable_set(:@file_path_provider, Roded::FilePathProvider.new(root))
+        %w[C-x C-f s r c Enter].each do |key|
+          application.handle_event(Roded::Event.new(:key, { key: }))
+        end
+        expect(application.minibuffer.text).to eq("src/")
+        "note.rb".each_char do |character|
+          application.handle_event(Roded::Event.new(:key, { key: character }))
+        end
+        application.handle_event(Roded::Event.new(:key, { key: "Enter" }))
+
+        expect(application.current_buffer.filename).to eq(File.join(root, "src", "note.rb"))
+        expect(application.current_buffer.to_s).to eq("content")
+      end
+    end
   end
 end
 # rubocop:enable Metrics/BlockLength

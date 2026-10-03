@@ -5,6 +5,9 @@ module Roded
     include Logging
     include FileOperations
     include CloseOperations
+    include PickerOperations
+    include SearchOperations
+    include QueryReplaceOperations
 
     attr_reader :focus, :minibuffer, :kill_ring, :current_window
     SYSTEM_EVENTS = %i[quit signal frontend_eof frontend_failure].freeze
@@ -307,23 +310,6 @@ module Roded
       broadcast_command(Command.new(:render, {}))
     end
 
-    def choose_yank_pop(text)
-      return if text.to_s.empty?
-
-      ring_index = kill_ring.items.index(text) || 0
-      previous = @last_yank&.fetch(:buffer).equal?(current_buffer) ? @last_yank : nil
-      start = previous ? previous.fetch(:start) : current_window.point.dup
-      current_buffer.with_undo_group do
-        if previous
-          current_buffer.delete_region(previous.fetch(:start), previous.fetch(:finish))
-        end
-        current_buffer.insert_text(text)
-      end
-      @last_yank = { buffer: current_buffer, start:, finish: current_buffer.cursor_pos, index: ring_index }
-      current_window.mark = nil
-      broadcast_command(Command.new(:render, {}))
-    end
-
     def scroll_viewport(amount)
       return unless current_window
 
@@ -383,34 +369,10 @@ module Roded
       )
     end
 
-    def move_picker(amount)
-      return unless @picker
-
-      @picker.move(amount)
-      render_picker
-    end
-
-    def refresh_picker
-      return unless @picker
-
-      @picker.update_query(@minibuffer.text)
-      render_picker
-    end
-
-    def render_picker
-      return unless @picker
-
-      payload = @picker.snapshot.merge(prompt: @minibuffer.prompt).freeze
-      broadcast_command(Command.new(:picker_render, payload))
-    end
-
-    def selected_picker_value
-      @picker&.selected
-    end
-
     def cancel_minibuffer
       @minibuffer.cancel
       @picker = nil
+      cancel_query_replace if @query_replace_state
       @minibuffer_kind = nil
       clear_pending_close_state
       clear_pending_save_confirmation
@@ -423,14 +385,27 @@ module Roded
     def submit_minibuffer
       text = @minibuffer.submit
       kind = @minibuffer_kind
-      text = selected_picker_value || text if @picker
+      @picker_query = @picker&.query
+      return if resume_path_picker_if_directory(kind)
+
+      text = selected_picker_value || text
       @picker = nil
       @minibuffer_kind = nil
       @focus = :buffer
       broadcast_focus
       broadcast_command(Command.new(:minibuffer_clear, {}))
       minibuffer_submit_handler.handle(kind, text)
+      @picker_query = nil
       broadcast_command(Command.new(:render, {}))
+    end
+
+    def resume_path_picker_if_directory(kind)
+      selected = selected_picker_value
+      return false unless path_picker?(kind) && selected&.end_with?("/")
+      return false unless File.directory?(File.expand_path(selected))
+
+      continue_path_picker(selected, kind)
+      true
     end
 
     private
@@ -451,16 +426,15 @@ module Roded
       @command_registry.register("next-buffer") { |editor| editor.next_buffer }
       @command_registry.register("previous-buffer") { |editor| editor.previous_buffer }
       @command_registry.register("kill-buffer") { |editor| editor.kill_current_buffer }
-    end
-
-    def picker_for(kind)
-      candidates = case kind
-                   when :command then command_names
-                   when :switch_buffer then @buffers.map(&:name)
-                   when :kill_ring then kill_ring.items
-                   when :open, :save, :save_as then @file_path_provider.candidates
-                   end
-      Picker.new(candidates) if candidates
+      @command_registry.register("isearch-forward", description: "Search forward") do |editor|
+        editor.start_minibuffer(:search_forward, "Search forward: ")
+      end
+      @command_registry.register("isearch-backward", description: "Search backward") do |editor|
+        editor.start_minibuffer(:search_backward, "Search backward: ")
+      end
+      @command_registry.register("goto-line", description: "Go to a line number") do |editor|
+        editor.start_minibuffer(:goto_line, "Goto line: ")
+      end
     end
 
     def active_region
