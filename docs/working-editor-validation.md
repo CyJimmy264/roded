@@ -1135,3 +1135,24 @@ File save здесь сохраняет текстовое представле�
   / gem `qt` **0.2.0**: key editing/save, scrolling, selection, Menu/Alt+Menu,
   split, Super resizing, empty scratch and quit; screenshots/log are in
   `/tmp/roded-qt-live-smoke.wNTMqA`. Neither smoke used desktop `DISPLAY`.
+
+## 2026-10-03 — immutable UI updates and core event-loop ownership
+
+- `UIUpdate` deep-copies and freezes nested hashes, arrays and strings at
+  publication. A regression spec mutates the original payload after creating
+  an update and verifies that the delivered snapshot remains unchanged and
+  deeply frozen. Unsupported mutable payload values fail immediately.
+- A core-queue spec registers and executes a command through `RubyEditorAPI`
+  from outside the event loop and verifies that the command action runs on the
+  event-loop thread. Frontend readers and the REPL worker enqueue input/API
+  events; the application loop handles mutations serially.
+- Targeted message/Qt input/clipboard specs: **18 examples, 0 failures**;
+  message/API specs: **12 examples, 0 failures**. `bundle exec rake`:
+  **269 examples, 0 failures**, RuboCop **145 files, 0 offenses**.
+- `script/curses_live_smoke.rb` passed in a private PTY (`C-n`, `C-x C-c`):
+  `/tmp/roded-curses-smoke.20261003-2-f0gf2k`. `script/qt_live_smoke.sh`
+  passed in private Xvfb / private `XDG_CONFIG_HOME` with Qt Widgets **6.11.2**
+  and gem `qt` **0.2.0**: 17 key events, wheel, mouse selection, Menu/Alt+Menu,
+  split, Super resize, no-argument scratch startup and keyboard quit; screenshots
+  and log are in `/tmp/roded-qt-live-smoke.xCZAwA`. Neither check used the
+  user's desktop `DISPLAY`.

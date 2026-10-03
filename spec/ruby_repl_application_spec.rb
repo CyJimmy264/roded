@@ -42,6 +42,24 @@ RSpec.describe Roded::Application, "core-queue API" do
   end
 end
 
+RSpec.describe Roded::Application, "core event loop ownership" do
+  it "runs editor API commands on the core event loop thread" do
+    application = described_class.new
+    api = Roded::RubyEditorAPI.new(application)
+    execution_threads = Queue.new
+    worker = Thread.new { application.send(:main_loop) }
+    Timeout.timeout(3) { sleep 0.01 until application.instance_variable_get(:@core_thread) }
+
+    api.register_command("record-thread") { execution_threads << Thread.current }
+    api.execute_command("record-thread")
+
+    expect(Timeout.timeout(3) { execution_threads.pop }).to equal(worker)
+  ensure
+    application&.push_event(Roded::Event.new(:quit, {}))
+    worker&.join(2)
+  end
+end
+
 RSpec.describe Roded::Application, "immutable editor API" do
   it "returns immutable snapshots and ignores edits to readonly documents" do
     application = described_class.new

@@ -87,7 +87,7 @@ file roundtrip не теряет текст. Коммит этапа до шир
   insert/backspace/delete/newline продолжают перерисовываться.
 - [X] Frontend получает initial active buffer/minibuffer state при подключении;
   picker state появится с общей picker model.
-- [ ] Cross-thread snapshots независимы и immutable; ядро — single writer.
+- [X] Cross-thread snapshots независимы и immutable; ядро — single writer.
 - [X] Page geometry travels with the key event from its active frontend/view;
   Qt measures the active pane on the GUI thread before core page commands run.
 - [X] Core загружается без require curses/qt; launcher подключает выбранный adapter.

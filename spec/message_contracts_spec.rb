@@ -26,3 +26,25 @@ RSpec.describe "editor message contracts" do
     end.to raise_error(ArgumentError, /expected InputEvent/)
   end
 end
+
+RSpec.describe Roded::UIUpdate do
+  it "copies and deeply freezes payloads before frontend delivery" do
+    payload = { text: +"hello", nested: [+"world"] }
+    update = described_class.new(:message, payload)
+    payload[:text].replace("changed")
+    payload[:nested].first.replace("changed")
+    payload[:nested] << "extra"
+
+    expect(update.payload).to eq(text: "hello", nested: ["world"])
+    expect(update.payload).to be_frozen
+    expect(update.payload.fetch(:text)).to be_frozen
+    expect(update.payload.fetch(:nested)).to be_frozen
+    expect(update.payload.fetch(:nested).first).to be_frozen
+  end
+
+  it "rejects unsupported mutable payload values" do
+    expect do
+      described_class.new(:message, { object: Object.new })
+    end.to raise_error(TypeError, /unsupported mutable UI update value/)
+  end
+end
