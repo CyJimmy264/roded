@@ -189,7 +189,6 @@ replace обратимы. Provider/history/preview не становятся cur
 - [X] Настоящий xterm-256color PTY показывает Ruby keyword/number/comment
   spans цветом.
 - [ ] Проверить region/search colors и monochrome fallback.
-- [ ] Проверены реальные curses colors, region/search и monochrome fallback.
 
 Критерий: обязательные modes дают полезную устойчивую подсветку.
 
@@ -213,7 +212,10 @@ replace обратимы. Provider/history/preview не становятся cur
 - [ ] Общие commands, file flows, region/undo/search/modes работают как в curses.
 - [ ] Native text/undo/context menu не образуют вторую editor model.
 - [ ] Mouse focus/caret/selection/wheel и clipboard идут через core contracts.
-- [ ] Unicode core/UTF-16 Qt offset conversion, tabs/long lines/scroll/resize.
+- [X] Qt visual caret maps core character columns to grapheme boundaries for
+  astral emoji, combining text, and ZWJ emoji sequences.
+- [ ] Exact core-character/Qt UTF-16 position conversion, including points
+  inside a grapheme; tabs/long lines/scroll/resize.
 - [ ] Все обязательные Super/Menu aliases из таблицы, включая Alt+Super/punctuation.
 - [ ] s-Left/s-Right resizing split и configurable combinations.
 - [ ] Native close -> save/discard/cancel; отмена сохраняет рабочее desktop window.

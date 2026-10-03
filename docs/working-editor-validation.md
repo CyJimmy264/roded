@@ -31,6 +31,25 @@
 - Остаются проверками region/search colors, monochrome fallback и физические
   curses сценарии с paste/resize.
 
+## 2026-10-03 — Qt caret и Unicode grapheme offsets
+
+- Runtime probe на qt 0.1.9 / Qt Widgets 6.11.2 показывает, что Qt `Right`
+  перемещает presentation caret по графемам, тогда как core хранит codepoint
+  columns. `QTextEdit` binding не предоставляет `textCursor`/`setTextCursor`,
+  поэтому exact UTF-16 position setter недоступен.
+- Добавлен `QtCursorMapper`: он считает полные grapheme boundaries до core point
+  и размещает Qt caret по visual movement. Реальный offscreen widget проверяет
+  следующую копируемую позицию для astral emoji, combining sequence и ZWJ family.
+- Команда: `GEM_HOME=/tmp/roded-qt-gems
+  GEM_PATH=/home/mveynberg/.rbenv/versions/3.4.2/lib/ruby/gems/3.4.0:/tmp/roded-qt-gems
+  XDG_CONFIG_HOME=/tmp/roded-qt-spec-config QT_QPA_PLATFORM=offscreen
+  bundle exec rspec spec/qt_editor_window_spec.rb` — **4 examples, 0 failures**.
+- Ограничение зафиксировано в `qt-workarounds.md`: точка внутри графемы
+  отображается на предыдущей caret boundary; точная UTF-16 установка и mouse
+  mapping остаются открытыми.
+- Полный запуск через `bundle exec rake` после этой проверки: **163 examples,
+  0 failures**; общий RuboCop gate пока сообщает **91 offense**.
+
 ## 2026-10-03 — Qt clipboard paste через общий core event
 
 - Runtime probe qt 0.1.9 / Qt Widgets 6.11.2: `QApplication.clipboard`

@@ -1,14 +1,9 @@
+require_relative "cursor_mapper"
+
 module Roded
   module Frontends
     # Renders one editor view and routes its key events to the core.
     class QtEditorPane
-      # TODO(qt): HACK — qt 0.1.9 omits QTextCursor::MoveOperation enum names.
-      # Workaround: use Qt's public integer values to place the read-only view cursor.
-      # Extend the binding to expose this enum, then replace these values with named constants.
-      MOVE_START = 1
-      MOVE_DOWN = 12
-      MOVE_RIGHT = 19
-
       attr_reader :container, :editor
 
       def initialize(parent)
@@ -31,8 +26,7 @@ module Roded
       def render(snapshot)
         text = snapshot.fetch(:text).gsub("\r\n", "\n")
         @editor.set_html(rendered_html(text, snapshot[:mark], snapshot[:point], snapshot[:tokens]))
-        place_cursor(snapshot.fetch(:row, snapshot.dig(:point, :row)),
-                     snapshot.fetch(:col, snapshot.dig(:point, :col)))
+        QtCursorMapper.place(@editor, snapshot, text)
         @modeline.set_text(snapshot[:modeline] || modeline_for(snapshot))
       end
 
@@ -105,14 +99,6 @@ module Roded
         text.gsub("&", "&amp;").gsub("<", "&lt;").gsub(">", "&gt;")
       end
 
-      def place_cursor(row, col)
-        return unless row && col
-
-        @editor.move_cursor(MOVE_START)
-        row.times { @editor.move_cursor(MOVE_DOWN) }
-        col.times { @editor.move_cursor(MOVE_RIGHT) }
-        @editor.ensure_cursor_visible
-      end
     end
   end
 end

@@ -2,28 +2,27 @@
 
 ## QTextCursor move-operation enum names
 
-- **Location:** `lib/roded/frontends/qt/editor_window.rb`
+- **Location:** `lib/roded/frontends/qt/cursor_mapper.rb`
 - **Observed binding:** qt 0.1.9 on Ruby 3.4.2, Qt Widgets 6.11.2.
-- **Gap:** `QPlainTextEdit#move_cursor` is exposed, but generated constants do not
+- **Gap:** `QTextEdit#move_cursor` is exposed, but generated constants do not
   include `QTextCursor::MoveOperation` names.
 - **Reproducer:** `require "qt"; p Qt::QTextCursor.constants.grep(/Start|Right|Down/)`
   returns no move-operation values. The installed Qt header
   `/usr/include/qt6/QtGui/qtextcursor.h` defines `Start`, `Down`, and `Right`
   in that order at enum values 1, 12, and 19.
-- **Workaround:** keep those three public Qt enum values in the presentation
-  adapter and apply them after setting the read-only widget text. This moves only
-  the Qt presentation cursor; document text, point, and edits remain in Roded core.
-- **Limits:** this early Qt slice resets text from core snapshots and does not yet
-  implement selection or mouse-to-core point mapping. The workaround covers
-  initial caret placement only.
+- **Workaround:** keep those three public Qt enum values in `QtCursorMapper` and
+  apply them after setting the read-only widget text. Core character columns are
+  mapped to complete grapheme boundaries before using the Qt `Right` operation.
+- **Limits:** points inside a multi-codepoint grapheme map to its preceding
+  Qt caret boundary. Mouse-to-core point mapping is still open.
 - **Verification:** a real Qt 6.11.2 desktop widget accepted text, cursor
   placement, layout, event subscriptions, and QTimer dispatch. An XTest/xdotool
   smoke sent `Super+j` and `Alt+Super+comma`; Qt delivered these as `s-j` and
   `M-s-,`, and the mapped commands ran. This verifies Qt's synthetic X11 input
   path, not physical keyboard hardware. Mouse, selection, clipboard, and
   physical Super-key checks remain open.
-- **Removal:** add generated `QTextCursor::MoveOperation` enum constants to qt,
-  then replace the integer values with their named bindings and remove the TODO.
+- **Removal:** add generated `QTextCursor::MoveOperation` enum constants and
+  QTextEdit cursor accessors to qt, then set a converted UTF-16 position directly.
 
 ## QClipboard text access
 
@@ -67,3 +66,26 @@
   restore a visible Qt window.
 - **Removal:** expose a Qt event-filter result that ignores and consumes the
   close event before the default handler, then replace `QtCloseGuard` with it.
+
+## Setting the QTextEdit cursor position
+
+- **Location:** `lib/roded/frontends/qt/cursor_mapper.rb` and
+  `lib/roded/frontends/qt/editor_pane.rb`.
+- **Observed binding:** qt 0.1.9 on Ruby 3.4.2, Qt Widgets 6.11.2.
+- **Gap:** the generated `QTextEdit` wrapper omits `textCursor()` and
+  `setTextCursor()`. The editor supports `moveCursor(MoveOperation, MoveMode)`,
+  but the cursor itself cannot be read or placed at a document/UTF-16 offset.
+- **Reproducer:** a real offscreen `QTextEdit` responds to `move_cursor` and
+  `copy`; its public methods have no `text_cursor`/`set_text_cursor`. Cursor
+  movement skips a combined grapheme such as `e` plus a combining accent and a
+  ZWJ family emoji as single visual units.
+- **Workaround:** map core character columns to the count of complete graphemes
+  before the point, then move Qt's presentation caret using `MoveOperation::Right`.
+  Real-widget tests select and copy the following character after an astral
+  emoji, combining sequence, and family emoji.
+- **Limits:** a core point inside a multi-codepoint grapheme is shown at the
+  preceding Qt caret boundary; the modeline still reports the core point. This
+  does not implement exact UTF-16 placement or mouse-to-core point mapping.
+- **Removal:** expose `QTextEdit#textCursor/#setTextCursor` and named cursor
+  operation/mode enums in qt, then translate each core character column to the
+  corresponding UTF-16 document offset and set the native cursor directly.
