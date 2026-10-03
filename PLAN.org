@@ -98,15 +98,15 @@ file roundtrip не теряет текст. Коммит этапа до шир
 
 Не откладывать совместимость с qt до завершения всех features.
 
-- [ ] Проверить опубликованный/installed qt gem и local API по =docs/qt-frontend.md=.
+- [X] Проверить установленный qt gem 0.1.9 и local API по =docs/qt-frontend.md=.
 - [ ] Probe реальных events: key/text/modifiers, consume, resize/focus/close.
 - [ ] Проверить доступные text/cursor/selection/highlight APIs используемой сборки.
-- [ ] QApplication и widgets в GUI/main thread; выбрать явную runtime интеграцию.
-- [ ] Один buffer: Qt input -> core edit -> UI snapshot -> рабочее отображение.
-- [ ] Super test binding вызывает core command ровно один раз; Alt/Super различаются.
+- [X] QApplication и widgets в GUI/main thread; выбрать явную runtime интеграцию.
+- [X] Один buffer: Qt input -> core edit -> UI snapshot -> рабочее отображение.
+- [X] Synthetic Super test binding вызывает core command; Alt/Super различаются.
 - [ ] Close/exception не вызывают widgets из чужого потока и не зависают.
-- [ ] Qt dependency/CLI boot воспроизводимы без обязательного local absolute path.
-- [ ] Missing bindings обходить локально; каждый hack получает TODO(qt): HACK
+- [X] Qt dependency/CLI boot воспроизводимы без обязательного local absolute path.
+- [X] Missing bindings обходить локально; каждый hack получает TODO(qt): HACK
   и запись с API gap/reproducer/test/normal replacement в qt-workarounds.md.
 
 Критерий: рабочий вертикальный сценарий с реальным Qt, а не только doubles.

@@ -81,14 +81,18 @@ module Roded
       end
     end
 
-    def run
-      trap_signals
+    def run(manage_signals: true)
+      trap_signals if manage_signals
       start_frontend_threads
       main_loop
     ensure
-      restore_signals
+      restore_signals if manage_signals
       @stop_requested = true
       shutdown_frontends
+    end
+
+    def restore_signal_handlers
+      restore_signals
     end
 
     def handle_event(event)
@@ -239,7 +243,7 @@ module Roded
     end
 
     def read_and_push_frontend_event(frontend, source_id)
-      event = frontend.get_event
+      event = frontend.next_event
       return push_event(Event.new(:frontend_eof, { frontend: frontend.class.name })) && false unless event
 
       push_event(Event.new(event.type, event.payload.merge(source_id:)))

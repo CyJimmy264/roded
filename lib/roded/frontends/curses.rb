@@ -86,10 +86,10 @@ module Roded
         true
       end
 
-      def get_event
-        logger.debug("get_event: read_key")
+      def next_event
+        logger.debug("next_event: read_key")
         key = read_key
-        logger.debug("get_event: read_key: #{key.inspect}")
+        logger.debug("next_event: read_key: #{key.inspect}")
         return Event.new(:noop, {}) unless key
         return Event.new(:quit, {}) if key == :quit_signal
         Event.new(:key, { key: })
