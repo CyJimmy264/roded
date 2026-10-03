@@ -8,7 +8,7 @@ RSpec.describe Roded::Application do
     spans = application.editor_snapshot[:windows].first[:tokens].flatten
     expect(spans.map { |span| span[:category] }).to include(:keyword, :number)
 
-    buffer.insert_text(" # comment")
+    buffer.insert_text(" # comment", at: application.current_window.point)
     edited_spans = application.editor_snapshot[:windows].first[:tokens].flatten
     expect(edited_spans.map { |span| span[:category] }).to include(:comment)
     expect(buffer.undo).to be(true)
@@ -26,8 +26,8 @@ RSpec.describe Roded::Application, "incomplete Ruby syntax snapshots" do
     buffer = application.current_buffer
     buffer.filename = "sample.rb"
     buffer.load_text("message = \"")
-    buffer.cursor_pos = { row: 0, col: buffer.line_at_cursor.length }
-    buffer.insert_text("unfinished\nстрока 🙂")
+    application.current_window.point = { row: 0, col: buffer.lines.first.length }
+    buffer.insert_text("unfinished\nстрока 🙂", at: application.current_window.point)
 
     edited_tokens = application.editor_snapshot[:windows].first[:tokens]
     expect(edited_tokens.last).to include(hash_including(start: 0, finish: 8, category: :string))
@@ -45,15 +45,15 @@ RSpec.describe Roded::Application, "Unicode highlight snapshots" do
     buffer = application.current_buffer
     buffer.filename = "sample.rb"
     buffer.load_text("x = \"🙂\"; 42")
-    buffer.cursor_pos = { row: 0, col: 7 }
-    before = [buffer.to_s, buffer.cursor_pos, buffer.modified?]
+    application.current_window.point = { row: 0, col: 7 }
+    before = [buffer.to_s, application.current_window.point, buffer.modified?]
     history_size = buffer.instance_variable_get(:@undo_stack).length
 
     snapshot = application.editor_snapshot
 
     number = snapshot[:windows].first[:tokens].first.find { |span| span[:category] == :number }
     expect(number).to include(start: 9, finish: 11)
-    expect([buffer.to_s, buffer.cursor_pos, buffer.modified?]).to eq(before)
+    expect([buffer.to_s, application.current_window.point, buffer.modified?]).to eq(before)
     expect(buffer.instance_variable_get(:@undo_stack).length).to eq(history_size)
   end
 end

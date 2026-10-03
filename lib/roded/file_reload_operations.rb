@@ -46,7 +46,7 @@ module Roded
     def reset_reloaded_view(window, buffer)
       return unless window.buffer.equal?(buffer)
 
-      window.point = buffer.cursor_pos
+      window.point = { row: 0, col: 0 }
       window.mark = nil
       window.top_line = 0
       window.left_column = 0

@@ -57,8 +57,8 @@ module Roded
       return display_message("Kill ring is empty.") unless text
 
       start = current_window.point.dup
-      current_buffer.insert_text(text)
-      @last_yank = { buffer: current_buffer, start:, finish: current_buffer.cursor_pos, index: 0 }
+      current_buffer.insert_text(text, at: start)
+      @last_yank = { buffer: current_buffer, start:, finish: current_window.point, index: 0 }
       current_window.mark = nil
       publish_ui_update(UIUpdate.new(:render, {}))
     end
@@ -95,11 +95,9 @@ module Roded
     def indent_rows(rows)
       current_buffer.with_undo_group do
         rows.reverse_each do |row|
-          current_buffer.cursor_pos = { row:, col: 0 }
-          current_buffer.insert_text("  ")
+          current_buffer.insert_text("  ", at: { row:, col: 0 })
         end
       end
-      current_buffer.cursor_pos = current_window.point
     end
 
     def publish_clipboard_text(text)
@@ -113,10 +111,11 @@ module Roded
     def replace_last_yank
       ring_index, text = next_yank
       current_buffer.with_undo_group do
-        current_buffer.delete_region(@last_yank.fetch(:start), @last_yank.fetch(:finish))
-        current_buffer.insert_text(text)
+        start = @last_yank.fetch(:start)
+        current_buffer.delete_region(start, @last_yank.fetch(:finish))
+        current_buffer.insert_text(text, at: start)
       end
-      @last_yank[:finish] = current_buffer.cursor_pos
+      @last_yank[:finish] = current_window.point
       @last_yank[:index] = ring_index
     end
 

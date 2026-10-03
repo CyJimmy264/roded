@@ -33,6 +33,7 @@ module Roded
       def render(buffer = nil)
         @current_buffer = buffer if buffer
         @data_lines = @current_buffer&.lines || []
+        @current_point ||= { row: 0, col: 0 }
         ensure_cursor_visible
         redraw
       end
@@ -51,7 +52,7 @@ module Roded
       def ensure_cursor_visible(_direction = nil)
         return unless @current_buffer
 
-        row = @current_buffer.cursor_row
+        row = @current_point.fetch(:row).clamp(0, @current_buffer.lines.length - 1)
         if row < @top
           @top = row
         elsif row >= @top + @screen.maxy
@@ -81,12 +82,19 @@ module Roded
       def place_cursor
         return unless @current_buffer
 
-        cursor_row = @current_buffer.cursor_row - @top
-        cursor_line = @current_buffer.lines[@current_buffer.cursor_row].to_s
-        cursor_col = CursesTextGeometry.column(cursor_line, @current_buffer.cursor_col)
-        cursor_row = cursor_row.clamp(0, @screen.maxy - 1)
-        cursor_col = cursor_col.clamp(0, @screen.maxx - 1)
-        @screen.setpos(cursor_row, cursor_col)
+        @screen.setpos(legacy_cursor_row, legacy_cursor_column)
+      end
+
+      def legacy_cursor_row
+        row = @current_point.fetch(:row).clamp(0, @current_buffer.lines.length - 1)
+        (row - @top).clamp(0, @screen.maxy - 1)
+      end
+
+      def legacy_cursor_column
+        row = @current_point.fetch(:row).clamp(0, @current_buffer.lines.length - 1)
+        line = @current_buffer.lines[row].to_s
+        column = [@current_point.fetch(:col), line.length].min
+        CursesTextGeometry.column(line, column).clamp(0, @screen.maxx - 1)
       end
 
       def visible_origin(point, origin, span)

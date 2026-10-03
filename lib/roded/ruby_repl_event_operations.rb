@@ -62,8 +62,7 @@ module Roded
     end
 
     def insert_repl_text(text)
-      current_buffer.insert_text(text.to_s)
-      current_window.point = current_buffer.cursor_pos if current_window
+      current_buffer.insert_text(text.to_s, at: current_window.point)
       publish_ui_update(UIUpdate.new(:render, {}))
       current_buffer.to_s.dup.freeze
     end
@@ -86,16 +85,21 @@ module Roded
 
       append_repl_output(buffer, payload)
       @ruby_repl_session = nil if payload[:exit]
-      @ruby_repl_input_start = payload[:exit] ? nil : buffer.cursor_pos
-      @ruby_repl_history_index = nil
-      @ruby_repl_history_draft = nil
-      current_window.point = buffer.cursor_pos if current_buffer.equal?(buffer) && current_window
+      finish_ruby_repl_result(buffer, payload)
       publish_ui_update(UIUpdate.new(:render, {}))
     end
 
+    def finish_ruby_repl_result(buffer, payload)
+      end_position = { row: buffer.lines.length - 1, col: buffer.lines.last.length }
+      @ruby_repl_input_start = payload[:exit] ? nil : end_position
+      @ruby_repl_history_index = nil
+      @ruby_repl_history_draft = nil
+      current_window.point = end_position if current_buffer.equal?(buffer) && current_window
+    end
+
     def append_repl_output(buffer, payload)
-      buffer.cursor_pos = { row: buffer.lines.length - 1, col: buffer.lines.last.length }
-      buffer.insert_text(format_repl_output(payload))
+      at = { row: buffer.lines.length - 1, col: buffer.lines.last.length }
+      buffer.insert_text(format_repl_output(payload), at:)
     end
 
     def shutdown_ruby_repl

@@ -45,7 +45,6 @@ module Roded
       prefix = @lines[first_row][0...first_col]
       suffix = @lines[last_row][last_col..].to_s
       @lines[first_row..last_row] = [prefix + suffix]
-      @cursor_pos = { row: first_row, col: first_col }
     end
   end
 end

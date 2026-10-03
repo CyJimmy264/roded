@@ -26,7 +26,7 @@ module QtClosePromptIntegrationSpecSupport
     application = Roded::Application.new
     application.startup
     application.open_file(path)
-    application.current_buffer.insert_char("X")
+    application.current_buffer.insert_char("X", at: application.current_window.point)
     application
   end
 

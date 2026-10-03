@@ -30,24 +30,20 @@ module Roded
     def insert_text_command(text)
       return unless editable_text_target?
 
-      current_buffer.insert_text(text)
-      current_window.point = current_buffer.cursor_pos
+      current_buffer.insert_text(text, at: current_window.point)
       publish_ui_update(UIUpdate.new(:render, {}))
     end
 
     def select_line(row)
       current_window.mark = { row:, col: 0 }
       current_window.point = { row:, col: current_buffer.lines.fetch(row).length }
-      current_buffer.cursor_pos = current_window.point
       publish_ui_update(UIUpdate.new(:render, {}))
     end
 
     def insert_binding_on_next_line(row)
       line = current_buffer.lines.fetch(row)
       indentation = line[/\A[ \t]*/]
-      current_buffer.cursor_pos = { row:, col: line.length }
-      current_buffer.insert_text("\n#{indentation}binding.irb")
-      current_window.point = current_buffer.cursor_pos
+      current_buffer.insert_text("\n#{indentation}binding.irb", at: { row:, col: line.length })
       publish_ui_update(UIUpdate.new(:render, {}))
     end
 

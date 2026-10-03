@@ -1359,3 +1359,24 @@ File save здесь сохраняет текстовое представле�
   Super resize, close decisions and scratch startup at
   `/tmp/roded-qt-live-smoke.B9R3oF`. They were run separately, without the
   desktop `DISPLAY`.
+
+## 2026-10-04 — move cursor ownership into Window
+
+- `Buffer` no longer stores, exposes or moves a cursor. Character/line edits
+  require an explicit `at:` position; edit history stores only document
+  fragments and newline metadata. `Window` owns point, mark, movement and
+  per-buffer position memory, and each view transforms its own positions when
+  shared text changes or undo/redo replays.
+- Added coverage for Buffer's cursor-free API, edit and undo position mapping,
+  independent views, and remembered point/mark mapping while a view temporarily
+  displays another buffer. Reloading a buffer resets attached and remembered
+  positions. `bundle exec rake`: **293 examples, 0 failures**; RuboCop: **151
+  files, 0 offenses**.
+- Real curses PTY smoke passed, including navigation, typing, paste, undo/redo,
+  save and quit: `/tmp/roded-curses-smoke.20261004-383541-plefod`. Actual
+  Ctrl+N, Ctrl+/, Ctrl+Shift+/ keys passed through Alacritty in private Xvfb:
+  `/tmp/roded-curses-xvfb.GNG3rP/roded.log`.
+- `script/qt_live_smoke.sh` passed with Qt Widgets **6.11.2** under private
+  Xvfb: editing, `C-/` undo, `C-?` redo, `C-c r d`, Menu, Super shortcuts,
+  mouse selection/scrolling and close decisions all passed. Log/screenshots:
+  `/tmp/roded-qt-live-smoke.NlgCuM`. No check used the user's desktop display.

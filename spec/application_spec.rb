@@ -35,7 +35,6 @@ RSpec.describe Roded::Application do
 
     expect(application.current_window.point).to eq(row: 1, col: 4)
     expect(application.current_window.mark).to eq(row: 1, col: 1)
-    expect(application.current_buffer.cursor_pos).to eq(row: 1, col: 4)
     expect(frontend.commands.last.payload[:editor_snapshot][:windows].first).to include(
       point: { row: 1, col: 4 }, mark: { row: 1, col: 1 }
     )
@@ -168,7 +167,7 @@ RSpec.describe Roded::Application do
     calls = 0
     application.register_command("count-call", binding: "C-c r g", description: "Count a call") do |editor|
       calls += 1
-      editor.current_buffer.insert_char("x")
+      editor.current_buffer.insert_text("x", at: editor.current_window.point)
     end
 
     %w[C-c r g].each do |key|
@@ -188,7 +187,7 @@ RSpec.describe Roded::Application do
   it "runs undo and redo commands against the active buffer" do
     application.startup
     buffer = application.current_buffer
-    buffer.insert_char("a")
+    buffer.insert_char("a", at: application.current_window.point)
 
     application.process_command("undo")
     expect(buffer.to_s).to eq("")
@@ -221,16 +220,16 @@ RSpec.describe Roded::Application do
     application.startup
     buffer = application.current_buffer
     buffer.load_text("cat")
-    buffer.insert_char("x")
-    buffer.move_cursor_line_end
-    buffer.insert_char("!")
+    buffer.insert_char("x", at: application.current_window.point)
+    application.current_window.move_cursor_line_end
+    buffer.insert_char("!", at: application.current_window.point)
     expect(buffer.undo).to be(true)
     expect(buffer.to_s).to eq("xcat")
     expect(buffer.redo).to be(true)
     expect(buffer.to_s).to eq("xcat!")
     expect(buffer.undo).to be(true)
 
-    buffer.cursor_pos = { row: 0, col: 4 }
+    application.current_window.point = { row: 0, col: 4 }
     application.current_window.mark = { row: 0, col: 1 }
     application.current_window.point = { row: 0, col: 4 }
     buffer.readonly = true
@@ -343,7 +342,7 @@ RSpec.describe Roded::Application do
     expect(window.point).to eq({ row: 0, col: 2 })
     application.switch_buffer("second")
     expect(window.point).to eq({ row: 0, col: 4 })
-    expect(application.current_buffer.cursor_pos).to eq({ row: 0, col: 4 })
+    expect(application.current_window.point).to eq({ row: 0, col: 4 })
   end
 
   it "keeps the active window point synchronized with routed edits" do
@@ -352,7 +351,7 @@ RSpec.describe Roded::Application do
     application.handle_event(Roded::Event.new(:key, { key: "x" }))
 
     expect(application.current_window.point).to eq({ row: 0, col: 1 })
-    expect(application.current_buffer.cursor_pos).to eq({ row: 0, col: 1 })
+    expect(application.current_window.point).to eq({ row: 0, col: 1 })
   end
 
   it "transforms the other view point and mark on edits and undo" do
@@ -455,7 +454,7 @@ RSpec.describe Roded::Application do
 
       expect(application.current_buffer.filename).to eq(file.path)
       expect(application.current_buffer.lines).to eq(["alpha", "beta", ""])
-      expect(application.current_buffer.cursor_pos).to eq({ row: 0, col: 0 })
+      expect(application.current_window.point).to eq({ row: 0, col: 0 })
       expect(frontend.buffers.last).to eq(application.current_buffer)
       render = frontend.commands.reverse.find { |command| command.type == :render }
       expect(render.payload[:editor_snapshot][:windows].first[:name]).to eq(file.path)
@@ -471,7 +470,7 @@ RSpec.describe Roded::Application do
       expect(application.current_buffer.filename).to eq(path)
       expect(application.current_buffer.to_s).to eq("")
       expect(File.exist?(path)).to be(false)
-      application.current_buffer.insert_char("x")
+      application.current_buffer.insert_char("x", at: application.current_window&.point || { row: 0, col: 0 })
       application.save_file(path)
       expect(File.binread(path)).to eq("x")
     end
@@ -553,7 +552,7 @@ RSpec.describe Roded::Application do
 
   it "prompts for a path when saving an unnamed buffer with C-x C-s" do
     buffer = Roded::Buffer.new("*scratch*")
-    buffer.insert_char("scratch")
+    buffer.insert_text("scratch", at: { row: 0, col: 0 })
     application.add_buffer(buffer)
     path = File.join(Dir.tmpdir, "roded-save-key-#{Process.pid}-#{object_id}.txt")
 
@@ -581,7 +580,7 @@ RSpec.describe Roded::Application do
 
   it "asks before killing a buffer with unsaved changes" do
     buffer = Roded::Buffer.new("temporary")
-    buffer.insert_char("x")
+    buffer.insert_char("x", at: application.current_window&.point || { row: 0, col: 0 })
     application.add_buffer(buffer)
 
     application.kill_current_buffer
@@ -600,7 +599,7 @@ RSpec.describe Roded::Application do
       file.flush
       application.open_file(file.path)
       buffer = application.current_buffer
-      buffer.insert_char("x")
+      buffer.insert_char("x", at: application.current_window&.point || { row: 0, col: 0 })
 
       application.kill_current_buffer
       answer_minibuffer(application, "save")
@@ -613,7 +612,7 @@ RSpec.describe Roded::Application do
 
   it "cancels close confirmation through C-g" do
     buffer = Roded::Buffer.new("dirty")
-    buffer.insert_char("x")
+    buffer.insert_char("x", at: application.current_window&.point || { row: 0, col: 0 })
     application.add_buffer(buffer)
     application.request_quit
 
@@ -626,7 +625,7 @@ RSpec.describe Roded::Application do
 
   it "cancels a quit confirmation without losing buffer edits" do
     buffer = Roded::Buffer.new("dirty")
-    buffer.insert_char("x")
+    buffer.insert_char("x", at: application.current_window&.point || { row: 0, col: 0 })
     application.add_buffer(buffer)
 
     application.request_quit
@@ -638,7 +637,7 @@ RSpec.describe Roded::Application do
 
   it "discards edited buffers only after the user confirms quit" do
     buffer = Roded::Buffer.new("dirty")
-    buffer.insert_char("x")
+    buffer.insert_char("x", at: application.current_window&.point || { row: 0, col: 0 })
     application.add_buffer(buffer)
 
     application.request_quit
@@ -657,10 +656,10 @@ RSpec.describe Roded::Application do
         second.flush
         application.open_file(first.path)
         first_buffer = application.current_buffer
-        first_buffer.insert_char("x")
+        first_buffer.insert_char("x", at: application.current_window&.point || { row: 0, col: 0 })
         application.open_file(second.path)
         second_buffer = application.current_buffer
-        second_buffer.insert_char("y")
+        second_buffer.insert_char("y", at: application.current_window&.point || { row: 0, col: 0 })
 
         application.request_quit
         answer_minibuffer(application, "save")
@@ -676,7 +675,7 @@ RSpec.describe Roded::Application do
 
   it "asks for a path when saving an unnamed buffer during quit" do
     buffer = Roded::Buffer.new("*scratch*")
-    buffer.insert_char("scratch text")
+    buffer.insert_text("scratch text", at: { row: 0, col: 0 })
     application.add_buffer(buffer)
     path = File.join(Dir.tmpdir, "roded-save-#{Process.pid}-#{object_id}.txt")
 
@@ -697,7 +696,7 @@ RSpec.describe Roded::Application do
       file.flush
       application.open_file(file.path)
       buffer = application.current_buffer
-      buffer.insert_char("x")
+      buffer.insert_char("x", at: application.current_window&.point || { row: 0, col: 0 })
       File.write(file.path, "external")
 
       application.request_quit
@@ -762,7 +761,7 @@ RSpec.describe Roded::Application do
       application.open_file(file.path)
 
       expect(application.current_buffer.lines).to eq([""])
-      application.current_buffer.insert_char("x")
+      application.current_buffer.insert_char("x", at: application.current_window&.point || { row: 0, col: 0 })
       application.save_file(file.path)
       expect(File.binread(file.path)).to eq("x")
     end
@@ -786,7 +785,7 @@ RSpec.describe Roded::Application do
       file.write("original")
       file.flush
       application.open_file(file.path)
-      application.current_buffer.insert_char("x")
+      application.current_buffer.insert_char("x", at: application.current_window&.point || { row: 0, col: 0 })
       File.write(file.path, "external")
 
       application.save_file(file.path)
@@ -806,7 +805,7 @@ RSpec.describe Roded::Application do
       application.startup
       application.open_file(file.path)
       buffer = application.current_buffer
-      buffer.insert_char("x")
+      buffer.insert_char("x", at: application.current_window&.point || { row: 0, col: 0 })
       File.write(file.path, "external\ncontent")
 
       application.save_file(file.path)
@@ -828,7 +827,7 @@ RSpec.describe Roded::Application do
       application.startup
       application.open_file(file.path)
       buffer = application.current_buffer
-      buffer.insert_char("x")
+      buffer.insert_char("x", at: application.current_window&.point || { row: 0, col: 0 })
       File.binwrite(file.path, "\0binary")
 
       application.save_file(file.path)
@@ -910,7 +909,7 @@ RSpec.describe Roded::Application do
     expect(frontend.messages.last).to match(/File not found/)
 
     buffer = Roded::Buffer.new("unsaved")
-    buffer.insert_char("x")
+    buffer.insert_char("x", at: application.current_window&.point || { row: 0, col: 0 })
     application.add_buffer(buffer)
     application.save_file("/no/such/roded/file")
     expect(frontend.messages.last).to match(/Error saving file/)
@@ -954,7 +953,7 @@ RSpec.describe Roded::Application do
         target.write("target")
         target.flush
         application.open_file(source.path)
-        application.current_buffer.insert_char("x")
+        application.current_buffer.insert_char("x", at: application.current_window&.point || { row: 0, col: 0 })
 
         application.save_file(target.path)
 
@@ -977,7 +976,7 @@ RSpec.describe Roded::Application do
         target.flush
         application.open_file(source.path)
         buffer = application.current_buffer
-        buffer.insert_char("x")
+        buffer.insert_char("x", at: application.current_window&.point || { row: 0, col: 0 })
 
         application.save_file(target.path)
         answer_minibuffer(application, "yes")
@@ -994,7 +993,7 @@ RSpec.describe Roded::Application do
       path = File.join(directory, "new.txt")
       application.open_file(path)
       buffer = application.current_buffer
-      buffer.insert_char("editor")
+      buffer.insert_text("editor", at: application.current_window&.point || { row: 0, col: 0 })
       File.write(path, "external")
 
       application.save_file(path)
@@ -1009,13 +1008,15 @@ RSpec.describe Roded::Application do
   it "moves the buffer cursor by a page in buffer focus" do
     buffer = Roded::Buffer.new("buffer")
     buffer.lines = %w[a b c d e f]
-    buffer.cursor_pos = { row: 1, col: 0 }
     application.add_buffer(buffer)
+    application.add_window(Roded::Window.new(buffer))
+    application.current_window.point = { row: 1, col: 0 }
 
     application.handle_event(Roded::Event.new(:page_down, {}))
 
-    expect(application.current_buffer.cursor_pos).to eq({ row: 4, col: 0 })
-    expect(frontend.commands.last).to eq(Roded::Command.new(:render, {}))
+    expect(application.current_window.point).to eq({ row: 4, col: 0 })
+    expect(frontend.commands.last.type).to eq(:render)
+    expect(frontend.commands.last.payload[:editor_snapshot][:windows].first[:point]).to eq({ row: 4, col: 0 })
   end
 
   it "uses the page size of the input source that issued the command" do
@@ -1026,10 +1027,11 @@ RSpec.describe Roded::Application do
     buffer = Roded::Buffer.new("buffer")
     buffer.lines = (0..8).map(&:to_s)
     application.add_buffer(buffer)
+    application.add_window(Roded::Window.new(buffer))
 
     application.handle_event(Roded::Event.new(:page_down, { source_id: :second }))
 
-    expect(buffer.cursor_row).to eq(5)
+    expect(application.current_window.point.fetch(:row)).to eq(5)
   end
 
   it "uses the page size captured with the input event without calling the frontend" do
@@ -1064,13 +1066,15 @@ RSpec.describe Roded::Application do
   it "moves the buffer cursor up by a page and clamps at the top" do
     buffer = Roded::Buffer.new("buffer")
     buffer.lines = %w[a b c d e f]
-    buffer.cursor_pos = { row: 2, col: 0 }
     application.add_buffer(buffer)
+    application.add_window(Roded::Window.new(buffer))
+    application.current_window.point = { row: 2, col: 0 }
 
     application.handle_event(Roded::Event.new(:page_up, {}))
 
-    expect(application.current_buffer.cursor_pos).to eq({ row: 0, col: 0 })
-    expect(frontend.commands.last).to eq(Roded::Command.new(:render, {}))
+    expect(application.current_window.point).to eq({ row: 0, col: 0 })
+    expect(frontend.commands.last.type).to eq(:render)
+    expect(frontend.commands.last.payload[:editor_snapshot][:windows].first[:point]).to eq({ row: 0, col: 0 })
   end
 
   it "routes word and document boundary bindings to core cursor movement" do
@@ -1188,7 +1192,6 @@ RSpec.describe Roded::Application do
     application.startup
     application.current_buffer.lines = ["x needle row"]
     application.current_window.point = { row: 0, col: 0 }
-    application.current_buffer.cursor_pos = application.current_window.point
     application.search("needle", :forward)
 
     expect(application.editor_snapshot[:windows].first[:highlight]).to eq(

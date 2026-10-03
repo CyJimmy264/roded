@@ -57,14 +57,14 @@ module Roded
       start = previous ? previous.fetch(:start) : current_window.point.dup
       current_buffer.with_undo_group do
         current_buffer.delete_region(previous.fetch(:start), previous.fetch(:finish)) if previous
-        current_buffer.insert_text(text)
+        current_buffer.insert_text(text, at: start)
       end
       remember_yank(text, start)
     end
 
     def remember_yank(text, start)
       index = kill_ring.items.index(text) || 0
-      @last_yank = { buffer: current_buffer, start:, finish: current_buffer.cursor_pos, index: index }
+      @last_yank = { buffer: current_buffer, start:, finish: current_window.point, index: index }
       current_window.mark = nil
       publish_ui_update(UIUpdate.new(:render, {}))
     end

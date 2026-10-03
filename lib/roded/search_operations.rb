@@ -57,7 +57,6 @@ module Roded
 
     def move_to_position(row, column, highlight: nil)
       current_window.point = { row:, col: column }
-      current_buffer.cursor_pos = current_window.point
       current_window.highlight = highlight
       publish_ui_update(UIUpdate.new(:render, {}))
     end

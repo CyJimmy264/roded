@@ -69,7 +69,6 @@ module Roded
     def update_active_view(buffer)
       add_window(Window.new(buffer)) unless current_window
       current_window.buffer = buffer if current_window
-      buffer.cursor_pos = current_window.point if current_window
       publish_ui_update(UIUpdate.new(:render, {}))
     end
   end

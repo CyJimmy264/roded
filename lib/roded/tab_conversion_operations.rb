@@ -28,7 +28,6 @@ module Roded
       end
       current_buffer.with_undo_group { replace_changed_rows(changed) }
       restore_transformed_positions(positions, changed, mode)
-      current_buffer.cursor_pos = current_window.point
       publish_ui_update(UIUpdate.new(:render, {}))
     end
 
@@ -70,9 +69,8 @@ module Roded
     def replace_line(row, original, replacement)
       start = { row:, col: 0 }
       finish = { row:, col: original.length }
-      current_buffer.cursor_pos = start
       current_buffer.delete_region(start, finish) unless original.empty?
-      current_buffer.insert_text(replacement) unless replacement.empty?
+      current_buffer.insert_text(replacement, at: start) unless replacement.empty?
     end
 
     def restore_transformed_positions(positions, changed, mode)

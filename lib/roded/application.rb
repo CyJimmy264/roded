@@ -74,7 +74,6 @@ module Roded
 
     def add_buffer(buffer)
       session.add_buffer(buffer)
-      buffer.add_edit_observer(self)
       @frontends.each { |frontend| frontend.add_buffer(buffer) if frontend.respond_to?(:add_buffer) }
     end
 

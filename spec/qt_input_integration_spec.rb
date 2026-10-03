@@ -15,8 +15,7 @@ module QtInputIntegrationSpecHelpers
   def build_application(lines)
     application = Roded::Application.new
     application.startup
-    application.current_buffer.insert_text(lines.join("\n"))
-    application.current_buffer.cursor_pos = { row: 0, col: 0 }
+    application.current_buffer.insert_text(lines.join("\n"), at: application.current_window.point)
     application.current_window.point = { row: 0, col: 0 }
     application
   end

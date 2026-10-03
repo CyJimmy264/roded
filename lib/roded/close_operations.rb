@@ -12,7 +12,10 @@ module Roded
     end
 
     def replace_closed_buffer_views(buffer)
-      windows.each { |window| window.buffer = buffers.first if window.buffer == buffer }
+      windows.each do |window|
+        window.buffer = buffers.first if window.buffer.equal?(buffer)
+        window.forget_buffer(buffer)
+      end
     end
 
     def render_buffer_removal
@@ -120,7 +123,6 @@ module Roded
 
     def remove_buffer(buffer)
       session.remove_buffer(buffer)
-      buffer.remove_edit_observer(self)
       unregister_frontends(buffer)
       preserve_writable_buffer
       replace_closed_buffer_views(buffer)

@@ -6,7 +6,7 @@ RSpec.describe Roded::Application, "text commands" do
 
   before { application.startup }
 
-  it "selects the current line and keeps the buffer cursor synchronized" do
+  it "selects the current line using the window point" do
     application.current_buffer.load_text("first line\nsecond")
     application.current_window.point = { row: 1, col: 2 }
 
@@ -14,7 +14,6 @@ RSpec.describe Roded::Application, "text commands" do
 
     expect(application.current_window.mark).to eq(row: 1, col: 0)
     expect(application.current_window.point).to eq(row: 1, col: 6)
-    expect(application.current_buffer.cursor_pos).to eq(row: 1, col: 6)
   end
 
   it "tabifies selected indentation as one undoable transformation" do
@@ -47,7 +46,7 @@ RSpec.describe Roded::Application, "text commands" do
     allow(Time).to receive(:now).and_return(Time.local(2026, 10, 3, 12, 34, 56))
 
     application.execute_command("insert-current-date-time")
-    application.current_buffer.insert_char(" ")
+    application.current_buffer.insert_char(" ", at: application.current_window.point)
     application.execute_command("insert-current-time")
 
     expect(application.current_buffer.to_s).to eq("03/10/2026 12:34:56 12:34:56")

@@ -2,8 +2,10 @@ module Roded
   # Manages the interactive Ruby session attached to the editor.
   module RubyReplOperations
     def open_ruby_repl
+      was_active = @ruby_repl_buffer && current_buffer.equal?(@ruby_repl_buffer)
       @ruby_repl_buffer = find_or_create_repl_buffer
       activate_buffer(@ruby_repl_buffer)
+      current_window.point = @ruby_repl_input_start if !was_active && @ruby_repl_input_start
       append_repl_prompt if @ruby_repl_input_start.nil?
       ensure_ruby_repl_session
     end
@@ -64,8 +66,7 @@ module Roded
     def start_repl_evaluation(code)
       return display_message("A Ruby expression is already running.") unless @ruby_repl_session.start_evaluation?(code)
 
-      current_buffer.insert_text("\n")
-      current_window.point = current_buffer.cursor_pos
+      current_buffer.insert_text("\n", at: current_window.point)
       publish_ui_update(UIUpdate.new(:render, {}))
     end
 
@@ -76,7 +77,6 @@ module Roded
     def create_repl_buffer
       buffer = Buffer.new("*ruby*")
       buffer.load_text("Roded Ruby REPL — C-c C-c evaluates; C-c C-k interrupts.\n> ")
-      buffer.cursor_pos = { row: 1, col: 2 }
       add_buffer(buffer)
       @ruby_repl_input_start = { row: 1, col: 2 }
       buffer
@@ -84,10 +84,11 @@ module Roded
 
     def append_repl_prompt
       buffer = @ruby_repl_buffer
-      buffer.cursor_pos = { row: buffer.lines.length - 1, col: buffer.lines.last.length }
-      buffer.insert_text("> ")
-      current_window.point = current_buffer.cursor_pos
-      @ruby_repl_input_start = buffer.cursor_pos
+      start = { row: buffer.lines.length - 1, col: buffer.lines.last.length }
+      buffer.insert_text("> ", at: start)
+      finish = { row: start.fetch(:row), col: start.fetch(:col) + 2 }
+      current_window.point = finish if current_buffer.equal?(buffer)
+      @ruby_repl_input_start = finish
     end
 
     def create_ruby_repl_session
@@ -113,8 +114,7 @@ module Roded
 
     def replace_repl_input(entry)
       current_buffer.delete_region(@ruby_repl_input_start, current_window.point)
-      current_buffer.insert_text(entry)
-      current_window.point = current_buffer.cursor_pos
+      current_buffer.insert_text(entry, at: @ruby_repl_input_start)
       publish_ui_update(UIUpdate.new(:render, {}))
     end
   end

@@ -26,8 +26,7 @@ RSpec.describe Roded::Application, "core-queue API" do
       'editor.execute_command("undo")',
       'editor.execute_command("redo")'
     ].join("; ")
-    repl.insert_text(code)
-    application.current_window.point = repl.cursor_pos
+    repl.insert_text(code, at: application.current_window.point)
 
     worker = Thread.new { application.send(:main_loop) }
     push_keys(application, "C-c", "C-c")
@@ -118,9 +117,9 @@ RSpec.describe Roded::Application, "REPL command registration" do
     target, repl = setup_repl_application(application)
     repl.insert_text(
       'editor.register_command("insert-star", binding: "C-c t") { |api| ' \
-      'api.switch_buffer("target"); api.insert_text("*") }'
+      'api.switch_buffer("target"); api.insert_text("*") }',
+      at: application.current_window.point
     )
-    application.current_window.point = repl.cursor_pos
 
     worker = Thread.new { application.send(:main_loop) }
     push_keys(application, "C-c", "C-c")
@@ -143,7 +142,7 @@ RSpec.describe Roded::Application, "documented Ruby API" do
     application = described_class.new
     application.startup
     buffer = application.current_buffer
-    buffer.insert_text("saved from Ruby")
+    buffer.insert_text("saved from Ruby", at: application.current_window.point)
     api = Roded::RubyEditorAPI.new(application)
     path = File.join(Dir.mktmpdir, "notes.txt")
 

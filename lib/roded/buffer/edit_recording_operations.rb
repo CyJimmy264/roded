@@ -8,7 +8,6 @@ module Roded
       before = edit_snapshot(row, before_count)
       yield
       sync_final_newline
-      clamp_cursor
       after = edit_snapshot(row, after_count)
       return if before == after
 
@@ -30,18 +29,24 @@ module Roded
 
     def append_typing_edit(edit)
       previous = @typing_undo_group&.last
-      if previous && previous.row == edit.row && previous.after_cursor == edit.before_cursor &&
-         previous.after_lines == edit.before_lines
-        @typing_undo_group << edit
-      else
-        @typing_undo_group = [edit]
-        @undo_stack << @typing_undo_group
-      end
+      return append_to_typing_group(edit) if contiguous_typing_edit?(previous, edit)
+
+      @typing_undo_group = [edit]
+      @undo_stack << @typing_undo_group
+    end
+
+    def contiguous_typing_edit?(previous, edit)
+      previous && previous.row == edit.row && previous.position_change&.new_end == edit.position_change&.start &&
+        previous.after_lines == edit.before_lines
+    end
+
+    def append_to_typing_group(edit)
+      @typing_undo_group << edit
     end
 
     def edit_snapshot(row, line_count)
       {
-        lines: @lines.slice(row, line_count).map(&:dup), cursor: @cursor_pos.dup,
+        lines: @lines.slice(row, line_count).map(&:dup),
         line_ending: @line_ending.dup, final_newline: @final_newline
       }
     end
@@ -50,7 +55,6 @@ module Roded
       previous = direction == :before
       replace_edit_lines(edit, previous)
       restore_edit_metadata(edit, previous)
-      clamp_cursor
     end
 
     def replace_edit_lines(edit, previous)
@@ -59,7 +63,6 @@ module Roded
     end
 
     def restore_edit_metadata(edit, previous)
-      @cursor_pos = (previous ? edit.before_cursor : edit.after_cursor).dup
       @line_ending = (previous ? edit.before_line_ending : edit.after_line_ending).dup
       @final_newline = previous ? edit.before_final_newline : edit.after_final_newline
     end
@@ -67,7 +70,6 @@ module Roded
     def build_edit(row, before, after)
       Buffer::Edit.new(
         row:, before_lines: before.fetch(:lines), after_lines: after.fetch(:lines),
-        before_cursor: before.fetch(:cursor), after_cursor: after.fetch(:cursor),
         before_line_ending: before.fetch(:line_ending), after_line_ending: after.fetch(:line_ending),
         before_final_newline: before.fetch(:final_newline), after_final_newline: after.fetch(:final_newline),
         position_change: position_change(row, before.fetch(:lines), after.fetch(:lines))

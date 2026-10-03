@@ -80,9 +80,9 @@ module Roded
       current_window.highlight = { start: first, finish: last }
       current_buffer.with_undo_group do
         current_buffer.delete_region(first, last)
-        current_buffer.insert_text(state.fetch(:replacement))
+        current_buffer.insert_text(state.fetch(:replacement), at: first)
       end
-      state[:position] = current_buffer.cursor_pos
+      state[:position] = current_window.point.values_at(:row, :col)
     end
 
     def query_match_boundaries(state)

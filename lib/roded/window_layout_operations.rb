@@ -94,7 +94,6 @@ module Roded
     def move_point_with_viewport(delta)
       point = current_window.point
       current_window.point = point.merge(row: point[:row] + delta)
-      current_buffer.cursor_pos = current_window.point
     end
   end
 end

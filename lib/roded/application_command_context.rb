@@ -13,6 +13,8 @@ module Roded
 
     def current_buffer = @application.current_buffer
 
+    def current_window = @application.current_window
+
     def page_size = @application.page_size
 
     def break_kill_sequence(command_type)
@@ -32,7 +34,18 @@ module Roded
     end
 
     def invoke_buffer_operation(method, *)
-      @application.current_buffer&.public_send(method, *)
+      return current_window&.public_send(method, *) if method.to_s.start_with?("move_cursor_")
+
+      buffer = current_buffer
+      return unless buffer
+
+      if %i[backspace delete_char newline insert_char insert_text].include?(method)
+        return unless current_window
+
+        buffer.public_send(method, *, at: current_window.point)
+      else
+        buffer.public_send(method, *)
+      end
     end
 
     def invoke_editor_action(method, *)

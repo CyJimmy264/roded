@@ -9,17 +9,10 @@ module Roded
       }.freeze
     end
 
-    def buffer_edited(buffer, position_change)
-      windows.each do |window|
-        window.transform_positions(position_change) if window.buffer.equal?(buffer)
-      end
-    end
-
     private
 
     def activate_window(window)
       self.current_window = window
-      current_buffer.cursor_pos = window.point
       render_active_window
     end
 

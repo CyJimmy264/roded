@@ -83,7 +83,10 @@ file roundtrip не теряет текст. Коммит этапа до шир
   отдельно с contract doubles и сквозными app/UI сценариями.
 - [X] Window хранит независимые point/mark, а logical window tree принадлежит
   session; общий текст/history остаётся в Buffer.
-- [ ] Перенести cursor ownership из Buffer с сохранением существующих scenarios.
+- [X] Перенести cursor ownership из Buffer: Buffer edits получают явную `at:`
+  позицию; Window владеет point/movement и запоминает точки/marks по buffer.
+  Delta undo/redo трансформирует точки всех views, включая сохранённую позицию
+  окна, временно показывающего другой buffer; сценарии покрыты specs.
 - [X] Контролируемый edit API не отдаёт изменяемые live lines/cursor наружу;
   инварианты readonly/positions соблюдаются на каждом входе.
 - [X] KillRing обновляется из edit result, Buffer не получает KillRing dependency.

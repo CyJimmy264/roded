@@ -3,6 +3,12 @@ module Roded
   module BufferPositionChangeOperations
     private
 
+    def normalize_buffer_position(position)
+      row = position.fetch(:row, 0).to_i.clamp(0, @lines.length - 1)
+      col = position.fetch(:col, 0).to_i.clamp(0, @lines[row].length)
+      { row:, col: }
+    end
+
     def position_change(row, before_lines, after_lines)
       before_chars = before_lines.join("\n").each_char.to_a
       after_chars = after_lines.join("\n").each_char.to_a

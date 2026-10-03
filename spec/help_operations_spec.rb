@@ -25,7 +25,7 @@ RSpec.describe Roded::Application, "binding help" do
     expect(application.current_buffer).to equal(help_buffer)
     expect(help_buffer.to_s).to include("Command added by the user")
     original_text = help_buffer.to_s
-    help_buffer.insert_char("x")
+    help_buffer.insert_char("x", at: { row: 0, col: 0 })
     expect(help_buffer.to_s).to eq(original_text)
   end
 end

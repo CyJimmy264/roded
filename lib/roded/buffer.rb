@@ -1,6 +1,5 @@
 require_relative "buffer/serialization_operations"
 require_relative "buffer/observation_operations"
-require_relative "buffer/cursor_operations"
 require_relative "buffer/character_edit_operations"
 require_relative "buffer/line_edit_operations"
 require_relative "buffer/region_operations"
@@ -9,18 +8,17 @@ require_relative "buffer/edit_recording_operations"
 require_relative "buffer/position_change_operations"
 
 module Roded
-  # A text document with controlled edits, cursor movement, and edit history.
+  # A text document with controlled edits and edit history.
   class Buffer
     PositionChange = Data.define(:start, :old_end, :new_end)
     Edit = Struct.new(
-      :row, :before_lines, :after_lines, :before_cursor, :after_cursor,
+      :row, :before_lines, :after_lines,
       :before_line_ending, :after_line_ending, :before_final_newline, :after_final_newline,
       :position_change, keyword_init: true
     )
 
     include BufferSerializationOperations
     include BufferObservationOperations
-    include BufferCursorOperations
     include BufferCharacterEditOperations
     include BufferLineEditOperations
     include BufferRegionOperations
@@ -52,7 +50,6 @@ module Roded
       @major_mode = nil
       @file_revision = nil
       @lines = [String.new("")]
-      @cursor_pos = { row: 0, col: 0 }
       @line_ending = "\n"
       @final_newline = false
     end

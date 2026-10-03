@@ -16,6 +16,7 @@ module Roded
       @lines = text.gsub("\r\n", "\n").split("\n", -1)
       @lines = [""] if @lines.empty?
       reset_edit_history
+      @edit_observers.each { |observer| observer.buffer_reloaded(self) if observer.respond_to?(:buffer_reloaded) }
       mark_saved
       self
     end
@@ -58,7 +59,6 @@ module Roded
     private
 
     def reset_edit_history
-      @cursor_pos = { row: 0, col: 0 }
       @undo_stack.clear
       @redo_stack.clear
       @undo_group_edits.clear

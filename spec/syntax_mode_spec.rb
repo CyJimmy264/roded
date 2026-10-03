@@ -7,7 +7,7 @@ RSpec.describe Roded::Buffer do
     expect(described_class.new("notes.txt").mode).to eq(:plain)
 
     buffer = described_class.new("sample.rb")
-    buffer.insert_text("def answer = 42")
+    buffer.insert_text("def answer = 42", at: { row: 0, col: 0 })
     saved_text = buffer.to_s
     history_size = buffer.instance_variable_get(:@undo_stack).length
     buffer.major_mode = :plain

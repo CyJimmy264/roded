@@ -1,30 +1,39 @@
+require_relative "window/cursor_operations"
+require_relative "window/position_operations"
+
 module Roded
   # A view over a buffer with independent cursor, mark, and viewport state.
   class Window
+    include WindowCursorOperations
+    include WindowPositionOperations
+
     attr_reader :buffer
     attr_accessor :top_line, :left_column
 
     def initialize(buffer)
       @buffer = buffer
-      @point = buffer.cursor_pos.dup
+      @point = { row: 0, col: 0 }
       @mark = nil
       @highlight = nil
       @top_line = 0
       @left_column = 0
       @position_memory = {}.compare_by_identity
       @position_memory[buffer] = [@point.dup, nil]
+      buffer.add_edit_observer(self)
     end
 
     def buffer=(buffer)
       remember_position
       @buffer = buffer
-      point, mark = @position_memory.fetch(buffer) do
-        [buffer.cursor_pos.dup, nil]
-      end
-      @point = point.dup
-      @mark = mark&.dup
-      @highlight = nil
-      clamp_point
+      @buffer.add_edit_observer(self)
+      restore_buffer_position
+    end
+
+    def forget_buffer(buffer)
+      return if buffer.equal?(@buffer)
+
+      buffer.remove_edit_observer(self)
+      @position_memory.delete(buffer)
     end
 
     def point=(position)
@@ -68,60 +77,19 @@ module Roded
       window
     end
 
-    def transform_positions(change)
-      @point = transform_position(@point, change)
-      @mark = transform_position(@mark, change) if @mark
-      @highlight = nil
-      clamp_point
-      clamp_mark
-      remember_position
-    end
-
     private
-
-    def normalize_highlight_position(position)
-      row = position.fetch(:row, 0).to_i.clamp(0, @buffer.lines.length - 1)
-      col = position.fetch(:col, 0).to_i.clamp(0, @buffer.lines[row].length)
-      { row:, col: }
-    end
 
     def remember_position
       @position_memory[@buffer] = [@point.dup, @mark&.dup]
     end
 
-    def clamp_point
-      @point[:row] = @point[:row].clamp(0, @buffer.lines.length - 1)
-      @point[:col] = @point[:col].clamp(0, @buffer.lines[@point[:row]].length)
-    end
-
-    def clamp_mark
-      return unless @mark
-
-      @mark[:row] = @mark[:row].clamp(0, @buffer.lines.length - 1)
-      @mark[:col] = @mark[:col].clamp(0, @buffer.lines[@mark[:row]].length)
-    end
-
-    def transform_position(position, change)
-      return position if position_before?(position, change.start)
-      return change.new_end.dup if position_before?(position, change.old_end)
-
-      map_position_after_edit(position, change)
-    end
-
-    def position_before?(position, other)
-      (position[:row] <=> other[:row]).negative? ||
-        (position[:row] == other[:row] && position[:col] < other[:col])
-    end
-
-    def map_position_after_edit(position, change)
-      row_delta = change.new_end[:row] - change.old_end[:row]
-      return map_position_on_replaced_row(position, change) if position[:row] == change.old_end[:row]
-
-      { row: position[:row] + row_delta, col: position[:col] }
-    end
-
-    def map_position_on_replaced_row(position, change)
-      { row: change.new_end[:row], col: change.new_end[:col] + position[:col] - change.old_end[:col] }
+    def restore_buffer_position
+      @point, @mark = @position_memory.fetch(@buffer, [{ row: 0, col: 0 }, nil])
+      @point = @point.dup
+      @mark = @mark&.dup
+      @highlight = nil
+      clamp_point
+      clamp_mark
     end
   end
 end
