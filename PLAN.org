@@ -174,8 +174,8 @@ replace обратимы. Provider/history/preview не становятся cur
 
 * Этап 7 — P1: независимые modes и syntax highlighting
 
-- [ ] Plain text fallback и modes по filename, ручная смена mode.
-- [ ] Ruby/JSON/YAML/Markdown token spans и theme mapping.
+- [X] Plain text fallback и modes по filename, ручная смена mode.
+- [X] Ruby/JSON/YAML/Markdown token spans и theme mapping.
 - [ ] Multiline/incomplete Ruby и изменение tokens после edits/undo.
 - [ ] Rendering spans не изменяет text/history/point/modified state.
 - [ ] Tokenizer errors не рушат loop; geometry Unicode и highlights согласованы.

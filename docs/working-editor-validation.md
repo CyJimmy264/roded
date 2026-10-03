@@ -287,6 +287,23 @@ File save здесь сохраняет текстовое представле�
   `fox dog fox`; quit/discard завершил приложение с exit code 0. Desktop Qt и
   полный RuboCop остаются открытыми проверками.
 
+## 2026-10-03 — syntax modes и token spans
+
+- Filename определяет Ruby, JSON, YAML, Markdown или plain mode; команда
+  `M-x set-major-mode` меняет mode без edits. Общий tokenizer возвращает frozen spans;
+  Ruby использует Ripper и обрабатывает incomplete/multiline tokens, остальные
+  modes дают минимальные полезные категории.
+- Qt применяет theme colors к token spans и показывает modified/readonly/mode в
+  modeline. Curses рендерит категории через цветовые пары, активный modeline
+  отмечается reverse-video; терминал без color support сохраняет текст и
+  selection.
+- Проверяется, что edits пересчитывают spans, undo возвращает прежние spans, а
+  modified state остаётся согласованным. Offscreen Qt проверил HTML color и
+  modeline; реальный curses PTY (`xterm-256color`) отрисовал Ruby buffer и
+  выдал color escape sequences. Полный RSpec: **136 examples, 0 failures**.
+- Новые syntax/tokenizer files проходят RuboCop. Полная интеграция подсветки с
+  region/search и отдельная monochrome терминальная проверка ещё не сделаны.
+
 ## 2026-10-03 — этап 2, подэтап: source routing и загрузка core
 
 - `bundle exec rspec`: **45 examples, 0 failures**.

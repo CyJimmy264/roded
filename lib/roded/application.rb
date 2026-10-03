@@ -28,6 +28,7 @@ module Roded
       @keymap = Keymap.load
       @command_registry = CommandRegistry.new
       @file_path_provider = FilePathProvider.new
+      @syntax_highlighter = SyntaxHighlighter.new
       register_builtin_commands
       @kill_ring = KillRing.new
       @current_buffer = nil
@@ -327,6 +328,14 @@ module Roded
       broadcast_command(Command.new(:render, {}))
     end
 
+    def change_major_mode(mode)
+      normalized = mode.to_s.downcase.to_sym
+      return display_message("Unknown mode: #{mode}") unless SyntaxHighlighter::MODES.include?(normalized)
+
+      current_buffer.major_mode = normalized
+      broadcast_command(Command.new(:render, {}))
+    end
+
     def next_buffer
       activate_relative_buffer(1)
     end
@@ -435,6 +444,9 @@ module Roded
       @command_registry.register("goto-line", description: "Go to a line number") do |editor|
         editor.start_minibuffer(:goto_line, "Goto line: ")
       end
+      @command_registry.register("set-major-mode", description: "Change syntax mode") do |editor|
+        editor.start_minibuffer(:major_mode, "Major mode: ")
+      end
     end
 
     def active_region
@@ -484,10 +496,16 @@ module Roded
 
     def window_snapshot(window)
       buffer = window.buffer
+      lines = buffer.lines
+      mode = buffer.mode
       {
         id: window.object_id,
         text: buffer.to_s.dup.freeze,
-        lines: buffer.lines.map { |line| line.dup.freeze }.freeze,
+        lines: lines.map { |line| line.dup.freeze }.freeze,
+        mode: mode,
+        tokens: @syntax_highlighter.spans(mode, lines),
+        modified: buffer.modified?,
+        readonly: buffer.readonly,
         point: window.point.dup.freeze,
         mark: window.mark&.dup&.freeze,
         name: (buffer.filename || buffer.name || "*scratch*").to_s.dup.freeze,

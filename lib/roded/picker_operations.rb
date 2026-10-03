@@ -55,6 +55,7 @@ module Roded
         switch_buffer: -> { buffers.map(&:name) },
         kill_ring: -> { kill_ring.items },
         line_search: -> { line_candidates },
+        major_mode: -> { SyntaxHighlighter::MODES.map(&:to_s) },
         open: -> { @file_path_provider.candidates },
         save: -> { @file_path_provider.candidates },
         save_as: -> { @file_path_provider.candidates }

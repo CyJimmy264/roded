@@ -9,11 +9,13 @@ module Roded
 
       def initialize
         @screen = nil
+        @color_pairs = {}
         @buffers = []
         @current_buffer = nil
         @top = 0
         @input_buffer = +"".b
         init_curses
+        initialize_colors
         @stdin = STDIN
         @wake_r, @wake_w = IO.pipe
         @wake_w.sync = true
@@ -341,8 +343,15 @@ module Roded
         modeline_row = y + height - 1
         point = item[:point]
         active_marker = item[:active] ? "*" : "-"
-        mode = "#{active_marker} #{item[:name]}  #{point[:row] + 1}:#{point[:col] + 1}"
-        write_at(modeline_row, x, mode, width)
+        modified = item[:modified] ? "*" : ""
+        readonly = item[:readonly] ? " RO" : ""
+        mode_name = item[:mode] || :plain
+        modeline = "#{active_marker} #{item[:name]}#{modified}#{readonly}  #{mode_name}  #{point[:row] + 1}:#{point[:col] + 1}"
+        if item[:active]
+          @screen.attron(::Curses::A_REVERSE) { write_at(modeline_row, x, modeline, width) }
+        else
+          write_at(modeline_row, x, modeline, width)
+        end
         return unless item[:active] && height.positive? && width.positive?
 
         cursor_y = y + point[:row] - first_line
@@ -353,19 +362,37 @@ module Roded
       end
 
       def draw_buffer_line(item, line, buffer_row, screen_row, x, width, left_column)
-        selection = selection_columns(item, buffer_row, line.length)
-        return write_at(screen_row, x, line[left_column..].to_s, width) unless selection
-
-        first, last = selection.map { |column| (column - left_column).clamp(0, width) }
-        first, last = last, first if last < first
         text = line[left_column..].to_s
-        write_at(screen_row, x, text[0...first].to_s, width)
-        @screen.attron(Curses::A_REVERSE) do
-          selected = text[first...last].to_s
-          selected = " " if selected.empty? && first == last
-          write_at(screen_row, x + first, selected, width - first)
+        tokens = item[:tokens]&.[](buffer_row).to_a
+        selection = selection_columns(item, buffer_row, line.length)
+        boundaries = [0, text.length]
+        tokens.each do |token|
+          boundaries.concat([token[:start] - left_column, token[:finish] - left_column])
         end
-        write_at(screen_row, x + last, text[last..].to_s, width - last)
+        if selection
+          boundaries.concat(selection.map { |column| column - left_column })
+        end
+        boundaries = boundaries.map { |column| column.clamp(0, text.length) }.uniq.sort
+        boundaries.each_cons(2) do |first, last|
+          write_styled_segment(item, screen_row, x, text, first, last, width, tokens, selection, left_column)
+        end
+      end
+
+      def write_styled_segment(item, row, x, text, first, last, width, tokens, selection, left_column)
+        return if first >= last
+
+        token = tokens.find do |span|
+          span[:start] <= first + left_column && span[:finish] >= last + left_column
+        end
+        selected = selection && first + left_column >= selection.first && last + left_column <= selection.last
+        writer = -> { write_at(row, x + first, text[first...last], width - first) }
+        if selected
+          @screen.attron(::Curses::A_REVERSE, &writer)
+        elsif token && (pair = @color_pairs[token[:category]])
+          @screen.attron(::Curses.color_pair(pair), &writer)
+        else
+          writer.call
+        end
       end
 
       def selection_columns(item, row, line_length)
@@ -402,6 +429,34 @@ module Roded
 
         @screen.setpos(row, column)
         @screen.addstr(text.to_s[0, width])
+      end
+
+      def initialize_colors
+        return unless ::Curses.has_colors?
+
+        ::Curses.start_color
+        background = begin
+          ::Curses.use_default_colors
+          -1
+        rescue StandardError
+          ::Curses::COLOR_BLACK
+        end
+        colors = {
+          comment: ::Curses::COLOR_WHITE,
+          string: ::Curses::COLOR_GREEN,
+          keyword: ::Curses::COLOR_MAGENTA,
+          number: ::Curses::COLOR_YELLOW,
+          symbol: ::Curses::COLOR_CYAN,
+          heading: ::Curses::COLOR_BLUE,
+          punctuation: ::Curses::COLOR_WHITE
+        }
+        colors.each_with_index do |(category, foreground), index|
+          pair = index + 1
+          ::Curses.init_pair(pair, foreground, background)
+          @color_pairs[category] = pair
+        end
+      rescue StandardError
+        @color_pairs = {}
       end
 
       def place_cursor

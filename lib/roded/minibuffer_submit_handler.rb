@@ -10,6 +10,7 @@ module Roded
       kill_ring: ->(app, value) { app.choose_yank_pop(value) unless value.to_s.empty? },
       line_search: ->(app, value) { app.select_picker_line(value) unless value.to_s.empty? },
       goto_line: ->(app, value) { app.goto_line(value) unless value.to_s.empty? },
+      major_mode: ->(app, value) { app.change_major_mode(value) unless value.to_s.empty? },
       search_forward: ->(app, value) { app.search(value, :forward) },
       search_backward: ->(app, value) { app.search(value, :backward) },
       query_replace_search: ->(app, value) { app.accept_query_replace_search(value) },

@@ -14,11 +14,13 @@ module Roded
     )
 
     attr_accessor :filename, :readonly, :file_revision
+    attr_accessor :major_mode
     attr_reader :line_ending, :final_newline, :name
 
     def initialize(name = nil)
       @name = name
       @filename = nil
+      @major_mode = nil
       @file_revision = nil
       @lines = [String.new("")]
       @cursor_pos = { row: 0, col: 0 }
@@ -289,6 +291,10 @@ module Roded
 
     def modified?
       to_s != @saved_text
+    end
+
+    def mode
+      major_mode || SyntaxHighlighter.new.mode_for(filename || name)
     end
 
     def undo

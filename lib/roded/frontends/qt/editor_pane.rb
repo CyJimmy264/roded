@@ -30,7 +30,7 @@ module Roded
 
       def render(snapshot)
         text = snapshot.fetch(:text).gsub("\r\n", "\n")
-        @editor.set_html(rendered_html(text, snapshot[:mark], snapshot[:point]))
+        @editor.set_html(rendered_html(text, snapshot[:mark], snapshot[:point], snapshot[:tokens]))
         place_cursor(snapshot.fetch(:row, snapshot.dig(:point, :row)),
                      snapshot.fetch(:col, snapshot.dig(:point, :col)))
         @modeline.set_text(snapshot[:modeline] || modeline_for(snapshot))
@@ -50,14 +50,17 @@ module Roded
       def modeline_for(snapshot)
         point = snapshot.fetch(:point)
         active = snapshot[:active] ? "--" : "  "
-        "#{active} Roded -- #{snapshot.fetch(:name)}  #{point[:row] + 1}:#{point[:col] + 1}"
+        modified = snapshot[:modified] ? " *" : ""
+        readonly = snapshot[:readonly] ? " RO" : ""
+        mode = snapshot[:mode] || :plain
+        "#{active} #{snapshot.fetch(:name)}#{modified}#{readonly}  #{mode}  #{point[:row] + 1}:#{point[:col] + 1}"
       end
 
-      def rendered_html(text, mark, point)
+      def rendered_html(text, mark, point, tokens)
         lines = text.split("\n", -1)
         ranges = mark && point && mark != point ? ordered_range(mark, point) : nil
         content = lines.each_with_index.map do |line, row|
-          render_line(line, row, ranges)
+          render_line(line, row, ranges, tokens&.[](row))
         end.join("<br>")
         "<pre style=\"white-space: pre-wrap; font-family: monospace; margin: 0;\">#{content}</pre>"
       end
@@ -66,15 +69,11 @@ module Roded
         [mark, point].sort_by { |position| [position[:row], position[:col]] }
       end
 
-      def render_line(line, row, range)
-        columns = selected_columns(line, row, range)
-        return escape_html(line) unless columns
-
-        first, last = columns
-        before, selected, after = [line[0...first], line[first...last], line[last..]].map do |part|
-          escape_html(part.to_s)
-        end
-        "#{before}<span style=\"background-color: #3e4451;\">#{selected}</span>#{after}"
+      def render_line(line, row, range, tokens)
+        boundaries = line_boundaries(line, row, range, tokens)
+        boundaries.each_cons(2).map do |first, last|
+          render_segment(line, row, first, last, range, tokens)
+        end.join
       end
 
       def selected_columns(line, row, range)
@@ -83,6 +82,25 @@ module Roded
         first = row == range.first[:row] ? range.first[:col] : 0
         last = row == range.last[:row] ? range.last[:col] : line.length
         [first, last]
+      end
+
+      def line_boundaries(line, row, range, tokens)
+        columns = [0, line.length]
+        tokens.to_a.each { |token| columns.concat([token[:start], token[:finish]]) }
+        columns.concat(selected_columns(line, row, range)) if selected_columns(line, row, range)
+        columns.map { |column| column.clamp(0, line.length) }.uniq.sort
+      end
+
+      def render_segment(line, row, first, last, range, tokens)
+        value = escape_html(line[first...last].to_s)
+        styles = []
+        token = tokens.to_a.find { |span| span[:start] <= first && span[:finish] >= last }
+        styles << "color: #{SyntaxHighlighter::COLORS.fetch(token[:category])};" if token
+        selected = selected_columns(line, row, range)
+        if selected && first >= selected.first && last <= selected.last
+          styles << "background-color: #3e4451;"
+        end
+        styles.empty? ? value : "<span style=\"#{styles.join}\">#{value}</span>"
       end
 
       def escape_html(text)
