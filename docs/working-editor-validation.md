@@ -837,11 +837,11 @@ File save здесь сохраняет текстовое представле�
 
 ## 2026-10-03 — безопасная среда для Qt specs
 
-- RSpec по умолчанию выбирает `QT_QPA_PLATFORM=offscreen` и задаёт
-  `XDG_CONFIG_HOME` внутри системного temp directory. При явных значениях из
-  окружения сохраняются пользовательские overrides. Полный `bundle exec rake`
-  больше не открывает modal предупреждение и не пытается писать Qt config в
-  `~/.config`.
+- `spec/spec_helper.rb` принудительно выбирает `QT_QPA_PLATFORM=offscreen` и
+  per-process `XDG_CONFIG_HOME` внутри системного temp directory, игнорируя
+  унаследованные desktop Qt/user config settings. Это предотвращает запуск Qt
+  specs на основном `DISPLAY` и обращения тестовых приложений к `~/.config`.
+  Live UI smoke checks запускаются отдельно под Xvfb.
 - Clipboard bridge specs: **4 examples, 0 failures**; полный RSpec:
   **220 examples, 0 failures**. RuboCop debt сейчас **55 offenses**, поэтому
   общий rake gate ещё красный.
