@@ -45,8 +45,18 @@ module Roded
         $stdout.flush
       end
 
+      def enable_keyboard_protocol
+        $stdout.write("\e[>1u")
+        $stdout.flush
+      end
+
       def disable_bracketed_paste
         $stdout.write("\e[?2004l")
+        $stdout.flush
+      end
+
+      def disable_keyboard_protocol
+        $stdout.write("\e[<u")
         $stdout.flush
       end
 

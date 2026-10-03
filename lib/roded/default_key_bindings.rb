@@ -77,6 +77,7 @@ module Roded
       "C-/" => { type: :undo },
       "C-_" => { type: :undo },
       "C-x u" => { type: :undo },
+      "C-?" => { type: :redo },
       "C-c r d" => { type: :redo },
       "C-c r b" => { type: :custom_command, payload: { name: "insert-binding-irb" } },
       "C-c d d" => { type: :custom_command, payload: { name: "insert-current-date-time" } },

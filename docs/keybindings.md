@@ -35,7 +35,7 @@ recentf/savehist/save-place не обязательны для этой верс
 | Backspace, `C-d`/Delete, Enter | Удаление назад/вперёд, newline |
 | Tab | Минимальный indent; сохранять предсказуемую семантику tabs |
 | `C-/`, `C-_`, `C-x u` | Undo; разные terminal aliases одной команды |
-| `C-c r d`, `M-x redo` | Redo, доступная terminal fallback sequence |
+| `C-?`, `C-c r d`, `M-x redo` | Redo; terminal fallback sequence |
 | `C-SPC` / `C-@` | Set mark |
 | `C-w`, `M-w`, `C-y` | Kill region, copy region, yank |
 | `C-k` | Kill до EOL / newline на EOL |
@@ -68,9 +68,11 @@ runtime.
 Alt+Super+j, а не `Esc s j`. Не подменять эту нотацию другой последовательностью
 молча. Большинство обычных терминалов не передаёт Super/Menu и некоторые
 Ctrl+Shift chords. Все обязательные действия должны быть доступны через
-обычные terminal bindings и `M-x`. В curses Super/Menu aliases применяются при
-наличии соответствующего нормализованного input token; поддержка расширенного
-terminal keyboard protocol не является обязательной для этой версии.
+обычные terminal bindings и `M-x`. Curses запрашивает Kitty CSI-u keyboard
+reporting, чтобы различать сочетания вроде `C-?` и Backspace; если терминал его
+не поддерживает, используйте terminal fallback `C-c r d` для redo. В curses
+Super/Menu aliases применяются при наличии соответствующего нормализованного
+input token.
 В **Qt frontend** перечисленные ниже Super/Menu aliases обязательны.
 На Linux Qt MetaModifier переводится в Emacs `s-`, AltModifier — в `M-`;
 Ctrl/Shift/Super и punctuation сохраняются при нормализации. Проверяются raw

@@ -145,7 +145,7 @@ file roundtrip не теряет текст. Коммит этапа до шир
 - [X] Undo/redo для обязательных insert/delete/newline/region/kill/yank,
   replace, indent, tab conversions и Ruby API edits; typing и paste grouping
   проверены, redo очищается после новой правки. Живые curses/Qt smoke проходят
-  `C-/`/`C-_` undo и `C-c r d` redo.
+  `C-/`/`C-_` undo и `C-?` redo; `C-c r d` остаётся fallback.
 - [X] Mark/region, kill/copy/yank/KillRing и readonly на edit entrypoints;
   read-only documents remain searchable/copyable, and cut/yank/paste/C-k,
   query replace, text commands, API edits and undo/redo cannot change them.

@@ -18,13 +18,26 @@ RSpec.describe Roded::Frontends::CursesKeyTranslator do
     translator = described_class.new
     sequences = {
       "[H" => "Home", "[F" => "End", "[5~" => "PageUp", "[6~" => "PageDown",
-      "[3~" => "Delete", "[18~" => "F7", "OP" => "F1", "[24~" => "F12"
+      "[3~" => "Delete", "[18~" => "F7", "OP" => "F1", "[24~" => "F12",
+      "[47;5u" => "C-/", "[47;6u" => "C-?", "[110;5u" => "C-n",
+      "[127u" => "Backspace", "[57352;5u" => "C-Up", "[46;4u" => "M->",
+      "[44;4u" => "M-<"
     }
 
     decoded = sequences.to_h do |sequence, _key|
       [sequence, translator.translate_escape(sequence)]
     end
     expect(decoded).to eq(sequences)
+  end
+end
+
+RSpec.describe Roded::Frontends::CursesKeyTranslator, "CSI-u decoding" do
+  it "waits for and recognizes fragmented CSI-u key sequences" do
+    translator = described_class.new
+
+    expect(translator.timeout("[110;", "[200~")).to be > 0.03
+    expect(translator.complete_sequence?("[110;5u", "[200~")).to be(true)
+    expect(translator.translate_escape("[110;5u")).to eq("C-n")
   end
 end
 

@@ -36,6 +36,7 @@ module Roded
         initialize_editor_state
         init_curses
         enable_bracketed_paste
+        enable_keyboard_protocol
         initialize_colors
         initialize_input_channel
         initialize_minibuffer
@@ -55,6 +56,7 @@ module Roded
       end
 
       def close
+        disable_keyboard_protocol
         disable_bracketed_paste
         ::Curses.close_screen
         Signal.trap("WINCH", @previous_winch_handler) if @previous_winch_handler

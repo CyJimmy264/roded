@@ -207,6 +207,12 @@ RSpec.describe Roded::Application do
     application.handle_event(Roded::Event.new(:key, { key: "C-_" }))
     expect(buffer.to_s).to eq("")
 
+    application.handle_event(Roded::Event.new(:key, { key: "C-?" }))
+    expect(buffer.to_s).to eq("ab")
+
+    application.handle_event(Roded::Event.new(:key, { key: "C-_" }))
+    expect(buffer.to_s).to eq("")
+
     %w[C-c r d].each { |key| application.handle_event(Roded::Event.new(:key, { key: })) }
     expect(buffer.to_s).to eq("ab")
   end

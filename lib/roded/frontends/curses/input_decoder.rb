@@ -2,6 +2,90 @@ require "io/wait"
 
 module Roded
   module Frontends
+    # Decodes modified keys reported using the Kitty keyboard protocol.
+    class CursesCsiUTranslator
+      PREFIX = /\A\[\d*(?::\d*)*(?:;\d*(?::\d*)*){0,2}\z/
+      SEQUENCE = /\A\[(?<key>\d+(?::\d+)*)(?:;(?<modifiers>\d+)(?::(?<event>\d+))?)?(?:;[\d:]+)?u\z/
+      SPECIAL_KEYS = {
+        9 => "Tab", 13 => "Enter", 27 => "Esc", 127 => "Backspace",
+        57_348 => "Insert", 57_349 => "Delete", 57_350 => "Left", 57_351 => "Right",
+        57_352 => "Up", 57_353 => "Down", 57_354 => "PageUp", 57_355 => "PageDown",
+        57_356 => "Home", 57_357 => "End"
+      }.freeze
+      SHIFTED_CHARACTERS = {
+        "`" => "~", "1" => "!", "2" => "@", "3" => "#", "4" => "$", "5" => "%",
+        "6" => "^", "7" => "&", "8" => "*", "9" => "(", "0" => ")", "-" => "_",
+        "=" => "+", "[" => "{", "]" => "}", "\\" => "|", ";" => ":", "'" => "\"",
+        "," => "<", "." => ">", "/" => "?"
+      }.freeze
+
+      def prefix?(sequence)
+        PREFIX.match?(sequence)
+      end
+
+      def complete?(sequence)
+        SEQUENCE.match?(sequence)
+      end
+
+      def translate(sequence)
+        match = SEQUENCE.match(sequence)
+        return unless match
+        return "Esc" if match[:event].to_i == 3
+
+        translated_key(match)
+      end
+
+      private
+
+      def translated_key(match)
+        key_code = match[:key].split(":", 2).first.to_i
+        key = SPECIAL_KEYS[key_code] || character_for(key_code)
+        return "Esc" unless key
+
+        modifier_bits = [match[:modifiers].to_i - 1, 0].max
+        format_key(key, modifier_bits)
+      end
+
+      def character_for(key_code)
+        return if key_code.negative? || key_code > 0x10FFFF
+
+        key_code.chr(Encoding::UTF_8)
+      rescue RangeError
+        nil
+      end
+
+      def format_key(key, bits)
+        control = bits.anybits?(4)
+        shift = bits.anybits?(1)
+        key = "SPC" if key == " " && control
+        shift_modifier = shift_modifier?(key, control, shift)
+        key = shifted_character(key, control, shift)
+        format_modifiers(key, bits, shift_modifier)
+      end
+
+      def shift_modifier?(key, control, shift)
+        shift && (%w[Tab Enter Left Right Up Down].include?(key) || (control && key.match?(/\A[a-z]\z/)))
+      end
+
+      def shifted_character(key, control, shift)
+        return key unless shift
+        return key.downcase if control && key.match?(/\A[A-Za-z]\z/)
+
+        SHIFTED_CHARACTERS.fetch(key) { key.match?(/\A[a-z]\z/) ? key.upcase : key }
+      end
+
+      def format_modifiers(key, bits, shift)
+        modifiers = []
+        modifiers << "C" if bits.anybits?(4)
+        modifiers << "M" if bits.anybits?(2)
+        modifiers << "s" if bits.anybits?(8)
+        modifiers << "S" if shift
+        return key if modifiers.empty?
+
+        "#{modifiers.join("-")}-#{key}"
+      end
+    end
+
     # Normalizes terminal key sequences without depending on curses window state.
     class CursesKeyTranslator
       KEY_BINDINGS = {
@@ -16,21 +100,25 @@ module Roded
         "[20~".b => "F9", "[21~".b => "F10", "[23~".b => "F11", "[24~".b => "F12"
       }.freeze
       SEQUENCES = KEY_BINDINGS.keys.freeze
+      CSI_U_TRANSLATOR = CursesCsiUTranslator.new
 
       def timeout(sequence, paste_start)
         return 0.03 if sequence.empty?
 
         known_prefix = SEQUENCES.any? { |candidate| candidate.start_with?(sequence) } ||
-                       paste_start.start_with?(sequence)
+                       paste_start.start_with?(sequence) || CSI_U_TRANSLATOR.prefix?(sequence)
         known_prefix ? 0.25 : 0.03
       end
 
       def complete_sequence?(sequence, paste_start)
-        SEQUENCES.include?(sequence) || sequence == paste_start
+        SEQUENCES.include?(sequence) || sequence == paste_start || CSI_U_TRANSLATOR.complete?(sequence)
       end
 
       def translate_escape(sequence)
         return KEY_BINDINGS.fetch(sequence) if KEY_BINDINGS.key?(sequence)
+
+        csi_u_key = CSI_U_TRANSLATOR.translate(sequence)
+        return csi_u_key if csi_u_key
 
         utf8 = sequence.dup.force_encoding("UTF-8")
         return "M-#{utf8}" if utf8.valid_encoding?

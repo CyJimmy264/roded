@@ -1306,18 +1306,32 @@ File save здесь сохраняет текстовое представле�
 - `bundle exec rake`: **288 examples, 0 failures**; RuboCop: **148 files, 0
   offenses**.
 
-## 2026-10-04 — curses undo through a terminal emulator
+## 2026-10-04 — curses undo and redo through a terminal emulator
 
 - The private PTY smoke above sends terminal byte `0x1f` directly. To verify
   the keyboard mapping too, `script/curses_xvfb_keyboard_smoke.sh` starts
   Alacritty **0.17.0** and the real curses app under Xvfb, with private
-  `XDG_CONFIG_HOME`, `XDG_CACHE_HOME` and `XDG_RUNTIME_DIR`. `xdotool` sends
-  Ctrl+/ through Alacritty; the application log records normalized `C-_`, and
-  saving after undo restores the exact file bytes. The process exits cleanly.
+  `XDG_CONFIG_HOME`, `XDG_CACHE_HOME` and `XDG_RUNTIME_DIR`. Curses requests
+  Kitty CSI-u reporting, and `xdotool` sends Ctrl+/ and Ctrl+Shift+/ through
+  Alacritty. The app receives `C-/` and `C-?`; saving after undo and redo
+  matches the expected complete file bytes. The process exits cleanly.
 - Runtime: Ruby **3.4.2**, curses gem **1.5.3**, `TERM=xterm-256color`, Alacritty
   X11 on isolated Xvfb (1280×800×24). Command and result:
   `script/curses_xvfb_keyboard_smoke.sh` — passed; log:
-  `/tmp/roded-curses-xvfb.Fxbti9/roded.log`. No desktop `DISPLAY` was used.
+  `/tmp/roded-curses-xvfb.2VKzx3/roded.log`. It also verifies Ctrl+N movement,
+  typing and save. No desktop `DISPLAY` was used. CSI-u decoding and the
+  `C-?` redo binding are covered by RSpec; `C-c r d` remains the fallback for
+  terminals that do not support the reporting protocol.
+- `script/qt_live_smoke.sh` also passed under private Xvfb with real Qt Widgets
+  6.11.2. It sends Ctrl+Shift+/ through xdotool, verifies the live app receives
+  `C-?`, and confirms the saved buffer is redone. It then checks the
+  `C-c r d` fallback after another undo. Screenshots and log:
+  `/tmp/roded-qt-live-smoke.IyLiot`; no desktop `DISPLAY` was used.
+- `script/curses_live_smoke.rb` passed again after the decoder change in a
+  private PTY; it covered legacy Ctrl+_, C-x u undo and C-c r d redo:
+  `/tmp/roded-curses-smoke.20261004-341835-ygudgn`.
+- `bundle exec rake`: **290 examples, 0 failures**; RuboCop: **148 files, 0
+  offenses**. `git diff --check` and `bash -n` for both live smoke scripts pass.
 
 ## 2026-10-04 — remove legacy console status bar
 

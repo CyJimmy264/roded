@@ -74,5 +74,11 @@ RSpec.describe Roded::Frontends::QtKeyTranslator do
 
     expect(translator.translate(payload)).to eq("C-_")
   end
+
+  it "translates Ctrl+Shift+Slash to the redo binding C-?" do
+    payload = { key: Qt::Key_Slash, modifiers: Qt::ControlModifier | Qt::ShiftModifier, text: "?" }
+
+    expect(translator.translate(payload)).to eq("C-?")
+  end
 end
 # rubocop:enable Metrics/BlockLength

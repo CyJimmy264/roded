@@ -88,7 +88,15 @@ xdotool key --clearmodifiers ctrl+x
 sleep 0.2
 xdotool key --clearmodifiers ctrl+s
 wait_for_content $'one\ntwo\n'
-rg -q 'next_event: read_key: "C-_"' "$RODED_LOG_PATH"
+xdotool windowfocus --sync "$window_id"
+xdotool key --clearmodifiers ctrl+shift+slash
+sleep 0.3
+xdotool key --clearmodifiers ctrl+x
+sleep 0.2
+xdotool key --clearmodifiers ctrl+s
+wait_for_content $'one\nXYZtwo\n'
+rg -Fq 'next_event: read_key: "C-/"' "$RODED_LOG_PATH"
+rg -Fq 'next_event: read_key: "C-?"' "$RODED_LOG_PATH"
 xdotool key --clearmodifiers ctrl+x
 sleep 0.2
 xdotool key --clearmodifiers ctrl+c
@@ -106,5 +114,5 @@ fi
 wait "$terminal_pid"
 terminal_pid=
 
-printf 'curses Xvfb/Alacritty smoke passed (Ctrl+N, type/save, Ctrl+/, undo, clean exit); log=%s\n' \
+printf 'curses Xvfb/Alacritty smoke passed (Ctrl+N, type/save, Ctrl+/, undo, Ctrl+?, redo, clean exit); log=%s\n' \
   "$RODED_LOG_PATH"
