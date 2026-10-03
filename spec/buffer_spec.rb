@@ -198,5 +198,23 @@ RSpec.describe Roded::Buffer do
       expect(observer).not_to have_received(:update)
     end
   end
+
+  describe "modified state" do
+    it "tracks edits against the last saved text" do
+      buffer = described_class.new
+      expect(buffer.modified?).to be(false)
+
+      buffer.insert_char("x")
+      expect(buffer.modified?).to be(true)
+      buffer.backspace
+      expect(buffer.modified?).to be(false)
+    end
+
+    it "marks loaded text as saved" do
+      buffer = described_class.new.load_text("loaded\n")
+
+      expect(buffer.modified?).to be(false)
+    end
+  end
 end
 # rubocop:enable Metrics/BlockLength

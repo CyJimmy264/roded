@@ -19,6 +19,7 @@ module Roded
       @final_newline = false
       @observers = []
       @readonly = false
+      @saved_text = to_s
     end
 
     def lines=(lines)
@@ -33,6 +34,7 @@ module Roded
       @final_newline = text.end_with?("\n")
       self.lines = text.gsub("\r\n", "\n").split("\n", -1).tap { |lines| lines.pop if @final_newline }
       @cursor_pos = { row: 0, col: 0 }
+      mark_saved
       self
     end
 
@@ -161,6 +163,14 @@ module Roded
     def to_s
       text = @lines.join(@line_ending)
       @final_newline ? text + @line_ending : text
+    end
+
+    def modified?
+      to_s != @saved_text
+    end
+
+    def mark_saved
+      @saved_text = to_s
     end
 
     def final_newline=(value)

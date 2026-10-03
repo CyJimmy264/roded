@@ -69,6 +69,11 @@ File save здесь сохраняет текстовое представле�
   reload/overwrite/cancel и modified-state модели ещё нет.
 - Автоматические проверки: **54 examples, 0 failures**; RuboCop на новых
   FileService и spec: **0 offenses**.
+- Buffer сравнивает текст с последним успешным saved snapshot: открытие и
+  успешное сохранение сбрасывают modified state, возврат edits к сохранённому
+  тексту снова делает buffer чистым. Ошибки и conflict не сбрасывают modified.
+- Проверки теперь: **56 examples, 0 failures**. Save/discard/cancel prompts и
+  undo до saved state ещё предстоит реализовать.
 
 ## 2026-10-03 — этап 2, подэтап: source routing и загрузка core
 

@@ -119,7 +119,9 @@ file roundtrip не теряет текст. Коммит этапа до шир
 - [ ] CLI file arguments, find-file/new file/save/save-as/cancel/dedup paths.
 - [X] Атомарная запись, permissions/symlinks и обнаружение внешнего изменения.
 - [ ] Подтверждение overwrite/conflict с выбором reload/overwrite/cancel.
-- [ ] Modified revision, saved state, save/discard/cancel при kill-buffer/quit.
+- [X] Buffer tracks modified state against saved text; loads and successful saves
+  reset the baseline, while failed/conflicting saves preserve dirty state.
+- [ ] Save/discard/cancel при kill-buffer/quit; undo до saved state.
 - [ ] Undo/redo для всех обязательных edits; grouping и paste transactions.
 - [ ] Mark/region, kill/copy/yank/KillRing и readonly на всех edit entrypoints.
 - [ ] Unicode position transforms корректируют point/mark всех views на edits/undo.

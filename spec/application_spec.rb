@@ -99,6 +99,7 @@ RSpec.describe Roded::Application do
 
       expect(File.binread(file.path)).to eq("external")
       expect(application.current_buffer.to_s).to eq("xoriginal")
+      expect(application.current_buffer.modified?).to be(true)
       expect(frontend.messages.last).to match(/Error saving file: file changed on disk/)
     end
   end
@@ -178,6 +179,7 @@ RSpec.describe Roded::Application do
     application.save_file("/no/such/roded/file")
     expect(frontend.messages.last).to match(/Error saving file/)
     expect(buffer.to_s).to eq("x")
+    expect(buffer.modified?).to be(true)
   end
 
   it "closes the frontend after a command raises in the event loop" do
@@ -201,6 +203,7 @@ RSpec.describe Roded::Application do
       application.save_file(file.path)
 
       expect(File.read(file.path)).to eq("saved\ncontent")
+      expect(buffer.modified?).to be(false)
       expect(frontend.messages.last).to eq("File '#{file.path}' saved.")
     end
   end

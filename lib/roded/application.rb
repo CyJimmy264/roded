@@ -138,6 +138,7 @@ module Roded
       result = write_buffer(buffer, filename)
       buffer.filename = result.path
       buffer.file_revision = result.revision
+      buffer.mark_saved
       display_message("File '#{result.path}' saved.")
     rescue StandardError => e
       display_message("Error saving file: #{e.message}")
