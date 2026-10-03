@@ -3,6 +3,23 @@
 Этот журнал содержит воспроизводимые результаты текущей ветки. Исторический
 отчёт ревизии остаётся в `architecture-review-2026-10-03.md`.
 
+## 2026-10-03 — curses navigation, pane bounds и resize
+
+- `C-n` / `C-p` посылали legacy `:move_cursor` hint до authoritative layout
+  snapshot. Curses выполнял старый full-screen redraw через весь `maxy`, мог
+  сдвигать содержимое, перезаписывать modeline и показывать строку за границей
+  окна. Теперь curses игнорирует устаревший hint; snapshot обновляет только
+  затронутые строки через `CursesCursorRedraw`.
+- RSpec проверяет, что cursor hint не скроллит и не очищает экран; после
+  уменьшения высоты render помещает текст до modeline, а modeline на
+  предпоследнюю строку. Curses specs: **3 examples, 0 failures**; RuboCop для
+  новых specs: **0 offenses**.
+- Настоящий `xterm-256color` PTY, 24×80: два `C-n` дали столько же full-screen
+  clears, сколько контрольный запуск без навигации (**5** с учётом startup и
+  shutdown); оба процесса завершились с кодом **0**. Второй PTY изменил размер
+  до 8×50, отправил `SIGWINCH`, выполнил два `C-n` и `C-x C-c`: resize event
+  принят, exit code **0**. Проверки не использовали desktop display.
+
 ## 2026-10-03 — переход на qt 0.2.0
 
 - Gemfile/gemspec и lockfile обновлены на `qt ~> 0.2.0`. Использованы новые

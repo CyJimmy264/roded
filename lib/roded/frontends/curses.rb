@@ -133,17 +133,11 @@ module Roded
       # Add this method to handle Command objects
       def handle_command(command)
         logger.debug("handle_command: #{command.type}")
-        case command.type
-        when :move_cursor
-          return if @layout_snapshot && @layout_snapshot[:windows].length > 1
+        # Core always follows cursor movement with an authoritative layout snapshot.
+        # The old hint redraws the whole terminal, including the modeline row.
+        return if command.type == :move_cursor
 
-          direction = command.payload[:direction]
-          if %i[up down].include?(direction)
-            send("scroll_viewport_#{direction}")
-          else
-            ensure_cursor_visible(direction)
-            redraw
-          end
+        case command.type
         when :render
           snapshot = command.payload[:editor_snapshot]
           snapshot ? render_layout(snapshot) : redraw
