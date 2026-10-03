@@ -21,6 +21,7 @@ module Roded
     def confirm_query_replace(answer)
       action = confirmation_action(answer)
       return start_minibuffer(:query_replace_confirm, confirmation_prompt) unless action
+      return finish_readonly_query_replace if current_buffer.readonly && %w[y !].include?(answer.to_s.downcase)
 
       action.call
     end
@@ -106,6 +107,12 @@ module Roded
       current_window.highlight = nil
       cancel_minibuffer if @focus == :minibuffer
       display_message("Query replace finished.")
+    end
+
+    def finish_readonly_query_replace
+      cancel_query_replace
+      cancel_minibuffer if @focus == :minibuffer
+      display_message("Cannot replace text in a read-only buffer.")
     end
   end
 end

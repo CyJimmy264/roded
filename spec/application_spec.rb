@@ -211,6 +211,44 @@ RSpec.describe Roded::Application do
     expect(buffer.to_s).to eq("ab")
   end
 
+  it "keeps readonly buffers copyable while blocking cut, paste, yank, undo, and redo" do
+    application.startup
+    buffer = application.current_buffer
+    buffer.load_text("cat")
+    buffer.insert_char("x")
+    buffer.move_cursor_line_end
+    buffer.insert_char("!")
+    expect(buffer.undo).to be(true)
+    expect(buffer.to_s).to eq("xcat")
+    expect(buffer.redo).to be(true)
+    expect(buffer.to_s).to eq("xcat!")
+    expect(buffer.undo).to be(true)
+
+    buffer.cursor_pos = { row: 0, col: 4 }
+    application.current_window.mark = { row: 0, col: 1 }
+    application.current_window.point = { row: 0, col: 4 }
+    buffer.readonly = true
+
+    application.handle_event(Roded::Event.new(:key, { key: "C-w" }))
+    expect(buffer.to_s).to eq("xcat")
+    expect(application.kill_ring.items).to be_empty
+
+    application.handle_event(Roded::Event.new(:key, { key: "M-w" }))
+    expect(buffer.to_s).to eq("xcat")
+    expect(application.kill_ring.last).to eq("cat")
+    clipboard_command = frontend.commands.reverse.find { |command| command.type == :clipboard_write }
+    expect(clipboard_command.payload[:text]).to eq("cat")
+
+    application.handle_event(Roded::Event.new(:key, { key: "C-y" }))
+    %w[Esc y].each { |key| application.handle_event(Roded::Event.new(:key, { key: })) }
+    application.handle_event(Roded::Event.new(:key, { key: "C-k" }))
+    application.handle_event(Roded::Event.new(:paste, { text: "!" }))
+    expect(application.kill_ring.last).to eq("cat")
+    expect(application.undo).to be(false)
+    expect(application.redo).to be(false)
+    expect(buffer.to_s).to eq("xcat")
+  end
+
   it "inserts a paste as one multiline edit" do
     application.startup
     buffer = application.current_buffer
@@ -1134,6 +1172,28 @@ RSpec.describe Roded::Application do
     expect(buffer.to_s).to eq("cat dog fox cat")
     expect(buffer.redo).to be(true)
     expect(buffer.to_s).to eq("cat dog fox fox")
+  end
+
+  it "rejects query replacement in a readonly buffer without looping" do
+    %w[y !].each do |answer|
+      readonly_application = described_class.new
+      readonly_frontend = FakeFrontend.new
+      readonly_application.add_frontend(readonly_frontend)
+      readonly_application.startup
+      buffer = readonly_application.current_buffer
+      buffer.load_text("cat cat")
+      buffer.readonly = true
+      readonly_application.begin_query_replace
+      readonly_application.accept_query_replace_search("cat")
+      readonly_application.accept_query_replace_replacement("fox")
+
+      expect do
+        Timeout.timeout(1) { readonly_application.confirm_query_replace(answer) }
+      end.not_to raise_error
+      expect(buffer.to_s).to eq("cat cat")
+      expect(readonly_application.focus).to eq(:buffer)
+      expect(readonly_frontend.messages.last).to eq("Cannot replace text in a read-only buffer.")
+    end
   end
 
   it "restores point when query replace is canceled" do

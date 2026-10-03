@@ -146,7 +146,9 @@ file roundtrip не теряет текст. Коммит этапа до шир
   replace, indent, tab conversions и Ruby API edits; typing и paste grouping
   проверены, redo очищается после новой правки. Живые curses/Qt smoke проходят
   `C-/`/`C-_` undo и `C-c r d` redo.
-- [ ] Mark/region, kill/copy/yank/KillRing и readonly на всех edit entrypoints.
+- [X] Mark/region, kill/copy/yank/KillRing и readonly на edit entrypoints;
+  read-only documents remain searchable/copyable, and cut/yank/paste/C-k,
+  query replace, text commands, API edits and undo/redo cannot change them.
 - [X] Unicode position transforms корректируют point/mark всех views на edits/undo.
 - [X] Tab и `indent-region` добавляют по два пробела в текущую строку или
   строки region; `tabify` / `untabify` работают с выбранными строками или всем

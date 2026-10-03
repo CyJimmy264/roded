@@ -1212,3 +1212,16 @@ File save здесь сохраняет текстовое представле�
 - Targeted Buffer/Application/indent/text-command specs: **118 examples, 0
   failures**. Full suite and live frontend evidence are recorded with the
   preceding undo-routing entry.
+
+## 2026-10-03 — readonly edit entrypoints
+
+- A readonly audit found that `replace-all` could loop forever because rejected
+  edits left the current match in place. `query-replace` now exits with a clear
+  message before either single or replace-all edits run.
+- Application integration covers readonly mark/region, cut, copy, yank,
+  yank-pop, kill-line, paste, query-replace, undo and redo. Copy and navigation
+  remain available; rejected edits preserve document text and KillRing. Existing
+  Buffer, text-command, and Ruby editor API specs cover their readonly paths.
+- `bundle exec rspec spec/application_spec.rb`: **74 examples, 0 failures**.
+  Full `bundle exec rake`: **279 examples, 0 failures**; RuboCop: **148 files,
+  0 offenses**.
