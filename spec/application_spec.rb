@@ -1,4 +1,5 @@
 require "tempfile"
+require "timeout"
 
 # rubocop:disable Metrics/BlockLength
 RSpec.describe Roded::Application do
@@ -29,6 +30,7 @@ RSpec.describe Roded::Application do
     expect(application.focus).to eq(:buffer)
     expect(frontend.focus).to eq(:buffer)
     expect(frontend.commands).to include(Roded::Command.new(:quit, {}))
+    expect(application.instance_variable_get(:@stop_requested)).to be(true)
   end
 
   it "opens a file and renders the loaded buffer" do
@@ -45,6 +47,118 @@ RSpec.describe Roded::Application do
       expect(frontend.renders.last).to eq(application.current_buffer)
       expect(frontend.messages.last).to eq("File '#{file.path}' opened.")
     end
+  end
+
+  it "opens and edits an empty file" do
+    Tempfile.create("roded-empty") do |file|
+      application.open_file(file.path)
+
+      expect(application.current_buffer.lines).to eq([""])
+      application.current_buffer.insert_char("x")
+      application.save_file(file.path)
+      expect(File.binread(file.path)).to eq("x")
+    end
+  end
+
+  it "preserves file line endings and a final newline on open and save" do
+    Tempfile.create("roded-roundtrip") do |file|
+      file.binmode
+      file.write("alpha\r\nbeta\r\n")
+      file.flush
+
+      application.open_file(file.path)
+      application.save_file(file.path)
+
+      expect(File.binread(file.path)).to eq("alpha\r\nbeta\r\n")
+    end
+  end
+
+  it "exits its event loop on routed C-x C-c and closes the frontend" do
+    events = %w[C-x C-c].map { |key| Roded::Event.new(:key, { key: key }) }
+    scripted_frontend = ScriptedFrontend.new(events)
+    app = described_class.new
+    app.add_frontend(scripted_frontend)
+
+    Timeout.timeout(2) { app.run }
+
+    expect(scripted_frontend.closed).to be(true)
+  end
+
+  it "sets the core stop state without waiting for a frontend acknowledgement" do
+    app = described_class.new
+    app.instance_variable_set(:@frontends, [frontend])
+
+    app.handle_event(Roded::Event.new(:key, { key: "C-x" }))
+    app.handle_event(Roded::Event.new(:key, { key: "C-c" }))
+
+    expect(app.instance_variable_get(:@stop_requested)).to be(true)
+  end
+
+  it "exits its event loop when M-x quit is submitted" do
+    events = %w[Esc x q u i t Enter].map { |key| Roded::Event.new(:key, { key: key }) }
+    scripted_frontend = ScriptedFrontend.new(events)
+    app = described_class.new
+    app.add_frontend(scripted_frontend)
+
+    Timeout.timeout(2) { app.run }
+
+    expect(scripted_frontend.closed).to be(true)
+  end
+
+  it "exits on a signal even while the minibuffer has focus" do
+    scripted_frontend = ScriptedFrontend.new
+    app = described_class.new
+    app.add_frontend(scripted_frontend)
+    app.start_minibuffer(:command, "M-x ")
+    previous_term_handler = Signal.trap("TERM", "DEFAULT")
+    Signal.trap("TERM", previous_term_handler)
+    signal_thread = Thread.new do
+      sleep 0.02
+      Process.kill("TERM", Process.pid)
+    end
+
+    Timeout.timeout(2) { app.run }
+    signal_thread.join
+    restored_term_handler = Signal.trap("TERM", "IGNORE")
+    Signal.trap("TERM", restored_term_handler)
+
+    expect(scripted_frontend.closed).to be(true)
+    expect(restored_term_handler).to eq(previous_term_handler)
+  ensure
+    Signal.trap("TERM", previous_term_handler) if previous_term_handler
+  end
+
+  it "shuts down when the frontend reaches end of input" do
+    frontend = EndOfInputFrontend.new
+    app = described_class.new
+    app.add_frontend(frontend)
+
+    Timeout.timeout(2) { app.run }
+
+    expect(frontend.closed).to be(true)
+  end
+
+  it "reports file read and write errors without raising" do
+    application.open_file("/no/such/roded/file")
+    expect(frontend.messages.last).to match(/File not found/)
+
+    buffer = Roded::Buffer.new("unsaved")
+    buffer.insert_char("x")
+    application.add_buffer(buffer)
+    application.save_file("/no/such/roded/file")
+    expect(frontend.messages.last).to match(/Error saving file/)
+    expect(buffer.to_s).to eq("x")
+  end
+
+  it "closes the frontend after a command raises in the event loop" do
+    events = [Roded::Event.new(:key, { key: "a" }), Roded::Event.new(:quit, {})]
+    scripted_frontend = ScriptedFrontend.new(events)
+    app = described_class.new
+    app.add_frontend(scripted_frontend)
+    app.define_singleton_method(:handle_event) { |_event| raise "command failure" }
+
+    expect { Timeout.timeout(2) { app.run } }.to raise_error("command failure")
+    expect(scripted_frontend.closed).to be(true)
   end
 
   it "saves the current buffer to disk" do

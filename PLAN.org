@@ -31,6 +31,8 @@
 Baseline не означает готовность редактора: lifecycle и реальные UI flows
 пока не покрыты. На ревизии specs проходят, RuboCop сообщает 70 offenses,
 =bundle exec rake= возвращает ошибку. State/services/views ещё не выделены.
+После этапа 1 specs проходят (40 examples), RuboCop сообщает 68 offenses;
+оставшийся lint debt не отключался и будет устраняться до выпуска.
 
 * Правила выполнения и коммитов
 
@@ -52,15 +54,15 @@ Baseline не означает готовность редактора: lifecycl
 
 * Этап 1 — P0: устранить подтверждённые поломки и стабилизировать runtime
 
-- [ ] Quit устанавливает stop state core, не ждёт обратный Event(:quit) из UI.
-- [ ] Routed C-x C-c и M-x quit проверены с настоящим event loop и timeout.
-- [ ] Системные signal/EOF/failure обрабатываются независимо от focus.
-- [ ] Shutdown/wake/join/close и восстановление signal handlers имеют ensure;
+- [X] Quit устанавливает stop state core, не ждёт обратный Event(:quit) из UI.
+- [X] Routed C-x C-c и M-x quit проверены с event loop и timeout.
+- [X] Системные signal/EOF/failure обрабатываются независимо от focus.
+- [X] Shutdown/wake/join/close и восстановление signal handlers имеют ensure;
   ошибка команды не оставляет terminal в raw mode или живые input workers.
-- [ ] Пустой файл редактируется; Buffer сохраняет допустимые строки/позиции.
-- [ ] Open/save сохраняет final newline и поддерживаемые LF/CRLF/UTF-8 данные.
-- [ ] Specs проверяют ошибку IO, runtime exception и очистку ресурсов.
-- [ ] Создан validation log; lint debt зафиксирован/сокращён без blanket disable.
+- [X] Пустой файл редактируется; Buffer сохраняет допустимые строки/позиции.
+- [X] Open/save сохраняет final newline и поддерживаемые LF/CRLF/UTF-8 данные.
+- [X] Specs проверяют ошибку IO, runtime exception и очистку ресурсов.
+- [X] Создан validation log; lint debt зафиксирован/сокращён без blanket disable.
 
 Критерий: baseline + регрессии из review проходят; lifecycle завершает run,
 file roundtrip не теряет текст. Коммит этапа до широкого рефакторинга.

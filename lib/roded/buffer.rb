@@ -6,15 +6,39 @@ module Roded
   # text, such as inserting and deleting characters, and allows other
   # objects to observe its state.
   class Buffer
-    attr_accessor :lines, :filename, :cursor_pos, :readonly
+    attr_reader :lines, :cursor_pos, :line_ending, :final_newline, :name
+    attr_accessor :filename
+    attr_accessor :readonly
 
     def initialize(name = nil)
       @name = name
       @filename = nil
       @lines = [String.new("")]
       @cursor_pos = { row: 0, col: 0 }
+      @line_ending = "\n"
+      @final_newline = false
       @observers = []
       @readonly = false
+    end
+
+    def lines=(lines)
+      @lines = Array(lines).map(&:to_s)
+      @lines = [""] if @lines.empty?
+      clamp_cursor
+    end
+
+    def load_text(text)
+      validate_text!(text)
+      @line_ending = text.scan(/\r\n|\n/).uniq.first || "\n"
+      @final_newline = text.end_with?("\n")
+      self.lines = text.gsub("\r\n", "\n").split("\n", -1).tap { |lines| lines.pop if @final_newline }
+      @cursor_pos = { row: 0, col: 0 }
+      self
+    end
+
+    def cursor_pos=(position)
+      @cursor_pos = { row: position.fetch(:row, 0).to_i, col: position.fetch(:col, 0).to_i }
+      clamp_cursor
     end
 
     def add_observer(observer)
@@ -135,7 +159,18 @@ module Roded
     end
 
     def to_s
-      @lines.join("\n")
+      text = @lines.join(@line_ending)
+      @final_newline ? text + @line_ending : text
+    end
+
+    def final_newline=(value)
+      @final_newline = !!value
+    end
+
+    def line_ending=(value)
+      raise ArgumentError, "unsupported line ending" unless ["\n", "\r\n"].include?(value)
+
+      @line_ending = value
     end
 
     def line_at_cursor
@@ -174,6 +209,16 @@ module Roded
 
     def clamp_cursor_col
       @cursor_pos[:col] = [@cursor_pos[:col], line_at_cursor.length].min
+    end
+
+    def clamp_cursor
+      @cursor_pos[:row] = @cursor_pos[:row].to_i.clamp(0, @lines.length - 1)
+      clamp_cursor_col
+    end
+
+    def validate_text!(text)
+      raise ArgumentError, "text must be valid UTF-8" unless text.encoding == Encoding::UTF_8 && text.valid_encoding?
+      raise ArgumentError, "mixed line endings are not supported" if text.scan(/\r\n|\n/).uniq.length > 1
     end
   end
 end

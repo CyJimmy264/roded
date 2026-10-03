@@ -47,7 +47,7 @@ module Roded
       when :render
         @editor.broadcast_command(Command.new(:render, {}))
       when :quit
-        @editor.broadcast_command(Command.new(:quit, {}))
+        @editor.request_quit
       when :start_command
         @editor.start_minibuffer(:command, "M-x ")
       when :cancel

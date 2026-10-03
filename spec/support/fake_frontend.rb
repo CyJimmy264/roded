@@ -30,3 +30,34 @@ class FakeFrontend
     3
   end
 end
+
+class ScriptedFrontend
+  attr_reader :closed
+
+  def initialize(events = [])
+    @events = Queue.new
+    events.each { |event| @events << event }
+  end
+
+  define_method(:get_event) { @events.pop }
+
+  def handle_command(command)
+    @events << Roded::Event.new(:quit, {}) if command.type == :quit
+  end
+
+  def close
+    @closed = true
+  end
+end
+
+class EndOfInputFrontend
+  attr_reader :closed
+
+  define_method(:get_event) { nil }
+
+  def handle_command(_command); end
+
+  def close
+    @closed = true
+  end
+end

@@ -20,11 +20,9 @@ module Roded
       @current_buffer = nil
       @command_router = CommandRouter.new(@keymap)
       @command_handler = CommandHandler.new(self)
+      initialize_lifecycle
       logger.info("Application initialized")
-      trap_signals
     end
-
-
 
     def welcome
       welcome_buffer = Buffer.new("Welcome")
@@ -62,12 +60,15 @@ module Roded
       thread = Thread.new do
         loop do
           event = frontend.get_event
-          next unless event
+          unless event
+            push_event(Event.new(:frontend_eof, { frontend: frontend.class.name }))
+            break
+          end
 
           push_event(event)
-          break if event.type == :quit
+          break if %i[quit frontend_eof frontend_failure].include?(event.type)
         rescue StandardError => e
-          warn "Frontend thread error: #{e.class}: #{e.message}\n#{e.backtrace.join("\n")}"
+          push_event(Event.new(:frontend_failure, { error: e }))
           break
         end
       end
@@ -87,27 +88,26 @@ module Roded
 
     def trap_signals
       %w[HUP INT QUIT TERM].each do |sig|
-        prev = trap(sig) do |signal|
+        @signal_handlers[sig] = trap(sig) do |signal|
           push_event(Event.new(:signal, { signal: }))
         end
-
-        trap(sig, "IGNORE") if prev == "IGNORE"
       end
     end
 
     def run
-      main_thread = Thread.new { main_loop }
-      main_thread.join
-
-      @frontends.each { |f| f.close if f.respond_to?(:close) }
-      @event_queue.close
-
-      @frontend_threads.each(&:join)
+      trap_signals
+      main_loop
+    ensure
+      restore_signals
+      @stop_requested = true
+      shutdown_frontends
     end
 
     def handle_event(event)
       logger.debug("handle_event: #{event.type}")
       logger.debug("handle_event: focus: #{@focus}")
+      return request_quit if %i[quit signal frontend_eof frontend_failure].include?(event.type)
+
       if event.type == :key
         routed = @command_router.route(event.payload[:key])
         return unless routed
@@ -124,7 +124,7 @@ module Roded
       when "save"
         start_minibuffer(:save, "Save file as: ")
       when "quit"
-        broadcast_command(Command.new(:quit, {}))
+        request_quit
       when "", nil
         broadcast_command(Command.new(:render, {}))
       else
@@ -133,9 +133,9 @@ module Roded
     end
 
     def open_file(filename)
-      content = File.read(filename)
+      content = File.binread(filename).force_encoding(Encoding::UTF_8)
       buffer = Buffer.new(filename)
-      buffer.lines = content.lines.map(&:chomp)
+      buffer.load_text(content)
       buffer.filename = filename
       buffer.cursor_pos = { row: 0, col: 0 }
       buffer.readonly = false
@@ -153,7 +153,7 @@ module Roded
       buffer = current_buffer
       return unless buffer
 
-      File.write(filename, buffer.to_s)
+      File.binwrite(filename, buffer.to_s)
       buffer.filename = filename
       display_message("File '#{filename}' saved.")
     rescue StandardError => e
@@ -162,6 +162,13 @@ module Roded
 
     def current_buffer
       @current_buffer || @buffers.first
+    end
+
+    def request_quit
+      return if @stop_requested
+
+      @stop_requested = true
+      broadcast_command(Command.new(:quit, {}))
     end
 
     def page_size
@@ -218,18 +225,17 @@ module Roded
     private
 
     def main_loop
-      loop do
+      until @stop_requested
         event = @event_queue.pop
-        next unless event
+        break unless event
 
         logger.debug("main_loop: event received: #{event.type} #{event.payload.inspect if event.respond_to?(:payload)}")
         handle_event(event)
 
-        if event.type == :quit
-          logger.debug("main_loop: break on quit")
-          break
-        end
       end
+    rescue StandardError => e
+      logger.error("Editor runtime failed: #{e.class}: #{e.message}")
+      raise
     end
 
     def display_message(message)
@@ -241,6 +247,40 @@ module Roded
     def broadcast_focus
       @frontends.each do |frontend|
         frontend.focus = @focus if frontend.respond_to?(:focus=)
+      end
+    end
+
+    def restore_signals
+      @signal_handlers.each { |signal, handler| trap(signal, handler) }
+      @signal_handlers.clear
+    end
+
+    def shutdown_frontends
+      notify_frontends_of_shutdown
+      @frontend_threads.each(&:join)
+      close_frontends
+    ensure
+      @event_queue.close unless @event_queue.closed?
+    end
+
+    def initialize_lifecycle
+      @stop_requested = false
+      @signal_handlers = {}
+    end
+
+    def notify_frontends_of_shutdown
+      @frontends.each do |frontend|
+        frontend.handle_command(Command.new(:quit, {}))
+      rescue StandardError => e
+        logger.warn("Frontend shutdown notification failed: #{e.class}: #{e.message}")
+      end
+    end
+
+    def close_frontends
+      @frontends.each do |frontend|
+        frontend.close if frontend.respond_to?(:close)
+      rescue StandardError => e
+        logger.warn("Frontend close failed: #{e.class}: #{e.message}")
       end
     end
   end

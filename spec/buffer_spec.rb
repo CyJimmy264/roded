@@ -26,6 +26,32 @@ RSpec.describe Roded::Buffer do
     end
   end
 
+  describe "text round trips" do
+    it "preserves empty text, final newline, and CRLF" do
+      expect(described_class.new.load_text("").to_s).to eq("")
+      expect(described_class.new.load_text("alpha\nbeta\n").to_s).to eq("alpha\nbeta\n")
+      expect(described_class.new.load_text("alpha\r\nbeta").to_s).to eq("alpha\r\nbeta")
+      expect(described_class.new.load_text("Привет, мир!\n").to_s).to eq("Привет, мир!\n")
+    end
+
+    it "rejects mixed line endings and invalid UTF-8" do
+      expect { described_class.new.load_text("a\nb\r\n") }
+        .to raise_error(ArgumentError, /mixed line endings/)
+      expect { described_class.new.load_text("\xFF".b.force_encoding(Encoding::UTF_8)) }
+        .to raise_error(ArgumentError, /valid UTF-8/)
+    end
+
+    it "keeps at least one line and clamps cursor assignments" do
+      buffer.lines = []
+      buffer.cursor_pos = { row: 9, col: 9 }
+
+      expect(buffer.lines).to eq([""])
+      expect(buffer.cursor_pos).to eq({ row: 0, col: 0 })
+      buffer.insert_char("a")
+      expect(buffer.lines).to eq(["a"])
+    end
+  end
+
   describe "#backspace" do
     it "removes the character before the cursor" do
       buffer.lines = ["abc"]
