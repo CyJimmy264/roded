@@ -49,6 +49,7 @@ module Roded
 
         codepoint = text.ord
         return "C-SPC" if codepoint.zero?
+        return "C-_" if codepoint == 31
         return "C-#{(codepoint + 96).chr}" if codepoint.between?(1, 26)
 
         text

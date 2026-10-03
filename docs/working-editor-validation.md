@@ -1177,3 +1177,27 @@ File save здесь сохраняет текстовое представле�
 - `CommandHandler` still receives the application facade, and `Buffer` still
   retains a compatibility cursor alongside each `Window` point. Those are
   separate remaining Stage 2 migrations and are not marked complete.
+
+## 2026-10-03 — undo/redo input and Qt shutdown thread
+
+- Qt sends Ctrl+/ as U+001F and curses receives byte `0x1f`; both frontends now
+  normalize that control character to the existing `C-_` undo binding. Typing
+  contiguous characters forms one undo group, broken by navigation or another
+  command. Core, Qt payload, and curses decoder specs cover the route; a live
+  Qt widget sequence verifies edit → Ctrl+/ undo → `C-c r d` redo.
+- The undo/redo regression is also exercised in both actual frontends. The
+  curses private-PTY smoke sends typed characters, Ctrl+_ undo, `C-c r d` redo,
+  and checks saved file contents. Log: `/tmp/roded-curses-smoke.20261003-257846-bdtw69`.
+  The Qt smoke runs in private Xvfb with private `XDG_CONFIG_HOME`, sends the
+  corresponding keyboard sequence, waits for the rendered snapshot, and checks
+  the visible widget/modeline and saved contents. Log/screenshots:
+  `/tmp/roded-qt-live-smoke.Z7yx4k`. Neither test
+  uses the desktop `DISPLAY`.
+- A real `QTimer` dispatcher spec records that worker-posted messages and quit
+  actions run on the GUI thread. Another Qt integration spec raises an
+  exception in the core loop and verifies the visible window closes without a
+  hang. Snapshot feedback remains covered by a real editor widget spec.
+- `bundle exec rake`: **277 examples, 0 failures**; RuboCop: **148 files, 0
+  offenses**. The live Qt smoke covered 25 key events, wheel, 12 mouse
+  selections, Menu picker, Ctrl+/ undo and C-c r d redo; Qt Widgets **6.11.2**,
+  gem `qt` **0.2.0**. The curses smoke passed in a private PTY.

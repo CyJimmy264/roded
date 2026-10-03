@@ -2,7 +2,9 @@ module Roded
   # Owns buffer cursor positions and their movement constraints.
   module BufferCursorOperations
     def cursor_pos=(position)
-      @cursor_pos = { row: position.fetch(:row, 0).to_i, col: position.fetch(:col, 0).to_i }
+      next_position = { row: position.fetch(:row, 0).to_i, col: position.fetch(:col, 0).to_i }
+      break_typing_undo_group if @cursor_pos != next_position
+      @cursor_pos = next_position
       clamp_cursor
     end
 
@@ -19,21 +21,25 @@ module Roded
     def cursor_col = @cursor_pos[:col]
 
     def move_cursor_left
+      break_typing_undo_group
       @cursor_pos[:col] = [@cursor_pos[:col] - 1, 0].max
       notify_observers
     end
 
     def move_cursor_right
+      break_typing_undo_group
       @cursor_pos[:col] = [@cursor_pos[:col] + 1, line_at_cursor.length].min
       notify_observers
     end
 
     def move_cursor_line_start
+      break_typing_undo_group
       @cursor_pos[:col] = 0
       notify_observers
     end
 
     def move_cursor_line_end
+      break_typing_undo_group
       @cursor_pos[:col] = line_at_cursor.length
       notify_observers
     end
@@ -63,12 +69,14 @@ module Roded
     end
 
     def move_cursor_up
+      break_typing_undo_group
       @cursor_pos[:row] = [@cursor_pos[:row] - 1, 0].max
       clamp_cursor_col
       notify_observers
     end
 
     def move_cursor_down
+      break_typing_undo_group
       @cursor_pos[:row] = [@cursor_pos[:row] + 1, @lines.length - 1].min
       clamp_cursor_col
       notify_observers
@@ -89,6 +97,7 @@ module Roded
     end
 
     def move_cursor_to_offset(offset)
+      break_typing_undo_group
       chars = @lines.join("\n").each_char.to_a
       @cursor_pos = position_at_offset(0, chars, offset.clamp(0, chars.length)).dup
       clamp_cursor
@@ -100,6 +109,7 @@ module Roded
     end
 
     def move_cursor_by_page(delta)
+      break_typing_undo_group
       @cursor_pos[:row] = [@cursor_pos[:row] + delta, 0].max
       @cursor_pos[:row] = [@cursor_pos[:row], @lines.length - 1].min
       clamp_cursor_col

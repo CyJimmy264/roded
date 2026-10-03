@@ -199,6 +199,18 @@ RSpec.describe Roded::Application do
     expect(frontend.commands.last.payload[:editor_snapshot][:windows].first[:text]).to eq("a")
   end
 
+  it "routes undo and redo keys across grouped character input" do
+    application.startup
+    buffer = application.current_buffer
+    %w[a b].each { |key| application.handle_event(Roded::Event.new(:key, { key: })) }
+
+    application.handle_event(Roded::Event.new(:key, { key: "C-_" }))
+    expect(buffer.to_s).to eq("")
+
+    %w[C-c r d].each { |key| application.handle_event(Roded::Event.new(:key, { key: })) }
+    expect(buffer.to_s).to eq("ab")
+  end
+
   it "inserts a paste as one multiline edit" do
     application.startup
     buffer = application.current_buffer

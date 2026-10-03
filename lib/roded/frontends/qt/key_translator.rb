@@ -36,19 +36,26 @@ module Roded
       def key_name(key, text, modifiers)
         return "SPC" if key == ::Qt::Key_Space && modifiers.anybits?(::Qt::ControlModifier)
         return SPECIAL_KEYS[key] if SPECIAL_KEYS.key?(key)
-        return control_key_name(key) if control_key?(key, modifiers)
+        return control_key_name(key, text) if control_key?(key, text, modifiers)
 
         return text.to_s unless text.to_s.empty?
 
         key.chr if key.between?(::Qt::Key_A, ::Qt::Key_Z)
       end
 
-      def control_key?(key, modifiers)
-        modifiers.anybits?(::Qt::ControlModifier) &&
-          (key == ::Qt::Key_At || key.between?(::Qt::Key_A, ::Qt::Key_Z))
+      def control_key?(key, text, modifiers)
+        control_modifier?(modifiers) && (
+          key == ::Qt::Key_At || key.between?(::Qt::Key_A, ::Qt::Key_Z) || text.to_s == "\u001f"
+        )
       end
 
-      def control_key_name(key)
+      def control_modifier?(modifiers)
+        modifiers.anybits?(::Qt::ControlModifier)
+      end
+
+      def control_key_name(key, text)
+        return "_" if text.to_s == "\u001f"
+
         key == ::Qt::Key_At ? "@" : key.chr.downcase
       end
 

@@ -42,6 +42,10 @@ module Roded
         @timer.start
       end
 
+      def stop
+        @timer.stop
+      end
+
       private
 
       def drain
@@ -65,6 +69,7 @@ module Roded
       end
 
       def quit(_payload)
+        stop
         @view.close
         @application.quit
       end

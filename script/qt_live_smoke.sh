@@ -66,6 +66,44 @@ if [[ "$saved_line" != "Xline 002" ]]; then
   printf 'Unexpected saved line: %s\n' "$saved_line" >&2
   exit 1
 fi
+xdotool windowfocus --sync "$window_id"
+xdotool key --clearmodifiers ctrl+slash
+sleep 0.3
+xdotool key --clearmodifiers ctrl+x
+sleep 0.3
+xdotool key --clearmodifiers ctrl+s
+saved_line=
+for attempt in $(seq 1 50); do
+  saved_line=$(sed -n '2p' "$smoke_dir/lines.txt")
+  [[ "$saved_line" == "line 002" ]] && break
+  sleep 0.1
+done
+if [[ "$saved_line" != "line 002" ]]; then
+  printf 'Unexpected line after Qt undo: %s\n' "$saved_line" >&2
+  exit 1
+fi
+sleep 0.5
+import -window "$window_id" "$smoke_dir/after-undo.png"
+xdotool windowfocus --sync "$window_id"
+xdotool key --clearmodifiers ctrl+c
+xdotool key --clearmodifiers r
+xdotool key --clearmodifiers d
+sleep 0.3
+xdotool key --clearmodifiers ctrl+x
+sleep 0.3
+xdotool key --clearmodifiers ctrl+s
+saved_line=
+for attempt in $(seq 1 50); do
+  saved_line=$(sed -n '2p' "$smoke_dir/lines.txt")
+  [[ "$saved_line" == "Xline 002" ]] && break
+  sleep 0.1
+done
+if [[ "$saved_line" != "Xline 002" ]]; then
+  printf 'Unexpected line after Qt redo: %s\n' "$saved_line" >&2
+  exit 1
+fi
+sleep 0.5
+import -window "$window_id" "$smoke_dir/after-redo.png"
 sleep 0.5
 import -window "$window_id" "$smoke_dir/after-edit-save.png"
 xdotool windowfocus --sync "$window_id"
@@ -192,3 +230,11 @@ if ! rg -q 'event received: key \{key: "Menu"' "$RODED_LOG_PATH" ||
   exit 1
 fi
 printf 'Menu shortcuts: project_files, switch_buffer\n'
+if ! rg -q 'event received: key \{key: "C-_"' "$RODED_LOG_PATH" ||
+  ! rg -q 'event received: key \{key: "C-c"' "$RODED_LOG_PATH" ||
+  ! rg -q 'event received: key \{key: "r"' "$RODED_LOG_PATH" ||
+  ! rg -q 'event received: key \{key: "d"' "$RODED_LOG_PATH"; then
+  printf 'Qt undo/redo shortcuts did not reach the core\n' >&2
+  exit 1
+fi
+printf 'Undo/redo shortcuts: Ctrl+Slash, C-c r d\n'

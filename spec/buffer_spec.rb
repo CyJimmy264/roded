@@ -414,6 +414,24 @@ RSpec.describe Roded::Buffer do
       expect(buffer.to_s).to eq("c")
     end
 
+    it "groups consecutive typed characters and starts a new group after movement" do
+      buffer.insert_char("a")
+      buffer.insert_char("b")
+
+      expect(buffer.undo).to be(true)
+      expect(buffer.to_s).to eq("")
+      expect(buffer.redo).to be(true)
+      expect(buffer.to_s).to eq("ab")
+
+      buffer.move_cursor_left
+      buffer.insert_char("x")
+      expect(buffer.to_s).to eq("axb")
+      expect(buffer.undo).to be(true)
+      expect(buffer.to_s).to eq("ab")
+      expect(buffer.undo).to be(true)
+      expect(buffer.to_s).to eq("")
+    end
+
     it "does not mutate readonly buffers" do
       buffer.insert_char("a")
       buffer.readonly = true

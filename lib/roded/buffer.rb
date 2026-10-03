@@ -62,6 +62,7 @@ module Roded
       @redo_stack = []
       @undo_group_depth = 0
       @undo_group_edits = []
+      @typing_undo_group = nil
     end
   end
 end

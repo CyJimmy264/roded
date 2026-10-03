@@ -16,6 +16,7 @@ module Qt
     Key_F7: 0x01000036,
     Key_Menu: 0x01000055,
     Key_At: 0x40,
+    Key_Slash: 0x2f,
     Key_A: 0x41,
     Key_Z: 0x5a,
     ControlModifier: 0x04000000,
@@ -66,6 +67,12 @@ RSpec.describe Roded::Frontends::QtKeyTranslator do
 
     expect(translator.translate(ctrl_at)).to eq("C-@")
     expect(translator.translate(ctrl_space)).to eq("C-SPC")
+  end
+
+  it "normalizes Qt's Ctrl+Slash control character to the undo alias" do
+    payload = { key: Qt::Key_Slash, modifiers: Qt::ControlModifier, text: "\u001f" }
+
+    expect(translator.translate(payload)).to eq("C-_")
   end
 end
 # rubocop:enable Metrics/BlockLength

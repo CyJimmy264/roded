@@ -3,7 +3,8 @@ module Roded
   module BufferEditRecordingOperations
     private
 
-    def record_edit(row, before_count, after_count)
+    def record_edit(row, before_count, after_count, undo_group: nil)
+      break_typing_undo_group if undo_group != :typing && @undo_group_depth.zero?
       before = edit_snapshot(row, before_count)
       yield
       sync_final_newline
@@ -11,14 +12,31 @@ module Roded
       after = edit_snapshot(row, after_count)
       return if before == after
 
-      publish_edit(build_edit(row, before, after))
+      publish_edit(build_edit(row, before, after), undo_group:)
     end
 
-    def publish_edit(edit)
-      @undo_group_depth.positive? ? @undo_group_edits << edit : @undo_stack << [edit]
+    def publish_edit(edit, undo_group: nil)
+      if @undo_group_depth.positive?
+        @undo_group_edits << edit
+      elsif undo_group == :typing
+        append_typing_edit(edit)
+      else
+        @undo_stack << [edit]
+      end
       @redo_stack.clear
       notify_position_change(edit.position_change)
       notify_observers
+    end
+
+    def append_typing_edit(edit)
+      previous = @typing_undo_group&.last
+      if previous && previous.row == edit.row && previous.after_cursor == edit.before_cursor &&
+         previous.after_lines == edit.before_lines
+        @typing_undo_group << edit
+      else
+        @typing_undo_group = [edit]
+        @undo_stack << @typing_undo_group
+      end
     end
 
     def edit_snapshot(row, line_count)

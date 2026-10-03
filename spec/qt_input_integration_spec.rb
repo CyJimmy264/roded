@@ -53,9 +53,30 @@ RSpec.shared_context "Qt input integration lifecycle" do
   end
 
   after(:context) do
-    @frontends.each { |frontend| frontend.view.close }
+    @frontends.each do |frontend|
+      frontend.instance_variable_get(:@ui_dispatcher).stop
+      frontend.view.close
+    end
     QApplication.process_events
     @qt_application.quit
+  end
+end
+
+RSpec.describe "Qt snapshot feedback" do
+  include_context "Qt input integration lifecycle"
+  include QtInputIntegrationSpecHelpers
+
+  it "updates a real editor widget without routing render feedback as input" do
+    application, frontend = build_qt_editor(%w[before after])
+    @frontends << frontend
+
+    application.handle_event(Roded::Event.new(:insert_char, { char: "!" }))
+    frontend.instance_variable_get(:@ui_dispatcher).send(:drain)
+    QApplication.process_events
+
+    expect(application.current_buffer.to_s).to eq("!before\nafter")
+    expect(frontend.view.editor.to_plain_text).to eq("!before\nafter")
+    expect(frontend.instance_variable_get(:@input_queue)).to be_empty
   end
 end
 
@@ -130,6 +151,38 @@ RSpec.describe "Qt space and final newline through editor session" do
 
     expect(application.current_window.point).to eq(row: 1, col: 0)
     expect(frontend.view.editor.text_cursor.position).to eq(6)
+  end
+end
+
+RSpec.describe "Qt undo and redo through editor session" do
+  include_context "Qt input integration lifecycle"
+  include QtInputIntegrationSpecHelpers
+
+  it "routes Ctrl+Slash undo and the redo sequence through the live editor" do
+    application, frontend = build_qt_editor([])
+    @frontends << frontend
+
+    deliver_qt_payload(application, frontend, key: Qt::Key_X, modifiers: 0, text: "x")
+    deliver_qt_payload(application, frontend, key: Qt::Key_Y, modifiers: 0, text: "y")
+    expect(frontend.view.editor.to_plain_text).to eq("xy ")
+
+    deliver_qt_payload(
+      application, frontend,
+      key: Qt::Key_Slash, modifiers: Qt::ControlModifier, text: "\u001f"
+    )
+    expect(application.current_buffer.to_s).to eq("")
+    expect(frontend.view.editor.to_plain_text).to eq(" ")
+    expect(frontend.view.editor.text_cursor.position).to eq(0)
+
+    deliver_qt_payload(
+      application, frontend, key: Qt::Key_C, modifiers: Qt::ControlModifier, text: "\u0003"
+    )
+    deliver_qt_payload(application, frontend, key: Qt::Key_R, modifiers: 0, text: "r")
+    deliver_qt_payload(application, frontend, key: Qt::Key_D, modifiers: 0, text: "d")
+
+    expect(application.current_buffer.to_s).to eq("xy")
+    expect(frontend.view.editor.to_plain_text).to eq("xy ")
+    expect(frontend.view.editor.text_cursor.position).to eq(2)
   end
 end
 

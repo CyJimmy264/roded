@@ -1,7 +1,12 @@
 module Roded
   # Replays and groups the undoable edit records owned by a buffer.
   module BufferHistoryOperations
+    def break_typing_undo_group
+      @typing_undo_group = nil
+    end
+
     def undo # rubocop:disable Naming/PredicateMethod -- editor commands use imperative names
+      break_typing_undo_group
       return false if readonly || @undo_stack.empty?
 
       edits = @undo_stack.pop
@@ -15,6 +20,7 @@ module Roded
     end
 
     def redo # rubocop:disable Naming/PredicateMethod -- editor commands use imperative names
+      break_typing_undo_group
       return false if readonly || @redo_stack.empty?
 
       edits = @redo_stack.pop
@@ -28,6 +34,7 @@ module Roded
     end
 
     def with_undo_group
+      break_typing_undo_group
       @undo_group_depth += 1
       yield
     ensure
@@ -36,6 +43,7 @@ module Roded
         @undo_stack << @undo_group_edits
         @undo_group_edits = []
       end
+      break_typing_undo_group
     end
 
     private

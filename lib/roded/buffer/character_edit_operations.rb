@@ -6,7 +6,7 @@ module Roded
       return if char.nil? || char.empty?
 
       row = @cursor_pos[:row]
-      record_edit(row, 1, 1) { insert_character(row, char) }
+      record_edit(row, 1, 1, undo_group: :typing) { insert_character(row, char) }
     end
 
     def insert_text(text)

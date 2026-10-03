@@ -110,7 +110,8 @@ file roundtrip не теряет текст. Коммит этапа до шир
 - [X] QApplication и widgets в GUI/main thread; выбрать явную runtime интеграцию.
 - [X] Один buffer: Qt input -> core edit -> UI snapshot -> рабочее отображение.
 - [X] Synthetic Super test binding вызывает core command; Alt/Super различаются.
-- [ ] Close/exception не вызывают widgets из чужого потока и не зависают.
+- [X] Close/exception не вызывают widgets из чужого потока и не зависают;
+  QTimer delivery and real-window exception shutdown have GUI-thread specs.
 - [X] Qt dependency/CLI boot воспроизводимы без обязательного local absolute path.
 - [X] Ранее недостающие bindings обходились локально; после qt 0.2.0 ненужные
   обходы удалены, а статус и оставшаяся native context-menu настройка описаны
@@ -142,6 +143,8 @@ file roundtrip не теряет текст. Коммит этапа до шир
   в KillRing; соседние kill-команды объединяются до следующей команды.
 - [X] Undo до saved state.
 - [ ] Undo/redo для всех обязательных edits; grouping и paste transactions.
+- [X] Обычный набор текста группируется; `C-/`/`C-_` нормализуется одинаково
+  в curses и Qt; живые smoke-проверки проходят undo и `C-c r d` redo.
 - [ ] Mark/region, kill/copy/yank/KillRing и readonly на всех edit entrypoints.
 - [X] Unicode position transforms корректируют point/mark всех views на edits/undo.
 - [X] Tab и `indent-region` добавляют по два пробела в текущую строку или
@@ -258,7 +261,7 @@ replace обратимы. Provider/history/preview не становятся cur
 - [ ] Physical s-Left/s-Right desktop smoke and configurable key combinations.
 - [X] Offscreen native QWidget.close returns rejected and remains visible while
   core decides; desktop save/discard/cancel interaction remains open.
-- [ ] UI-thread/snapshot/feedback-loop/REPL/shutdown integration checks.
+- [X] UI-thread/snapshot/feedback-loop/REPL/shutdown integration checks.
 - [X] Qt UI dispatcher protects pending updates with a mutex and coalesces
   obsolete editor/picker/minibuffer snapshots while retaining discrete actions.
 - [X] Real-widget offscreen tests cover layout, Unicode caret and mouse hit-test,

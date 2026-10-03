@@ -7,6 +7,7 @@ RSpec.describe Roded::Frontends::CursesKeyTranslator do
 
     expect(decoder.send(:normalize_input, "\0")).to eq("C-SPC")
     expect(decoder.send(:normalize_input, "\u0001")).to eq("C-a")
+    expect(decoder.send(:normalize_input, "\u001f")).to eq("C-_")
     expect(decoder.send(:normalize_input, "\t")).to eq("Tab")
     expect(decoder.send(:normalize_input, "\b")).to eq("C-h")
     expect(decoder.send(:normalize_input, "\u007F")).to eq("Backspace")

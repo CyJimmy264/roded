@@ -88,6 +88,7 @@ module Roded
       routed_event = route_input_event(event)
       preserve_yank = %i[yank yank_pop].include?(routed_event&.type) || @focus == :minibuffer
       @last_yank = nil if routed_event && !preserve_yank
+      break_typing_undo_groups unless routed_event&.type == :insert_char
       return unless routed_event
 
       @command_handler.handle(routed_event)
@@ -99,6 +100,10 @@ module Roded
       return unless window.equal?(current_window) && buffer.equal?(current_buffer)
 
       window.point = buffer.cursor_pos
+    end
+
+    def break_typing_undo_groups
+      session.buffers.each(&:break_typing_undo_group)
     end
   end
 end

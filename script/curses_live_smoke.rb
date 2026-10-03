@@ -5,6 +5,59 @@ require "io/wait"
 require "pty"
 require "tmpdir"
 
+def drain_pty_output(reader, captured)
+  loop do
+    captured << reader.read_nonblock(65_536)
+  rescue IO::WaitReadable, EOFError, Errno::EIO
+    break
+  end
+end
+
+def send_terminal_input(writer, reader, captured, bytes, delay)
+  writer.write(bytes)
+  deadline = Process.clock_gettime(Process::CLOCK_MONOTONIC) + delay
+  while Process.clock_gettime(Process::CLOCK_MONOTONIC) < deadline
+    drain_pty_output(reader, captured)
+    sleep 0.05
+  end
+end
+
+def wait_for_file_text(path, expected, reader, captured)
+  deadline = Process.clock_gettime(Process::CLOCK_MONOTONIC) + 3
+  loop do
+    return if File.binread(path) == expected
+
+    drain_pty_output(reader, captured)
+    if Process.clock_gettime(Process::CLOCK_MONOTONIC) >= deadline
+      raise "file did not reach #{expected.inspect}: #{path}"
+    end
+
+    sleep 0.05
+  end
+end
+
+def send_smoke_input(session, bytes, delay)
+  send_terminal_input(session.fetch(:writer), session.fetch(:reader), session.fetch(:captured), bytes, delay)
+end
+
+def save_smoke_buffer(session, expected)
+  send_smoke_input(session, "\x18", 0.3)
+  send_smoke_input(session, "\x13", 0.8)
+  wait_for_file_text(session.fetch(:source_path), expected, session.fetch(:reader), session.fetch(:captured))
+end
+
+def exercise_curses_undo_redo(session)
+  send_smoke_input(session, "\x0e", 0.8)
+  send_smoke_input(session, "XYZ", 0.4)
+  save_smoke_buffer(session, session.fetch(:edited_text))
+  send_smoke_input(session, "\x1f", 0.4)
+  save_smoke_buffer(session, session.fetch(:original_text))
+  send_smoke_input(session, "\x03rd", 0.4)
+  save_smoke_buffer(session, session.fetch(:edited_text))
+  send_smoke_input(session, "\x18", 0.3)
+  send_smoke_input(session, "\x03", 0.3)
+end
+
 repository = File.expand_path("..", __dir__)
 smoke_dir = Dir.mktmpdir("roded-curses-smoke.", "/tmp")
 config_dir = File.join(smoke_dir, "config")
@@ -12,7 +65,9 @@ cache_dir = File.join(smoke_dir, "cache")
 source_path = File.join(smoke_dir, "input.txt")
 log_path = File.join(smoke_dir, "roded.log")
 FileUtils.mkdir_p([config_dir, cache_dir])
-File.write(source_path, "one\ntwo\nthree\n")
+original_text = "one\ntwo\nthree\n"
+edited_text = "one\nXYZtwo\nthree\n"
+File.write(source_path, original_text)
 
 environment = {
   "TERM" => "xterm-256color",
@@ -25,10 +80,8 @@ captured = +""
 exit_status = nil
 
 PTY.spawn(environment, "bundle", "exec", "bin/roded", source_path, chdir: repository) do |reader, writer, pid|
-  [["\x0e", 0.8], ["\x18", 0.3], ["\x03", 0.3]].each do |key, delay|
-    sleep delay
-    writer.write(key)
-  end
+  session = { writer:, reader:, captured:, source_path:, original_text:, edited_text: }
+  exercise_curses_undo_redo(session)
 
   deadline = Process.clock_gettime(Process::CLOCK_MONOTONIC) + 10
   loop do
@@ -56,12 +109,16 @@ log = File.read(log_path)
 required_log_entries = [
   'next_event: read_key: "C-n"',
   "publish_ui_update: move_cursor",
-  'next_event: read_key: "C-x"',
+  'next_event: read_key: "C-_"',
   'next_event: read_key: "C-c"',
+  'next_event: read_key: "r"',
+  'next_event: read_key: "d"',
+  'next_event: read_key: "C-x"',
   "publish_ui_update: quit"
 ]
 missing_entries = required_log_entries.reject { |entry| log.include?(entry) }
 abort "curses smoke exited #{exit_status.inspect}; missing #{missing_entries.inspect}; files: #{smoke_dir}" unless
   exit_status&.zero? && missing_entries.empty? && !log.include?("Editor runtime failed")
 
-puts "curses live smoke passed (C-n, C-x C-c); output=#{captured.bytesize} bytes; logs=#{smoke_dir}"
+puts "curses live smoke passed (C-n, grouped typing, C-_, C-c r d, save/quit); " \
+     "output=#{captured.bytesize} bytes; logs=#{smoke_dir}"

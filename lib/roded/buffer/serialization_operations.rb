@@ -62,6 +62,7 @@ module Roded
       @undo_stack.clear
       @redo_stack.clear
       @undo_group_edits.clear
+      @typing_undo_group = nil
     end
 
     def sync_final_newline
