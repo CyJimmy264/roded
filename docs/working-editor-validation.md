@@ -86,6 +86,20 @@ File save здесь сохраняет текстовое представле�
 - Проверки: **60 examples, 0 failures**. Реальный многодокументный curses/Qt
   сценарий с переключением buffer ещё не выполнен: переключение будет в этапе 5.
 
+## 2026-10-03 — переключение buffers
+
+- Реализованы `C-x b` по точному имени/пути, `C-x C-Left/Right` для циклического
+  переключения, `C-x k` для закрытия чистого buffer. При закрытии последнего
+  документа остаётся редактируемый `*scratch*`; изменения в dirty buffer пока
+  блокируют закрытие с сообщением.
+- Добавлены проверки CLI-документов, переключения по key sequences и kill
+  поведение: **63 examples, 0 failures**.
+- Buffer picker с completion/preview и предложением save/discard/cancel,
+  disambiguation совпадающих basename и полноценное multipane UI остаются этапом 5/6.
+- Настоящий curses PTY с двумя CLI-файлами показал второй документ, обработал
+  `C-x C-c`, завершился с exit 0 и восстановил alternate screen. Полный
+  acceptance путь edit/save/split ещё не выполнен.
+
 ## 2026-10-03 — этап 2, подэтап: source routing и загрузка core
 
 - `bundle exec rspec`: **45 examples, 0 failures**.

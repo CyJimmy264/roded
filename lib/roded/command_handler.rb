@@ -44,6 +44,14 @@ module Roded
       when :save_buffer
         filename = @editor.current_buffer&.filename || "untitled"
         @editor.save_file(filename)
+      when :switch_buffer
+        @editor.start_minibuffer(:switch_buffer, "Buffer name or path: ")
+      when :previous_buffer
+        @editor.previous_buffer
+      when :next_buffer
+        @editor.next_buffer
+      when :kill_buffer
+        @editor.kill_current_buffer
       when :render
         @editor.broadcast_command(Command.new(:render, {}))
       when :quit

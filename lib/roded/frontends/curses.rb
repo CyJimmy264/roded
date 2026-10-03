@@ -47,6 +47,11 @@ module Roded
         update(buffer)
       end
 
+      def remove_buffer(buffer)
+        @buffers.delete(buffer)
+        buffer.remove_observer(self)
+      end
+
       def draw_placeholder
         lines = ["Welcome Curses", "M-x for commands, C-x C-c to quit"]
         @screen.clear

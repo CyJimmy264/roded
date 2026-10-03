@@ -29,6 +29,10 @@ module Roded
         render(buffer) if buffer == @application.current_buffer
       end
 
+      def remove_buffer(buffer)
+        buffer.remove_observer(self)
+      end
+
       def update(buffer)
         render(buffer) if buffer == @application.current_buffer
       end

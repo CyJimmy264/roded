@@ -99,6 +99,50 @@ RSpec.describe Roded::Application do
     expect(scratch_app.current_buffer.readonly).to be(false)
   end
 
+  it "cycles through open buffers and switches by exact path from C-x b" do
+    Tempfile.create("roded-switch-one") do |first|
+      Tempfile.create("roded-switch-two") do |second|
+        application.open_file(first.path)
+        first_buffer = application.current_buffer
+        application.open_file(second.path)
+        second_buffer = application.current_buffer
+
+        application.previous_buffer
+        expect(application.current_buffer).to equal(first_buffer)
+        application.next_buffer
+        expect(application.current_buffer).to equal(second_buffer)
+
+        ["C-x", "b", *first.path.chars, "Enter"].each do |key|
+          application.handle_event(Roded::Event.new(:key, { key: }))
+        end
+        expect(application.current_buffer).to equal(first_buffer)
+      end
+    end
+  end
+
+  it "kills clean buffers but keeps a writable scratch buffer available" do
+    buffer = Roded::Buffer.new("temporary")
+    application.add_buffer(buffer)
+
+    application.kill_current_buffer
+
+    expect(application.current_buffer.name).to eq("*scratch*")
+    expect(application.buffers.length).to eq(1)
+    expect(application.current_buffer.readonly).to be(false)
+  end
+
+  it "refuses to kill a buffer with unsaved changes" do
+    buffer = Roded::Buffer.new("temporary")
+    buffer.insert_char("x")
+    application.add_buffer(buffer)
+
+    application.kill_current_buffer
+
+    expect(application.current_buffer).to equal(buffer)
+    expect(application.buffers).to include(buffer)
+    expect(frontend.messages.last).to match(/unsaved changes/)
+  end
+
   it "synchronizes a late frontend to the active buffer" do
     Tempfile.create("roded-late-frontend") do |file|
       file.write("current")

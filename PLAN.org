@@ -136,7 +136,8 @@ undo и modified state согласованы. FileService и edit history — �
 
 - [X] Writable *scratch* startup, startup file arguments and initial window.
 - [ ] Emacs-подобный dark UI, modeline and echo/minibuffer.
-- [ ] Switch/next/previous/kill buffer в активном окне, одинаковые basenames различимы.
+- [X] Next/previous buffer, exact-name/path switch and kill clean buffer.
+- [ ] Picker/completion, dirty-buffer save/discard/cancel, basename disambiguation.
 - [ ] Horizontal/vertical split, other/delete/only window; последний view сохраняется.
 - [ ] Один buffer в двух окнах: общий текст, независимые point/mark/positions.
 - [ ] Viewport follows point с горизонтальным scrolling; page size из text area.

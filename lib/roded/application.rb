@@ -137,7 +137,7 @@ module Roded
     def open_file(filename)
       identity = file_service.path_identity(filename)
       existing_buffer = @buffers.find { |buffer| buffer.filename == identity }
-      return activate_buffer(existing_buffer) if existing_buffer
+      return activate_buffer(existing_buffer, message: "File '#{identity}' is already open.") if existing_buffer
 
       result = File.file?(identity) ? file_service.read(identity) : file_service.create_new(identity)
       activate_loaded_file(result)
@@ -166,6 +166,35 @@ module Roded
 
     def buffers
       @buffers.dup.freeze
+    end
+
+    def next_buffer
+      activate_relative_buffer(1)
+    end
+
+    def previous_buffer
+      activate_relative_buffer(-1)
+    end
+
+    def switch_buffer(name)
+      buffer = @buffers.find { |candidate| candidate.name == name || candidate.filename == name }
+      return display_message("No buffer named '#{name}'.") unless buffer
+
+      activate_buffer(buffer, message: "Switched to '#{name}'.")
+    end
+
+    def kill_current_buffer
+      buffer = current_buffer
+      return unless buffer
+      return display_message("Cannot kill a buffer with unsaved changes.") if buffer.modified?
+
+      @buffers.delete(buffer)
+      @frontends.each { |frontend| frontend.remove_buffer(buffer) if frontend.respond_to?(:remove_buffer) }
+      add_buffer(Buffer.new("*scratch*")) if @buffers.empty?
+      @current_buffer = @buffers.first
+      @windows.each { |window| window.buffer = @current_buffer if window.buffer == buffer }
+      @frontends.each { |frontend| frontend.render(@current_buffer) }
+      display_message("Buffer killed.")
     end
 
     def request_quit
@@ -223,6 +252,10 @@ module Roded
         open_file(text) if text && !text.empty?
       when :save
         save_file(text) if text && !text.empty?
+      when :switch_buffer
+        switch_buffer(text) if text && !text.empty?
+      when :kill_buffer
+        kill_current_buffer
       end
       broadcast_command(Command.new(:render, {}))
     end
@@ -240,10 +273,18 @@ module Roded
       display_message("File '#{result.path}' opened.")
     end
 
-    def activate_buffer(buffer)
+    def activate_buffer(buffer, message: nil)
       @current_buffer = buffer
       @frontends.each { |frontend| frontend.render(buffer) }
-      display_message("File '#{buffer.filename}' is already open.")
+      display_message(message) if message
+    end
+
+    def activate_relative_buffer(direction)
+      return if @buffers.empty?
+
+      index = @buffers.index(current_buffer) || 0
+      @current_buffer = @buffers[(index + direction) % @buffers.length]
+      @frontends.each { |frontend| frontend.render(@current_buffer) }
     end
 
     def file_service
