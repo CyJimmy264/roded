@@ -779,6 +779,17 @@ File save здесь сохраняет текстовое представле�
   isolated Xvfb display: two `C-n` events moved point to row 2; one wheel notch
   moved `top_line` to 3 and the scrollbar to 60. No user desktop input was used.
 
+## 2026-10-03 — curses cursor-only redraw
+
+- When layout, buffer contents, viewport and region are unchanged, cursor
+  movement now redraws only the previous/current text rows, updates the
+  modeline, and restores the cursor position. Edits, scrolling, region changes,
+  viewport changes and layout changes keep the complete redraw path.
+- A curses screen double asserts that navigation writes both affected rows and
+  the modeline without clearing the screen; the dedicated spec passes. This
+  reduces terminal output from the full visible buffer to at most two rows for
+  ordinary navigation.
+
 
 ## 2026-10-03 — табличная маршрутизация core input events
 

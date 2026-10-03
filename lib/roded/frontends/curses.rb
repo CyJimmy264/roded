@@ -1,6 +1,8 @@
 require "curses"
 require_relative "curses/minibuffer"
 require_relative "curses/input_decoder"
+require_relative "curses/cursor_redraw"
+require_relative "curses/cursor_snapshot_comparison"
 require_relative "curses/text_geometry"
 
 module Roded
@@ -241,6 +243,8 @@ module Roded
       end
 
       def render_layout(snapshot)
+        return if CursesCursorRedraw.new(self).call(@layout_snapshot, snapshot)
+
         @layout_snapshot = snapshot
         @screen.clear
         area_height = [@screen.maxy - 1, 1].max
@@ -282,26 +286,29 @@ module Roded
           draw_buffer_line(item, line, first_line + index, y + index, x, width, left_column)
         end
         modeline_row = y + height - 1
+        draw_modeline(item, modeline_row, x, width)
+        return unless item[:active] && height.positive? && width.positive?
+
         point = item[:point]
+        cursor_line = item[:lines][point[:row]].to_s
+        cursor_y = (y + point[:row] - first_line).clamp(y, [y + text_height - 1, y].max)
+        cursor_x = (x + CursesTextGeometry.column(cursor_line, point[:col]) -
+                    CursesTextGeometry.column(cursor_line, left_column)).clamp(x, x + width - 1)
+        @screen.setpos(cursor_y, cursor_x)
+      end
+
+      def draw_modeline(item, row, x, width)
+        writer = proc { write_at(row, x, modeline_text(item), width) }
+        item[:active] ? @screen.attron(::Curses::A_REVERSE, &writer) : writer.call
+      end
+
+      def modeline_text(item)
         active_marker = item[:active] ? "*" : "-"
         modified = item[:modified] ? "*" : ""
         readonly = item[:readonly] ? " RO" : ""
         mode_name = item[:mode] || :plain
-        modeline = "#{active_marker} #{item[:name]}#{modified}#{readonly}  #{mode_name}  " \
-                   "#{point[:row] + 1}:#{point[:col] + 1}"
-        if item[:active]
-          @screen.attron(::Curses::A_REVERSE) { write_at(modeline_row, x, modeline, width) }
-        else
-          write_at(modeline_row, x, modeline, width)
-        end
-        return unless item[:active] && height.positive? && width.positive?
-
-        cursor_y = y + point[:row] - first_line
-        cursor_x = x + CursesTextGeometry.column(item[:lines][point[:row]].to_s, point[:col]) -
-                   CursesTextGeometry.column(item[:lines][point[:row]].to_s, left_column)
-        cursor_y = cursor_y.clamp(y, [y + text_height - 1, y].max)
-        cursor_x = cursor_x.clamp(x, x + width - 1)
-        @screen.setpos(cursor_y, cursor_x)
+        point = item[:point]
+        "#{active_marker} #{item[:name]}#{modified}#{readonly}  #{mode_name}  #{point[:row] + 1}:#{point[:col] + 1}"
       end
 
       def draw_buffer_line(item, line, buffer_row, screen_row, x, width, left_column)
