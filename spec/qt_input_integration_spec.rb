@@ -80,3 +80,25 @@ RSpec.describe "Qt input through editor session" do
     expect(scroll_bar.value).to eq(3 * scroll_bar.single_step)
   end
 end
+
+RSpec.describe "Qt fractional wheel input through editor session" do
+  include_context "Qt input integration lifecycle"
+  include QtInputIntegrationSpecHelpers
+
+  it "accumulates fractional wheel input before scrolling a line" do
+    application, frontend = build_qt_editor((1..80).map { |number| "line #{number}" })
+    @frontends << frontend
+    router = frontend.instance_variable_get(:@input_router)
+    payload = { angle_delta_y: -60, pixel_delta_y: 0, window_id: application.current_window.object_id }
+
+    router.enqueue_wheel(payload)
+    drain_core_events(application, frontend)
+    expect(application.current_window.top_line).to eq(0)
+
+    router.enqueue_wheel(payload)
+    drain_core_events(application, frontend)
+    expect(application.current_window.top_line).to eq(3)
+    scroll_bar = frontend.view.editor.vertical_scroll_bar
+    expect(scroll_bar.value).to eq(3 * scroll_bar.single_step)
+  end
+end

@@ -783,6 +783,16 @@ File save здесь сохраняет текстовое представле�
   только на оставшихся **57 RuboCop offenses** в `buffer.rb`, curses frontend,
   `window.rb` и одном spec.
 
+### Fractional wheel regression
+
+- Spec прокидывает два реальных Qt wheel payload-shaped события по `-60` через
+  router, core event loop и widget scrollbar. Ранее отрицательный `divmod`
+  интерпретировал первый half-notch как полный; накопление теперь делит с
+  усечением к нулю и сохраняет signed remainder.
+- `spec/qt_input_integration_spec.rb`: **3 examples, 0 failures**; targeted
+  RuboCop чистый; полный RSpec: **221 example, 0 failures**. Общий lint debt
+  остаётся **55 offenses**.
+
 ## 2026-10-03 — curses cursor-only redraw
 
 - When layout, buffer contents, viewport and region are unchanged, cursor

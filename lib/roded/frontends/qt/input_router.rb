@@ -48,7 +48,9 @@ module Roded
         angle_delta = payload.fetch(:angle_delta_y, 0).to_i
         return (-payload.fetch(:pixel_delta_y, 0).to_i / 40.0).round if angle_delta.zero?
 
-        notches, @wheel_remainder = (@wheel_remainder + angle_delta).divmod(120)
+        total_delta = @wheel_remainder + angle_delta
+        notches = (total_delta / 120.0).truncate
+        @wheel_remainder = total_delta - (notches * 120)
         -notches * 3
       end
     end
