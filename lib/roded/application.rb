@@ -24,6 +24,7 @@ module Roded
       @keymap = Keymap.load
       @kill_ring = KillRing.new
       @current_buffer = nil
+      @last_yank = nil
       @command_router = CommandRouter.new(@keymap)
       @command_handler = CommandHandler.new(self)
       initialize_lifecycle
@@ -189,6 +190,7 @@ module Roded
       buffer_before.cursor_pos = window_before.point if window_before && buffer_before
       @active_source_id = event.payload.fetch(:source_id, :default)
       routed_event = route_input_event(event)
+      @last_yank = nil if routed_event && !%i[yank yank_pop].include?(routed_event.type)
       @command_handler.handle(routed_event) if routed_event
       if window_before && @current_window.equal?(window_before) && current_buffer.equal?(buffer_before)
         window_before.point = buffer_before.cursor_pos
@@ -269,7 +271,25 @@ module Roded
       text = kill_ring.last
       return display_message("Kill ring is empty.") unless text
 
+      start = current_window.point.dup
       current_buffer.insert_text(text)
+      @last_yank = { buffer: current_buffer, start:, finish: current_buffer.cursor_pos, index: 0 }
+      current_window.mark = nil
+      broadcast_command(Command.new(:render, {}))
+    end
+
+    def yank_pop
+      return display_message("No previous yank to replace.") unless @last_yank&.fetch(:buffer).equal?(current_buffer)
+      return display_message("Kill ring has no other entries.") if kill_ring.items.length < 2
+
+      ring_index = (@last_yank.fetch(:index) + 1) % kill_ring.items.length
+      text = kill_ring.items.fetch(ring_index)
+      current_buffer.with_undo_group do
+        current_buffer.delete_region(@last_yank.fetch(:start), @last_yank.fetch(:finish))
+        current_buffer.insert_text(text)
+      end
+      @last_yank[:finish] = current_buffer.cursor_pos
+      @last_yank[:index] = ring_index
       current_window.mark = nil
       broadcast_command(Command.new(:render, {}))
     end

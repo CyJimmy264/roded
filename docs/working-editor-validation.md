@@ -222,6 +222,18 @@ File save здесь сохраняет текстовое представле�
   единому command registry, history encapsulation и single-writer REPL API
   остаются открытыми; этап 2 не завершён.
 
+## 2026-10-03 — yank-pop и курсор после paste
+
+- `M-y` после `C-y` циклически меняет последнюю вставку на следующий KillRing
+  элемент; вся замена — одна undo-группа. Любая другая команда аннулирует
+  доступность yank-pop. KillRing items теперь возвращаются immutable snapshot.
+- Исправлен cursor offset при вставке однострочного текста в середину строки;
+  многострочная вставка оставляет point после последнего вставленного символа
+  перед исходным суффиксом строки.
+- Полный RSpec: **108 examples, 0 failures**. Interactive candidate picker для
+  `M-y`, bracketed paste в настоящем curses и общий frontend acceptance остаются
+  открытыми.
+
 ## 2026-10-03 — этап 2, подэтап: source routing и загрузка core
 
 - `bundle exec rspec`: **45 examples, 0 failures**.

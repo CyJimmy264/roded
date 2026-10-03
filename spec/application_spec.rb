@@ -78,6 +78,27 @@ RSpec.describe Roded::Application do
     expect(buffer.to_s).to eq("abbcdef")
   end
 
+  it "replaces the last yank from the kill ring and keeps it undoable" do
+    application.startup
+    buffer = application.current_buffer
+    buffer.load_text("||")
+    application.current_window.point = { row: 0, col: 1 }
+    application.kill_ring.push("first")
+    application.kill_ring.break_sequence
+    application.kill_ring.push("second")
+
+    application.handle_event(Roded::Event.new(:key, { key: "C-y" }))
+    expect(buffer.to_s).to eq("|second|")
+    application.handle_event(Roded::Event.new(:key, { key: "Esc" }))
+    application.handle_event(Roded::Event.new(:key, { key: "y" }))
+    expect(buffer.to_s).to eq("|first|")
+
+    expect(buffer.undo).to be(true)
+    expect(buffer.to_s).to eq("|second|")
+    expect(buffer.undo).to be(true)
+    expect(buffer.to_s).to eq("||")
+  end
+
   it "keeps buffer positions in the active window while switching buffers" do
     application.startup
     window = application.current_window

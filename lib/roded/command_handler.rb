@@ -50,6 +50,8 @@ module Roded
         @editor.copy_region
       when :yank
         @editor.yank
+      when :yank_pop
+        @editor.yank_pop
       when :save_buffer
         filename = @editor.current_buffer&.filename
         filename ? @editor.save_file(filename) : @editor.start_minibuffer(:save, "Save file as: ")

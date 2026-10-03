@@ -322,6 +322,21 @@ RSpec.describe Roded::Buffer do
       expect(buffer.to_s).to eq("aПривет\nмирb")
     end
 
+    it "places the cursor after pasted text inserted in the middle of a line" do
+      buffer.load_text("beforeafter")
+      buffer.cursor_pos = { row: 0, col: 6 }
+
+      buffer.insert_text("X\nY")
+
+      expect(buffer.to_s).to eq("beforeX\nYafter")
+      expect(buffer.cursor_pos).to eq({ row: 1, col: 1 })
+
+      buffer.load_text("beforeafter")
+      buffer.cursor_pos = { row: 0, col: 6 }
+      buffer.insert_text("XYZ")
+      expect(buffer.cursor_pos).to eq({ row: 0, col: 9 })
+    end
+
     it "joins consecutive line kills into one kill-ring item" do
       buffer.load_text("abc\ndef")
       ring = Roded::KillRing.new

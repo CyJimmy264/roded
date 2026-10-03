@@ -17,6 +17,7 @@ module Roded
       "C-w" => { type: :kill_region },
       "M-w" => { type: :copy_region },
       "C-y" => { type: :yank },
+      "M-y" => { type: :yank_pop },
       "C-g" => { type: :cancel },
       "M-x" => { type: :start_command },
       "Enter" => { type: :enter },

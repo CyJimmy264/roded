@@ -1,11 +1,13 @@
 module Roded
   # Stores killed text and joins adjacent kill commands into the newest entry.
   class KillRing
-    attr_reader :items
-
     def initialize
       @items = []
       @continuing_kill = false
+    end
+
+    def items
+      @items.map { |item| item.dup.freeze }.freeze
     end
 
     def push(text)
@@ -24,7 +26,7 @@ module Roded
     end
 
     def last
-      @items.first
+      @items.first&.dup&.freeze
     end
   end
 end

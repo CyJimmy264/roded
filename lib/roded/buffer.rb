@@ -393,7 +393,8 @@ module Roded
       lines = segments.each_with_index.map do |segment, index|
         paste_line(segment, index, segments.length, before, after)
       end
-      [row, lines, segments.last.length]
+      cursor_col = (segments.length == 1 ? before.length : 0) + segments.last.length
+      [row, lines, cursor_col]
     end
 
     def paste_line(segment, index, count, before, after)
