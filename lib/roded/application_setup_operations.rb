@@ -49,7 +49,7 @@ module Roded
 
     def initialize_input_state
       @command_router = CommandRouter.new(@keymap)
-      @command_handler = CommandHandler.new(self)
+      @command_handler = CommandHandler.new(ApplicationCommandContext.new(self))
     end
 
     def welcome_buffer

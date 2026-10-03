@@ -1342,3 +1342,20 @@ File save здесь сохраняет текстовое представле�
   reintroducing the stdout presentation class.
 - `rg -n 'StatusBar' lib spec` returns no references. `bundle exec rake`:
   **282 examples, 0 failures**; RuboCop: **147 files, 0 offenses**.
+
+## 2026-10-04 — narrow CommandHandler context
+
+- `CommandHandler` no longer stores or calls `Application`. Its command-facing
+  operations are exposed through `ApplicationCommandContext`, which is the
+  Application adapter; the routing layer can be exercised with a context test
+  double. Existing key, M-x, minibuffer and UI update flows remain end-to-end.
+- `spec/command_handler_spec.rb` verifies buffer and minibuffer routing against
+  the context contract. `bundle exec rake`: **292 examples, 0 failures**;
+  RuboCop: **150 files, 0 offenses**.
+- Sequential isolated UI checks passed: Alacritty+curses under private Xvfb
+  verifies Ctrl+N, edit/save, undo, Ctrl+? redo and quit at
+  `/tmp/roded-curses-xvfb.T8ssDt/roded.log`; Qt Widgets **6.11.2** under
+  private Xvfb checks editing, both redo bindings, Menu, wheel, mouse selection,
+  Super resize, close decisions and scratch startup at
+  `/tmp/roded-qt-live-smoke.B9R3oF`. They were run separately, without the
+  desktop `DISPLAY`.
