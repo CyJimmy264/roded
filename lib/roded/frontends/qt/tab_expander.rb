@@ -16,7 +16,7 @@ module Roded
 
       def expand(first, last)
         visual_column = display_width(@line[0...first].to_s)
-        @line[first...last].to_s.each_grapheme_cluster.with_object("") do |cluster, expanded|
+        @line[first...last].to_s.each_grapheme_cluster.with_object(+"") do |cluster, expanded|
           visual_column += append_cluster(expanded, cluster, visual_column)
         end
       end

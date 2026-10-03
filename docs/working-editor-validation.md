@@ -755,6 +755,19 @@ File save здесь сохраняет текстовое представле�
   0 failures**. RuboCop снизился с **63 до 62 offenses в 107 files**; изменённые
   Qt files проходят targeted lint.
 
+## 2026-10-03 — Qt initial render и frozen strings
+
+- Реальный запуск через `bin/roded --frontend qt README.md` включал
+  `frozen_string_literal`; `QtTabExpander` добавлял символы в замороженную
+  строку. Ошибка возникала в отложенном render, поэтому окно оставалось пустым,
+  редактор не получал focus и shortcuts не доходили до core. Строка результата
+  теперь создаётся изменяемой. Первый layout рендерится до показа окна, чтобы
+  первый видимый кадр уже содержал буфер и активный editor.
+- Qt editor/shortcut/close specs под `RUBYOPT=--enable=frozen_string_literal`:
+  **20 examples, 0 failures**; RuboCop затронутых файлов: **0 offenses**.
+  Запуск в изолированном Xvfb с настоящими Qt Widgets показал содержимое README
+  в первом кадре; физическая последовательность `C-x C-c` закрыла приложение.
+
 ## 2026-10-03 — табличная маршрутизация core input events
 
 - `CommandHandler` заменил большой ветвящийся `case` на декларативные event maps

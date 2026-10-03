@@ -235,6 +235,9 @@ RSpec.describe Roded::Frontends::QtEditorWindow, "visible caret" do
     expect(view.editor.to_html).to include("#61afef")
     expect(view.editor.q_inspect[:properties][:cursorWidth]).to eq(2)
     expect(view.editor.has_focus).to be(true)
+    expect(view.editor.height).to be > 0
+    modeline = view.instance_variable_get(:@panes).fetch(101).instance_variable_get(:@modeline)
+    expect(modeline.y).to be > view.editor.y
   end
 end
 

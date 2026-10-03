@@ -85,6 +85,7 @@ module Roded
 
       def run
         @application.trap_signals
+        render_initial_layout
         start_core
         @view.show
         @qt_application.exec
@@ -104,6 +105,10 @@ module Roded
       end
 
       private
+
+      def render_initial_layout
+        @view.render_layout(@application.editor_snapshot)
+      end
 
       def handle_render_command(command)
         snapshot = command.payload[:editor_snapshot]
