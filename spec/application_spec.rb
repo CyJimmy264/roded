@@ -594,6 +594,21 @@ RSpec.describe Roded::Application do
     end
   end
 
+  it "keeps multi-key sequences independent across frontend input streams" do
+    application.startup
+    first = FakeFrontend.new
+    second = FakeFrontend.new
+    application.add_frontend(first)
+    application.add_frontend(second)
+    sources = application.instance_variable_get(:@frontend_sources)
+
+    application.handle_event(Roded::Event.new(:key, { key: "C-x", source_id: sources.fetch(first) }))
+    application.handle_event(Roded::Event.new(:key, { key: "C-z", source_id: sources.fetch(second) }))
+    application.handle_event(Roded::Event.new(:key, { key: "C-c", source_id: sources.fetch(first) }))
+
+    expect(application.instance_variable_get(:@stop_requested)).to be(true)
+  end
+
   it "opens and edits an empty file" do
     Tempfile.create("roded-empty") do |file|
       application.open_file(file.path)

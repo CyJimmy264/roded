@@ -88,7 +88,7 @@ file roundtrip не теряет текст. Коммит этапа до шир
 - [ ] Cross-thread snapshots независимы и immutable; ядро — single writer.
 - [ ] Geometry policy использует именно активный source/view и учитывает overlays.
 - [X] Core загружается без require curses/qt; launcher подключает выбранный adapter.
-- [ ] Проверить два input streams, late frontend, два view одного buffer и edits.
+- [X] Проверить два input streams, late frontend, два view одного buffer и edits.
 
 Критерий: headless core управляет views/commands; rendering имеет один путь,
 ввод источников не смешивается. Миграция этого этапа — несколько коммитов,

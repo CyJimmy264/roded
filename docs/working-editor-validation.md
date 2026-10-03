@@ -853,3 +853,12 @@ File save здесь сохраняет текстовое представле�
   сценариям.
 - Window/layout specs: **6 examples, 0 failures**; targeted RuboCop чистый.
   Эти правки помогли сократить общий lint debt до **55 offenses**.
+
+## 2026-10-03 — независимые frontend input streams
+
+- Application integration теперь регистрирует два frontend, передаёт `C-x`
+  одному источнику, незнакомый chord второму и `C-c` первому. Prefix state не
+  смешивается; маршрутизированный quit останавливает core. Это дополняет
+  router unit spec независимой обработкой prefixes, late-frontend sync и
+  Unicode/обычными edits в двух views одного buffer.
+- Пять соответствующих Application/CommandRouter/Window examples: **5 pass**.
