@@ -686,8 +686,9 @@ File save здесь сохраняет текстовое представле�
 ## 2026-10-03 — ручная проверка Qt Super shortcut
 
 - Пользователь физически проверил в живом Qt UI сочетание `M-s-k`: закрытие
-  текущего buffer работает. Это подтверждает доставку и действие именно этого
-  сочетания в его окружении; остальные Super shortcuts остаются непроверенными.
+  текущего buffer работает; затем подтвердил `s-,` и `s-.` для перехода между
+  предыдущим и следующим buffer. Это подтверждает доставку и действие этих трёх
+  сочетаний в его окружении; остальные Super shortcuts остаются непроверенными.
 
 ## 2026-10-03 — Qt wheel прокручивает core viewport
 
@@ -701,6 +702,32 @@ File save здесь сохраняет текстовое представле�
   0 failures**. Полный RSpec: **210 examples, 0 failures**. Изменённые файлы
   проходят RuboCop; общий gate всё ещё сообщает **63 offenses в 106 files**
   (тот же count, что до этого изменения).
+
+## 2026-10-03 — Qt tab display width
+
+- Qt HTML renderer expands source tabs to two-cell stops while retaining the
+  original core text and character-column caret mapping. A real offscreen
+  `QTextEdit` renders `界\t\tb` as `界    b`; moving right from the core position
+  after the second tab and copying returns `b`.
+- `qtimetrap` integration specs were reviewed for their approach: boot one real
+  `QApplication`, exercise public widget actions, then process queued Qt events.
+  Roded's real-widget specs use the same event-loop-aware pattern.
+- Qt editor window specs: **9 examples, 0 failures**; tab renderer, expander and
+  spec pass targeted RuboCop. The paired curses tab display and core horizontal
+  scroll synchronization remain open.
+
+## 2026-10-03 — Qt Menu key and native context menu
+
+- Native `QTextEdit` defaults to `DefaultContextMenu`, which opened copy/select
+  all actions instead of Roded's Menu bindings. Qt pane now sets the real widget
+  property to `NoContextMenu`; Menu and Alt+Menu key payloads remain routed to
+  project/buffer pickers.
+- Offscreen Qt verifies the widget property, and shortcut routing specs exercise
+  both Menu bindings. Targeted Qt UI/shortcut specs: **16 examples, 0 failures**.
+  Full RSpec: **211 examples, 0 failures**. Physical Menu-key delivery will be
+  confirmed with the remaining desktop checks. The overall RuboCop gate remains
+  at **63 offenses in 107 files**; all files changed in this slice pass targeted
+  RuboCop.
 
 ## 2026-10-03 — табличная маршрутизация core input events
 

@@ -1,3 +1,5 @@
+require_relative "tab_expander"
+
 module Roded
   module Frontends
     # Builds Qt rich text from immutable core snapshots and visual overlays.
@@ -43,16 +45,14 @@ module Roded
         columns.map { |column| column.clamp(0, line.length) }.uniq.sort
       end
 
-      def token_boundaries(row)
-        @snapshot[:tokens]&.[](row).to_a.flat_map { |token| [token[:start], token[:finish]] }
-      end
+      def token_boundaries(row) = @snapshot[:tokens]&.[](row).to_a.flat_map { |token| [token[:start], token[:finish]] }
 
       def overlay_boundaries(line, row)
         [selected_columns(line, row), highlight_columns(line, row)].compact.flatten
       end
 
       def render_segment(line, row, first, last)
-        value = escape_html(line[first...last].to_s)
+        value = escape_html(QtTabExpander.expand(line, first, last))
         style = segment_style(line, row, first, last)
         style ? "<span style=\"#{style}\">#{value}</span>" : value
       end
@@ -97,9 +97,7 @@ module Roded
         [start_column, end_column.clamp(0, line.length)]
       end
 
-      def covers?(range, first, last)
-        range && first >= range.first && last <= range.last
-      end
+      def covers?(range, first, last) = range && first >= range.first && last <= range.last
 
       def escape_html(text)
         text.gsub("&", "&amp;").gsub("<", "&lt;").gsub(">", "&gt;")

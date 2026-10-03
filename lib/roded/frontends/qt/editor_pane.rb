@@ -11,16 +11,21 @@ module Roded
         @container = QWidget.new(parent)
         layout = QVBoxLayout.new(@container)
         @editor = QTextEdit.new(@container)
-        @editor.set_read_only(true)
-        @editor.set_undo_redo_enabled(false)
-        # TODO(qt): HACK — qt 0.1.9 omits QTextEdit::LineWrapMode constants.
-        # Workaround: use the documented NoWrap enum value 0.
-        # Generate LineWrapMode constants in qt, then replace this value with NoWrap.
-        @editor.set_line_wrap_mode(0)
+        configure_editor
         @modeline = QLabel.new(@container)
         layout.add_widget(@editor)
         layout.add_widget(@modeline)
         @subscribed = false
+      end
+
+      def configure_editor
+        @editor.set_read_only(true)
+        @editor.set_undo_redo_enabled(false)
+        @editor.set_context_menu_policy(::Qt::NoContextMenu)
+        # TODO(qt): HACK — qt 0.1.9 omits QTextEdit::LineWrapMode constants.
+        # Workaround: use the documented NoWrap enum value 0.
+        # Generate LineWrapMode constants in qt, then replace this value with NoWrap.
+        @editor.set_line_wrap_mode(0)
       end
 
       def bind(window_id, callback, wheel_callback = nil)

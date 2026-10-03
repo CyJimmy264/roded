@@ -70,6 +70,7 @@ RSpec.describe Roded::Frontends::QtEditorWindow, "region rendering" do
 
     editor = view.editor
     expect(editor).to be_a(QTextEdit)
+    expect(editor.property("contextMenuPolicy")).to eq("NoContextMenu")
     expect(editor.to_plain_text).to eq("a<b\nc")
     expect(editor.to_html).to include("#3e4451")
     expect(editor.to_html).to include("&lt;b")
@@ -202,5 +203,22 @@ RSpec.describe Roded::Frontends::QtEditorWindow, "vertical scrolling" do
 
     scroll_bar = view.editor.vertical_scroll_bar
     expect(scroll_bar.value).to eq(30 * scroll_bar.single_step)
+  end
+end
+
+RSpec.describe Roded::Frontends::QtEditorWindow, "tab display" do
+  include_context "Qt editor window lifecycle"
+
+  it "renders tabs with two-cell stops while keeping the caret at core columns" do
+    view = described_class.new
+    render_qt_snapshot(view, "界\t\tb", 3)
+
+    expect(view.editor.to_plain_text).to eq("界    b")
+    clipboard = Roded::Frontends::QtClipboardBridge.new
+    clipboard.write_text("sentinel")
+    view.editor.move_cursor(Roded::Frontends::QtCursorMapper::MOVE_RIGHT, 1)
+    view.editor.copy
+
+    expect(clipboard.read_text).to eq("b")
   end
 end

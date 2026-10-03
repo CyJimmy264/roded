@@ -13,8 +13,8 @@
 - **Workaround:** keep those three public Qt enum values in `QtCursorMapper` and
   apply them after setting the read-only widget text. Core character columns are
   mapped to complete grapheme boundaries before using the Qt `Right` operation.
-- **Limits:** points inside a multi-codepoint grapheme map to its preceding
-  Qt caret boundary. Mouse-to-core point mapping is still open.
+- **Limits:** QTextCursor remains unavailable for reading the native position;
+  mouse-to-core point mapping is still open.
 - **Verification:** a real Qt 6.11.2 desktop widget accepted text, cursor
   placement, layout, event subscriptions, and QTimer dispatch. An XTest/xdotool
   smoke sent `Super+j` and `Alt+Super+comma`; Qt delivered these as `s-j` and
@@ -97,6 +97,8 @@
   That can inject input into the user's desktop despite filesystem sandboxing
   and may have caused visible desktop activity. Do not repeat it outside an
   isolated display such as Xvfb; it did not prove physical keyboard delivery.
+- The user has since physically confirmed `M-s-k`, `s-,`, and `s-.` in the
+  running UI. Other required Super aliases still need desktop verification.
 - **Removal:** expose `QTextEdit#textCursor/#setTextCursor` and named cursor
   operation/mode enums in qt, then translate each core character column to its
   UTF-16 offset and set the native cursor directly.
@@ -113,3 +115,15 @@
   300-character line and scrolls its caret into view.
 - **Removal:** generate the `QTextEdit::LineWrapMode` constants in qt and use
   `QTextEdit::NoWrap` instead of the numeric enum value.
+
+## Disabling the native text context menu
+
+- **Location:** `lib/roded/frontends/qt/editor_pane.rb`.
+- **Observed behavior:** `QTextEdit` defaults to `DefaultContextMenu`; the
+  keyboard Menu event opened native Copy/Select All actions instead of reaching
+  Roded's project/buffer picker bindings.
+- **Workaround:** set the widget's public `contextMenuPolicy` property to
+  `Qt::NoContextMenu`. The Qt key translator still routes Menu and Alt+Menu.
+- **Verification:** the offscreen widget reports property value `NoContextMenu`;
+  `spec/qt_shortcut_routing_spec.rb` checks both Menu key routes.
+- **Removal:** none; the Qt binding exposes the needed API and enum.
