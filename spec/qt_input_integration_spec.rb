@@ -1,0 +1,82 @@
+require "qt"
+require "spec_helper"
+require_relative "../lib/roded/frontends/qt"
+
+module QtInputIntegrationSpecHelpers
+  def build_qt_editor(lines)
+    application = build_application(lines)
+    frontend = attach_qt_frontend(application)
+    frontend.instance_variable_get(:@ui_dispatcher).send(:drain)
+    frontend.view.show
+    QApplication.process_events
+    [application, frontend]
+  end
+
+  def build_application(lines)
+    application = Roded::Application.new
+    application.startup
+    application.current_buffer.insert_text(lines.join("\n"))
+    application.current_buffer.cursor_pos = { row: 0, col: 0 }
+    application.current_window.point = { row: 0, col: 0 }
+    application
+  end
+
+  def attach_qt_frontend(application)
+    frontend = Roded::Frontends::Qt.new(application)
+    application.add_frontend(frontend)
+    frontend
+  end
+
+  def deliver_qt_payload(application, frontend, payload)
+    frontend.instance_variable_get(:@input_router).enqueue_key(payload)
+    drain_core_events(application, frontend)
+  end
+
+  def drain_core_events(application, frontend)
+    event_queue = application.instance_variable_get(:@event_queue)
+    application.handle_event(event_queue.pop) until event_queue.empty?
+    frontend.instance_variable_get(:@ui_dispatcher).send(:drain)
+    QApplication.process_events
+  end
+end
+
+RSpec.shared_context "Qt input integration lifecycle" do
+  before(:context) do
+    @qt_application = QApplication.new(0, ["roded-input-integration-spec"])
+    @frontends = []
+  end
+
+  after(:context) do
+    @frontends.each { |frontend| frontend.view.close }
+    QApplication.process_events
+    @qt_application.quit
+  end
+end
+
+RSpec.describe "Qt input through editor session" do
+  include_context "Qt input integration lifecycle"
+  include QtInputIntegrationSpecHelpers
+
+  it "moves the active core point with real Qt Ctrl+N and Ctrl+P payloads" do
+    application, frontend = build_qt_editor((1..12).map { |number| "line #{number}" })
+    @frontends << frontend
+
+    deliver_qt_payload(application, frontend, key: Qt::Key_N, modifiers: Qt::ControlModifier, text: "\u000e")
+    expect(application.current_window.point).to eq(row: 1, col: 0)
+
+    deliver_qt_payload(application, frontend, key: Qt::Key_P, modifiers: Qt::ControlModifier, text: "\u0010")
+    expect(application.current_window.point).to eq(row: 0, col: 0)
+  end
+
+  it "scrolls the core viewport and real Qt scrollbar from wheel input" do
+    application, frontend = build_qt_editor((1..80).map { |number| "line #{number}" })
+    @frontends << frontend
+    payload = { angle_delta_y: -120, pixel_delta_y: 0, window_id: application.current_window.object_id }
+    frontend.instance_variable_get(:@input_router).enqueue_wheel(payload)
+    drain_core_events(application, frontend)
+
+    expect(application.current_window.top_line).to eq(3)
+    scroll_bar = frontend.view.editor.vertical_scroll_bar
+    expect(scroll_bar.value).to eq(3 * scroll_bar.single_step)
+  end
+end

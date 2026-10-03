@@ -768,6 +768,18 @@ File save здесь сохраняет текстовое представле�
   Запуск в изолированном Xvfb с настоящими Qt Widgets показал содержимое README
   в первом кадре; физическая последовательность `C-x C-c` закрыла приложение.
 
+## 2026-10-03 — Qt navigation and wheel input
+
+- End-to-end Qt input integration specs send `C-n`/`C-p` payloads through the
+  Qt router and application event loop, then assert the active window point.
+  Wheel input advances core `top_line` and the real `QTextEdit` scrollbar to
+  the matching position. Specs run with `frozen_string_literal`: **2 examples,
+  0 failures**.
+- Native X11 key and wheel events were also sent to the real Qt window in an
+  isolated Xvfb display: two `C-n` events moved point to row 2; one wheel notch
+  moved `top_line` to 3 and the scrollbar to 60. No user desktop input was used.
+
+
 ## 2026-10-03 — табличная маршрутизация core input events
 
 - `CommandHandler` заменил большой ветвящийся `case` на декларативные event maps

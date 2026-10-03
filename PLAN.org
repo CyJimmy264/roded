@@ -242,6 +242,9 @@ replace обратимы. Provider/history/preview не становятся cur
 - [ ] UI-thread/snapshot/feedback-loop/REPL/shutdown integration checks.
 - [X] Real-widget offscreen tests cover layout, Unicode caret, syntax, region,
   search, close, picker, resize and clipboard.
+- [X] Qt `C-n`/`C-p` input moves the active core point, and wheel input updates
+  both core `top_line` and the real Qt scrollbar; integration specs cover the
+  application/input-router/widget path.
 - [ ] Desktop smoke с физическими Super keys.
 - [ ] Список hacks полон; TODO сообщает missing API и требуемую замену в qt.
 
