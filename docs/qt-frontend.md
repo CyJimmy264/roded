@@ -126,4 +126,6 @@ Offscreen modifiers доказывают input translation; физические
 В установленном `qt` 0.1.9 `QApplication.clipboard` возвращает QObject без
 `QClipboard#text`/`#setText`. Текущий workaround использует только clipboard
 slots transport-only `QTextEdit`; shortcut `C-S-v` передаёт один core `:paste`
-event и не конфликтует с `C-v` page-down. Copy/cut parity остаётся незакрытой.
+event и не конфликтует с `C-v` page-down. `C-S-c`/`C-S-x` идут в core region
+copy/kill и записывают полученный текст через Qt UI dispatcher. Mouse selection
+и native context menu остаются незакрытыми.

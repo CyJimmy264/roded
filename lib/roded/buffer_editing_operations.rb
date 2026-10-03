@@ -24,8 +24,11 @@ module Roded
       region = active_region
       return display_message("No active region.") unless region
 
+      text = current_buffer.region_text(*region)
       kill_ring.break_sequence
-      kill_ring.push(current_buffer.region_text(*region))
+      kill_ring.push(text)
+      kill_ring.break_sequence
+      publish_clipboard_text(text)
       display_message("Region copied.")
     end
 
@@ -37,6 +40,7 @@ module Roded
       return unless current_buffer.delete_region(*region)
 
       kill_ring.push(text)
+      publish_clipboard_text(text)
       current_window.mark = nil
       broadcast_command(Command.new(:render, {}))
     end
@@ -67,6 +71,10 @@ module Roded
       return unless current_window&.mark
 
       [current_window.mark, current_window.point]
+    end
+
+    def publish_clipboard_text(text)
+      broadcast_command(Command.new(:clipboard_write, { text: text.dup.freeze }))
     end
 
     def previous_yank_for_current_buffer?

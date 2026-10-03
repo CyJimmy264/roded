@@ -35,12 +35,14 @@
   returned object's public methods do not include `text` or `set_text`.
 - **Workaround:** a transport-only `QTextEdit` invokes Qt's native `paste` and
   `copy` slots. It is always cleared and never stores editor state. Clipboard
-  paste is translated to one core `:paste` event; `C-S-v` keeps Emacs `C-v`
-  available for page-down.
-- **Limits:** this transports text only. Clipboard copy/cut commands and native
-  mouse selection routing remain part of the larger Qt parity work.
+  paste is translated to one core `:paste` event; `C-S-c`/`C-S-x` invoke core
+  region-copy/kill commands, whose clipboard writes return through the GUI
+  dispatcher. `C-S-v` keeps Emacs `C-v` available for page-down.
+- **Limits:** this supports mark-based region copy/cut and text paste. Native
+  mouse selection/context-menu routing remains part of the larger Qt parity work.
 - **Verification:** the offscreen Qt 6.11.2 widget round-tripped multiline UTF-8
   text including a non-BMP emoji; the Qt key callback produced a core paste
-  event with the same text, source id, and active window id.
+  event with the same text, source id, and active window id. Core specs confirm
+  copy leaves the document intact and cut keeps undoable edits/KillRing state.
 - **Removal:** expose `QClipboard#text` and `QClipboard#setText` in qt and replace
   the transport widget with those direct clipboard calls.

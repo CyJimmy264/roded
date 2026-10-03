@@ -18,7 +18,21 @@
   namespace collision в splitter (`Qt::Horizontal/Vertical` разрешались в
   frontend class); ссылки исправлены на top-level `::Qt`, split-widget specs
   прошли в полной suite.
-- Полная проверка desktop system clipboard и copy/cut parity остаётся открытой.
+- Desktop clipboard smoke и copy/cut через mouse selection остаются открытыми.
+
+## 2026-10-03 — Qt region copy/cut в системный clipboard
+
+- Qt `C-S-c` и `C-S-x` преобразуются в core `M-w` и `C-w`; операции остаются
+  в общей command path. Core публикует скопированный/вырезанный текст как
+  `:clipboard_write`, а Qt записывает его через native widget slot в GUI thread.
+- `spec/application_spec.rb` проверяет, что копирование не меняет текст,
+  вырезание остаётся undoable и KillRing не объединяет copy с последующим kill.
+  Qt bridge spec проверяет mapping desktop shortcuts в core key events.
+- Qt UI dispatcher spec проверяет, что core `:clipboard_write` использует
+  настоящие Qt widget copy slots. Целевой RuboCop: **9 файлов, 0 offenses**.
+- Полное RSpec после изменений: **156 примеров, 0 failures**. Offscreen clipboard
+  transport остаётся проверенным; desktop copy/cut с физическим выделением
+  мышью не проверялись и остаются открытыми.
 
 ## 2026-10-03 — bracketed paste в настоящем curses TUI
 
@@ -31,7 +45,8 @@
   bracketed-paste sequence, сохранил файл через `C-x C-s` и завершил curses
   через `C-x C-c`; exit code 0, сохранён точный UTF-8 текст без final newline.
 - Полный RSpec после выделения decoder: **152 примера, 0 failures**.
-- Clipboard paste в Qt пока не направлен в core `:paste` contract.
+- На момент этого этапа Qt clipboard paste ещё не была направлена в core
+  `:paste` contract; последующая проверка и интеграция записаны выше.
 
 ## 2026-10-03 — Unicode position transforms между views
 

@@ -4,12 +4,20 @@ require_relative "qt/editor_pane"
 require_relative "qt/splitter_tree"
 require_relative "qt/editor_window"
 require_relative "qt/clipboard_bridge"
+require_relative "qt/buffer_snapshot"
 require_relative "qt/ui_dispatcher"
 
 module Roded
   module Frontends
     # Connects the shared editor core to a Qt desktop window.
     class Qt
+      UI_COMMAND_ACTIONS = {
+        minibuffer_render: :minibuffer,
+        picker_render: :picker,
+        clipboard_write: :clipboard_write,
+        minibuffer_clear: :minibuffer_clear
+      }.freeze
+
       attr_reader :view
 
       def initialize(application)
@@ -19,7 +27,7 @@ module Roded
         @qt_application = QApplication.new(0, ["roded"])
         @clipboard = QtClipboardBridge.new
         @view = QtEditorWindow.new
-        @ui_dispatcher = QtUiDispatcher.new(@view, @qt_application)
+        @ui_dispatcher = QtUiDispatcher.new(@view, @qt_application, @clipboard)
         configure_events
         start_ui_dispatcher
       end
@@ -49,7 +57,7 @@ module Roded
           @ui_dispatcher.post(:layout, @application.editor_snapshot)
           return
         end
-        @ui_dispatcher.post(:render, buffer_snapshot(buffer))
+        @ui_dispatcher.post(:render, QtBufferSnapshot.capture(buffer))
       end
 
       def display_message(message)
@@ -57,21 +65,11 @@ module Roded
       end
 
       def handle_command(command)
-        case command.type
-        when :render
-          snapshot = command.payload[:editor_snapshot]
-          snapshot ? @ui_dispatcher.post(:layout, snapshot) : render
-        when :move_cursor
-          render
-        when :minibuffer_render
-          @ui_dispatcher.post(:minibuffer, command.payload.dup.freeze)
-        when :picker_render
-          @ui_dispatcher.post(:picker, command.payload)
-        when :minibuffer_clear
-          @ui_dispatcher.post(:minibuffer_clear)
-        when :quit
-          enqueue_quit
-        end
+        return handle_render_command(command) if %i[render move_cursor].include?(command.type)
+        return enqueue_quit if command.type == :quit
+
+        action = UI_COMMAND_ACTIONS[command.type]
+        @ui_dispatcher.post(action, command_payload(command)) if action
       end
 
       def next_event
@@ -109,14 +107,19 @@ module Roded
 
       def enqueue_key(payload)
         key = @key_translator.translate(payload)
-        return :consume if @clipboard.enqueue_paste(key, payload, application: @application, source_id: input_source_id)
+        @clipboard.dispatch_key(key, payload, application: @application, source_id: input_source_id)
+      end
 
-        if key
-          @application.push_event(
-            Event.new(:key, { key:, source_id: input_source_id, window_id: payload[:window_id] })
-          )
-        end
-        :consume
+      def handle_render_command(command)
+        snapshot = command.payload[:editor_snapshot]
+        snapshot ? @ui_dispatcher.post(:layout, snapshot) : render
+      end
+
+      def command_payload(command)
+        return command.payload.dup.freeze if command.type == :minibuffer_render
+        return command.payload.fetch(:text) if command.type == :clipboard_write
+
+        command.payload
       end
 
       def start_ui_dispatcher
@@ -130,17 +133,6 @@ module Roded
       def enqueue_quit
         @input_queue << Event.new(:quit, {})
         @ui_dispatcher.post(:quit)
-      end
-
-      def buffer_snapshot(buffer)
-        point = buffer.cursor_pos.dup.freeze
-        name = buffer.filename || buffer.name || "*scratch*"
-        {
-          text: buffer.to_s.dup.freeze,
-          row: point.fetch(:row),
-          col: point.fetch(:col),
-          modeline: "-- Roded -- #{name}  #{point.fetch(:row) + 1}:#{point.fetch(:col) + 1}"
-        }.freeze
       end
     end
   end

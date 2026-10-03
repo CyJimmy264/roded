@@ -113,9 +113,18 @@ RSpec.describe Roded::Application do
 
     application.handle_event(Roded::Event.new(:key, { key: "C-SPC" }))
     application.handle_event(Roded::Event.new(:key, { key: "C-f" }))
+    application.handle_event(Roded::Event.new(:key, { key: "M-w" }))
+
+    expect(buffer.to_s).to eq("abcdef")
+    expect(frontend.commands.last.type).to eq(:clipboard_write)
+    expect(frontend.commands.last.payload[:text]).to eq("b")
+
     application.handle_event(Roded::Event.new(:key, { key: "C-w" }))
 
     expect(buffer.to_s).to eq("acdef")
+    expect(frontend.commands.last.type).to eq(:render)
+    clipboard_command = frontend.commands.reverse.find { |command| command.type == :clipboard_write }
+    expect(clipboard_command.payload[:text]).to eq("b")
     expect(application.kill_ring.last).to eq("b")
     expect(application.current_window.mark).to be_nil
     expect(buffer.undo).to be(true)

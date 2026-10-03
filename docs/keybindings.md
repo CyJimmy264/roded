@@ -57,6 +57,10 @@ Backspace/Delete редактируют query. В prompts текстовые edi
 предсказуемое поведение. Context keymaps не перехватывают global cancel и
 системное завершение runtime.
 
+В Qt clipboard использует `C-S-c` для copy region, `C-S-x` для cut region и
+`C-S-v` для paste. Они проходят через core region/`:paste` действия; `C-v`
+остаётся page-down, как в curses.
+
 ## Минимальное подмножество личных Spacemacs bindings
 
 `s-` в Lisp означает **Super**, `M-` — **Meta/Alt**; `M-s-j` означает
