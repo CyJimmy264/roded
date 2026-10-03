@@ -25,8 +25,7 @@ module Roded
     end
 
     def render_active_window
-      @frontends.each { |frontend| frontend.render(current_buffer) }
-      broadcast_command(Command.new(:render, {}))
+      publish_ui_update(UIUpdate.new(:render, {}))
     end
 
     def window_snapshot(window)

@@ -83,7 +83,7 @@ file roundtrip не теряет текст. Коммит этапа до шир
 - [X] Контролируемый edit API не отдаёт изменяемые live lines/cursor наружу;
   инварианты readonly/positions соблюдаются на каждом входе.
 - [X] KillRing обновляется из edit result, Buffer не получает KillRing dependency.
-- [ ] Единая публикация UI-state заменяет observers/direct-render/broadcast mix;
+- [X] Единая публикация UI-state заменяет observers/direct-render/broadcast mix;
   insert/backspace/delete/newline продолжают перерисовываться.
 - [X] Frontend получает initial active buffer/minibuffer state при подключении;
   picker state появится с общей picker model.

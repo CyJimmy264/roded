@@ -66,6 +66,7 @@ RSpec.describe "Qt Ctrl+N and Ctrl+P through editor session" do
   it "moves the active core point with real Qt Ctrl+N and Ctrl+P payloads" do
     application, frontend = build_qt_editor((1..12).map { |number| "line #{number}" })
     @frontends << frontend
+    expect(application.current_buffer.instance_variable_get(:@observers)).not_to include(frontend)
 
     deliver_qt_payload(application, frontend, key: Qt::Key_N, modifiers: Qt::ControlModifier, text: "\u000e")
     expect(application.current_window.point).to eq(row: 1, col: 0)

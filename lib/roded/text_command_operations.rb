@@ -32,14 +32,14 @@ module Roded
 
       current_buffer.insert_text(text)
       current_window.point = current_buffer.cursor_pos
-      broadcast_command(Command.new(:render, {}))
+      publish_ui_update(UIUpdate.new(:render, {}))
     end
 
     def select_line(row)
       current_window.mark = { row:, col: 0 }
       current_window.point = { row:, col: current_buffer.lines.fetch(row).length }
       current_buffer.cursor_pos = current_window.point
-      broadcast_command(Command.new(:render, {}))
+      publish_ui_update(UIUpdate.new(:render, {}))
     end
 
     def insert_binding_on_next_line(row)
@@ -48,7 +48,7 @@ module Roded
       current_buffer.cursor_pos = { row:, col: line.length }
       current_buffer.insert_text("\n#{indentation}binding.irb")
       current_window.point = current_buffer.cursor_pos
-      broadcast_command(Command.new(:render, {}))
+      publish_ui_update(UIUpdate.new(:render, {}))
     end
 
     def editable_text_target?

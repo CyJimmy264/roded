@@ -12,7 +12,7 @@ module Roded
       return handle_repl_api_event(event) if event.type == :repl_api_call
       return append_ruby_repl_result(event.payload) if event.type == :repl_result
       return handle_mouse_selection(event) if event.type == :mouse_selection
-      return broadcast_command(Command.new(:render, {})) if event.type == :resize
+      return publish_ui_update(UIUpdate.new(:render, {})) if event.type == :resize
       return handle_system_event(event) if system_event?(event)
 
       process_frontend_input(event)
@@ -37,7 +37,7 @@ module Roded
       window.point = event.payload.fetch(:point)
       window.mark = event.payload[:mark]
       buffer.cursor_pos = window.point
-      broadcast_command(Command.new(:render, {}))
+      publish_ui_update(UIUpdate.new(:render, {}))
     end
 
     def system_event?(event)
@@ -57,7 +57,7 @@ module Roded
       prepare_input_context(event, window_before, buffer_before)
       routed_event = dispatch_routed_input(event)
       sync_window_cursor_to_buffer(window_before, buffer_before)
-      broadcast_command(Command.new(:render, {})) if snapshot_refresh_required?(routed_event, refresh_snapshot)
+      publish_ui_update(UIUpdate.new(:render, {})) if snapshot_refresh_required?(routed_event, refresh_snapshot)
     end
 
     def log_input_event(event)

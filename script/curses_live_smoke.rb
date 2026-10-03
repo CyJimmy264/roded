@@ -55,10 +55,10 @@ end
 log = File.read(log_path)
 required_log_entries = [
   'next_event: read_key: "C-n"',
-  "broadcast_command: move_cursor",
+  "publish_ui_update: move_cursor",
   'next_event: read_key: "C-x"',
   'next_event: read_key: "C-c"',
-  "broadcast_command: quit"
+  "publish_ui_update: quit"
 ]
 missing_entries = required_log_entries.reject { |entry| log.include?(entry) }
 abort "curses smoke exited #{exit_status.inspect}; missing #{missing_entries.inspect}; files: #{smoke_dir}" unless

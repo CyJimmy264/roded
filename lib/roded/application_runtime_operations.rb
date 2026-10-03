@@ -64,7 +64,7 @@ module Roded
 
     def notify_frontends_of_shutdown
       @frontends.each do |frontend|
-        frontend.handle_command(Command.new(:quit, {}))
+        frontend.handle_command(UIUpdate.new(:quit, {}))
       rescue StandardError => e
         logger.warn("Frontend shutdown notification failed: #{e.class}: #{e.message}")
       end

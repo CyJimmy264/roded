@@ -187,7 +187,7 @@ if ! rg -q 'event received: mouse_selection \{point: \{row: 2, col: 0\}' "$RODED
 fi
 if ! rg -q 'event received: key \{key: "Menu"' "$RODED_LOG_PATH" ||
   ! rg -q 'event received: key \{key: "M-Menu"' "$RODED_LOG_PATH" ||
-  [[ $(rg -c 'broadcast_command: picker_render' "$RODED_LOG_PATH") -lt 2 ]]; then
+  [[ $(rg -c 'publish_ui_update: picker_render' "$RODED_LOG_PATH") -lt 2 ]]; then
   printf 'Qt Menu/Alt+Menu did not open both core pickers\n' >&2
   exit 1
 fi

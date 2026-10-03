@@ -64,7 +64,7 @@ module Roded
     def insert_repl_text(text)
       current_buffer.insert_text(text.to_s)
       current_window.point = current_buffer.cursor_pos if current_window
-      broadcast_command(Command.new(:render, {}))
+      publish_ui_update(UIUpdate.new(:render, {}))
       current_buffer.to_s.dup.freeze
     end
 
@@ -90,7 +90,7 @@ module Roded
       @ruby_repl_history_index = nil
       @ruby_repl_history_draft = nil
       current_window.point = buffer.cursor_pos if current_buffer.equal?(buffer) && current_window
-      broadcast_command(Command.new(:render, {}))
+      publish_ui_update(UIUpdate.new(:render, {}))
     end
 
     def append_repl_output(buffer, payload)

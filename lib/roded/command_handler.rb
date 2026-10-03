@@ -30,7 +30,7 @@ module Roded
       args = option == :page_size ? [@editor.page_size] : []
       @editor.current_buffer&.public_send(method, *args)
       payload = option && option != :page_size ? { direction: option } : {}
-      @editor.broadcast_command(Command.new(render_type, payload))
+      @editor.publish_ui_update(UIUpdate.new(render_type, payload))
     end
 
     def scroll_viewport(event)
@@ -72,7 +72,7 @@ module Roded
 
     def execute_custom_command(event) = @editor.execute_command(event.payload.fetch(:name))
 
-    def render_event(_event) = @editor.broadcast_command(Command.new(:render, {}))
+    def render_event(_event) = @editor.publish_ui_update(UIUpdate.new(:render, {}))
 
     def ignore_event(_event); end
 

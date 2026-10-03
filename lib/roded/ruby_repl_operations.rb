@@ -66,7 +66,7 @@ module Roded
 
       current_buffer.insert_text("\n")
       current_window.point = current_buffer.cursor_pos
-      broadcast_command(Command.new(:render, {}))
+      publish_ui_update(UIUpdate.new(:render, {}))
     end
 
     def find_or_create_repl_buffer
@@ -115,7 +115,7 @@ module Roded
       current_buffer.delete_region(@ruby_repl_input_start, current_window.point)
       current_buffer.insert_text(entry)
       current_window.point = current_buffer.cursor_pos
-      broadcast_command(Command.new(:render, {}))
+      publish_ui_update(UIUpdate.new(:render, {}))
     end
   end
 end

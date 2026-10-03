@@ -221,8 +221,8 @@ RSpec.describe Roded::Application do
     application.handle_event(Roded::Event.new(:key, { key: "M-w" }))
 
     expect(buffer.to_s).to eq("abcdef")
-    expect(frontend.commands.last.type).to eq(:clipboard_write)
-    expect(frontend.commands.last.payload[:text]).to eq("b")
+    clipboard_command = frontend.commands.reverse.find { |command| command.type == :clipboard_write }
+    expect(clipboard_command.payload[:text]).to eq("b")
 
     application.handle_event(Roded::Event.new(:key, { key: "C-w" }))
 
@@ -392,7 +392,8 @@ RSpec.describe Roded::Application do
       expect(application.current_buffer.lines).to eq(["alpha", "beta", ""])
       expect(application.current_buffer.cursor_pos).to eq({ row: 0, col: 0 })
       expect(frontend.buffers.last).to eq(application.current_buffer)
-      expect(frontend.renders.last).to eq(application.current_buffer)
+      render = frontend.commands.reverse.find { |command| command.type == :render }
+      expect(render.payload[:editor_snapshot][:windows].first[:name]).to eq(file.path)
       expect(frontend.messages.last).to eq("File '#{file.path}' opened.")
     end
   end
@@ -638,7 +639,8 @@ RSpec.describe Roded::Application do
       application.add_frontend(late_frontend)
 
       expect(late_frontend.buffers).to include(application.current_buffer)
-      expect(late_frontend.renders.last).to eq(application.current_buffer)
+      render = late_frontend.commands.reverse.find { |command| command.type == :render }
+      expect(render.payload[:editor_snapshot][:windows].first[:name]).to eq(file.path)
     end
   end
 

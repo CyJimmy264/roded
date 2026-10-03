@@ -56,7 +56,7 @@ module Roded
         paths.each { |path| open_file(path) }
       end
       ensure_startup_buffer_and_window
-      broadcast_command(Command.new(:render, {}))
+      publish_ui_update(UIUpdate.new(:render, {}))
       display_configuration_warning
     end
 
@@ -64,7 +64,7 @@ module Roded
       @buffers << buffer
       buffer.add_edit_observer(self)
       @current_buffer ||= buffer
-      @frontends.each { |frontend| frontend.add_buffer(buffer) }
+      @frontends.each { |frontend| frontend.add_buffer(buffer) if frontend.respond_to?(:add_buffer) }
     end
 
     def change_major_mode(mode)
@@ -72,7 +72,7 @@ module Roded
       return display_message("Unknown mode: #{mode}") unless SyntaxHighlighter::MODES.include?(normalized)
 
       current_buffer.major_mode = normalized
-      broadcast_command(Command.new(:render, {}))
+      publish_ui_update(UIUpdate.new(:render, {}))
     end
 
     private

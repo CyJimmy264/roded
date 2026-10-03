@@ -6,7 +6,7 @@ module Roded
       return unless text
 
       kill_ring.push(text)
-      broadcast_command(Command.new(:render, {}))
+      publish_ui_update(UIUpdate.new(:render, {}))
     end
   end
 end

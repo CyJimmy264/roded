@@ -61,7 +61,7 @@ module Roded
     def resize_window(amount)
       return unless current_window && @window_layout.resize_columns(current_window, amount)
 
-      broadcast_command(Command.new(:render, {}))
+      publish_ui_update(UIUpdate.new(:render, {}))
     end
 
     private
@@ -73,7 +73,7 @@ module Roded
 
       current_window.top_line = origin
       move_point_with_viewport(origin - previous_origin)
-      broadcast_command(Command.new(:render, {}))
+      publish_ui_update(UIUpdate.new(:render, {}))
     end
 
     def clamp_viewport_origin(origin)

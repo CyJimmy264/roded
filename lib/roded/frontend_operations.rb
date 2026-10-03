@@ -8,14 +8,18 @@ module Roded
       sync_frontend(frontend)
     end
 
-    def broadcast_command(command)
-      if command.type == :render && current_window
-        payload = command.payload.merge(editor_snapshot: editor_snapshot)
-        command = Command.new(:render, payload.freeze)
+    def publish_ui_update(update)
+      raise ArgumentError, "expected UIUpdate, got #{update.class}" unless update.is_a?(UIUpdate)
+
+      if update.type == :render && current_window
+        payload = update.payload.merge(editor_snapshot: editor_snapshot).freeze
+        update = UIUpdate.new(:render, payload)
       end
-      logger.debug("broadcast_command: #{command.type}")
-      @frontends.each { |frontend| frontend.handle_command(command) }
+      logger.debug("publish_ui_update: #{update.type}")
+      @frontends.each { |frontend| deliver_ui_update(frontend, update) }
     end
+
+    alias broadcast_command publish_ui_update
 
     def push_event(event)
       @event_queue << event
@@ -32,15 +36,18 @@ module Roded
 
     def prepare_frontend(frontend)
       frontend.keymap = @keymap if frontend.respond_to?(:keymap=)
-      frontend.focus = @focus if frontend.respond_to?(:focus=)
-      @buffers.each { |buffer| frontend.add_buffer(buffer) }
+      @buffers.each { |buffer| frontend.add_buffer(buffer) if frontend.respond_to?(:add_buffer) }
     end
 
     def sync_frontend(frontend)
-      frontend.render(current_buffer) if current_buffer && frontend.respond_to?(:render)
+      if current_buffer
+        payload = current_window ? { editor_snapshot: editor_snapshot }.freeze : {}.freeze
+        deliver_ui_update(frontend, UIUpdate.new(:render, payload))
+      end
+      deliver_ui_update(frontend, UIUpdate.new(:focus, { focus: @focus }.freeze))
       return unless @focus == :minibuffer && frontend.respond_to?(:handle_command)
 
-      frontend.handle_command(Command.new(:minibuffer_render, minibuffer_snapshot))
+      deliver_ui_update(frontend, UIUpdate.new(:minibuffer_render, minibuffer_snapshot.freeze))
     end
 
     def minibuffer_snapshot
@@ -48,15 +55,15 @@ module Roded
     end
 
     def display_message(message)
-      @frontends.each do |frontend|
-        frontend.display_message(message) if frontend.respond_to?(:display_message)
-      end
+      publish_ui_update(UIUpdate.new(:message, { text: message.to_s.dup.freeze }.freeze))
     end
 
     def broadcast_focus
-      @frontends.each do |frontend|
-        frontend.focus = @focus if frontend.respond_to?(:focus=)
-      end
+      publish_ui_update(UIUpdate.new(:focus, { focus: @focus }.freeze))
+    end
+
+    def deliver_ui_update(frontend, update)
+      frontend.handle_command(update) if frontend.respond_to?(:handle_command)
     end
   end
 end

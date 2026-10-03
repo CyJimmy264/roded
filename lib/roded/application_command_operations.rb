@@ -3,7 +3,7 @@ module Roded
   module ApplicationCommandOperations
     def process_command(command)
       if command.to_s.empty?
-        broadcast_command(Command.new(:render, {}))
+        publish_ui_update(UIUpdate.new(:render, {}))
       elsif !@command_registry.registered?(command)
         display_message("Unknown command: #{command}")
       else

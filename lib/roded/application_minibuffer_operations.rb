@@ -12,8 +12,8 @@ module Roded
     end
 
     def render_minibuffer
-      broadcast_command(
-        Command.new(
+      publish_ui_update(
+        UIUpdate.new(
           :minibuffer_render,
           { prompt: @minibuffer.prompt, text: @minibuffer.text, cursor: @minibuffer.cursor }
         )
@@ -29,8 +29,8 @@ module Roded
       clear_pending_save_confirmation
       @focus = :buffer
       broadcast_focus
-      broadcast_command(Command.new(:minibuffer_clear, {}))
-      broadcast_command(Command.new(:render, {}))
+      publish_ui_update(UIUpdate.new(:minibuffer_clear, {}))
+      publish_ui_update(UIUpdate.new(:render, {}))
     end
 
     def submit_minibuffer
@@ -51,10 +51,10 @@ module Roded
       @minibuffer_kind = nil
       @focus = :buffer
       broadcast_focus
-      broadcast_command(Command.new(:minibuffer_clear, {}))
+      publish_ui_update(UIUpdate.new(:minibuffer_clear, {}))
       minibuffer_submit_handler.handle(kind, text)
       @picker_query = nil
-      broadcast_command(Command.new(:render, {}))
+      publish_ui_update(UIUpdate.new(:render, {}))
     end
 
     def resume_path_picker_if_directory?(kind)

@@ -29,7 +29,7 @@ module Roded
       current_buffer.with_undo_group { replace_changed_rows(changed) }
       restore_transformed_positions(positions, changed, mode)
       current_buffer.cursor_pos = current_window.point
-      broadcast_command(Command.new(:render, {}))
+      publish_ui_update(UIUpdate.new(:render, {}))
     end
 
     def changed_text_rows(mode)

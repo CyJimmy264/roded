@@ -1113,3 +1113,25 @@ File save здесь сохраняет текстовое представле�
   selection, Menu/Alt+Menu, split, Super resize, and scratch startup passed.
   Screenshots/log: `/tmp/roded-qt-live-smoke.HzEMxJ`; no desktop `DISPLAY` was
   used.
+
+## 2026-10-03 — UI state uses one frontend update channel
+
+- Added `Application#publish_ui_update` as the single core-to-frontend update
+  channel. Editor snapshots, minibuffer/picker state, messages, focus, clipboard
+  and shutdown all travel as `UIUpdate` values. The former `broadcast_command`
+  API remains as an alias for compatibility; internal application operations
+  use the update API directly.
+- Curses and Qt no longer subscribe to `Buffer` observers for rendering, and
+  application operations no longer call frontend `render` or
+  `display_message` methods directly. Curses input uses the same render snapshot
+  publication; Qt posts snapshots through its GUI-thread dispatcher.
+- Qt integration verifies normal key navigation works without a Buffer UI
+  observer. Offscreen application/frontend specs cover file-open, late attach,
+  edit snapshots, focus, messages and clipboard. Full `bundle exec rake`:
+  **266 examples, 0 failures**; RuboCop: **145 files, 0 offenses**.
+- Real `script/curses_live_smoke.rb` passed in private PTY (`C-n`, edit-loop
+  routing, `C-x C-c`): `/tmp/roded-curses-smoke.20261003-2-xanvss`.
+  Real `script/qt_live_smoke.sh` passed under private Xvfb / Qt Widgets **6.11.2**
+  / gem `qt` **0.2.0**: key editing/save, scrolling, selection, Menu/Alt+Menu,
+  split, Super resizing, empty scratch and quit; screenshots/log are in
+  `/tmp/roded-qt-live-smoke.wNTMqA`. Neither smoke used desktop `DISPLAY`.

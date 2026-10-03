@@ -5,18 +5,18 @@ module Roded
       return unless editable_buffer_and_window?
 
       indent_rows(indented_rows)
-      broadcast_command(Command.new(:render, {}))
+      publish_ui_update(UIUpdate.new(:render, {}))
     end
 
     def undo
       changed = current_buffer&.undo
-      broadcast_command(Command.new(:render, {})) if changed
+      publish_ui_update(UIUpdate.new(:render, {})) if changed
       changed
     end
 
     def redo
       changed = current_buffer&.redo
-      broadcast_command(Command.new(:render, {})) if changed
+      publish_ui_update(UIUpdate.new(:render, {})) if changed
       changed
     end
 
@@ -24,7 +24,7 @@ module Roded
       return unless current_window
 
       current_window.mark = current_window.point
-      broadcast_command(Command.new(:render, {}))
+      publish_ui_update(UIUpdate.new(:render, {}))
     end
 
     def copy_region
@@ -49,7 +49,7 @@ module Roded
       kill_ring.push(text)
       publish_clipboard_text(text)
       current_window.mark = nil
-      broadcast_command(Command.new(:render, {}))
+      publish_ui_update(UIUpdate.new(:render, {}))
     end
 
     def yank
@@ -60,7 +60,7 @@ module Roded
       current_buffer.insert_text(text)
       @last_yank = { buffer: current_buffer, start:, finish: current_buffer.cursor_pos, index: 0 }
       current_window.mark = nil
-      broadcast_command(Command.new(:render, {}))
+      publish_ui_update(UIUpdate.new(:render, {}))
     end
 
     def yank_pop
@@ -69,7 +69,7 @@ module Roded
 
       replace_last_yank
       current_window.mark = nil
-      broadcast_command(Command.new(:render, {}))
+      publish_ui_update(UIUpdate.new(:render, {}))
     end
 
     private
@@ -103,7 +103,7 @@ module Roded
     end
 
     def publish_clipboard_text(text)
-      broadcast_command(Command.new(:clipboard_write, { text: text.dup.freeze }))
+      publish_ui_update(UIUpdate.new(:clipboard_write, { text: text.dup.freeze }))
     end
 
     def previous_yank_for_current_buffer?

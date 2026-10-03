@@ -44,7 +44,7 @@ module Roded
       return unless @picker
 
       payload = @picker.snapshot.merge(prompt: @minibuffer.prompt).freeze
-      broadcast_command(Command.new(:picker_render, payload))
+      publish_ui_update(UIUpdate.new(:picker_render, payload))
     end
 
     def selected_picker_value
@@ -66,7 +66,7 @@ module Roded
       index = kill_ring.items.index(text) || 0
       @last_yank = { buffer: current_buffer, start:, finish: current_buffer.cursor_pos, index: index }
       current_window.mark = nil
-      broadcast_command(Command.new(:render, {}))
+      publish_ui_update(UIUpdate.new(:render, {}))
     end
 
     def matching_column(line, query)

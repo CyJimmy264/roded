@@ -78,7 +78,7 @@ module Roded
       buffer.filename = result.path
       buffer.file_revision = result.revision
       buffer.mark_saved
-      broadcast_command(Command.new(:render, {}))
+      publish_ui_update(UIUpdate.new(:render, {}))
       display_message("File '#{result.path}' saved.")
       result
     end

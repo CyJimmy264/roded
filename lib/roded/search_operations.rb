@@ -59,7 +59,7 @@ module Roded
       current_window.point = { row:, col: column }
       current_buffer.cursor_pos = current_window.point
       current_window.highlight = highlight
-      broadcast_command(Command.new(:render, {}))
+      publish_ui_update(UIUpdate.new(:render, {}))
     end
 
     def match_range(position, query)

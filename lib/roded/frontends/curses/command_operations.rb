@@ -4,6 +4,8 @@ module Roded
     module CursesCommandOperations
       COMMAND_HANDLERS = {
         render: :render_command,
+        message: :show_message,
+        focus: :apply_focus,
         minibuffer_render: :show_minibuffer,
         picker_render: :show_picker,
         minibuffer_clear: :clear_minibuffer,
@@ -47,6 +49,14 @@ module Roded
         @minibuffer_state = nil
         @picker_state = nil
         @minibuffer_view.clear
+      end
+
+      def show_message(payload)
+        display_message(payload.fetch(:text))
+      end
+
+      def apply_focus(payload)
+        @focus = payload.fetch(:focus)
       end
     end
   end

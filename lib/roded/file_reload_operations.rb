@@ -27,7 +27,7 @@ module Roded
       display_message("Error reloading file: #{e.message}")
       cancel_pending_close if pending_close_action?
     ensure
-      broadcast_command(Command.new(:render, {}))
+      publish_ui_update(UIUpdate.new(:render, {}))
     end
 
     def finish_reload(pending, result)
@@ -41,7 +41,6 @@ module Roded
       buffer.load_text(result.content)
       buffer.file_revision = result.revision
       @windows.each { |window| reset_reloaded_view(window, buffer) }
-      @frontends.each { |frontend| frontend.render(buffer) }
     end
 
     def reset_reloaded_view(window, buffer)

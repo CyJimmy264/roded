@@ -13,15 +13,6 @@ module Roded
         @screen.refresh
       end
 
-      def update(buffer)
-        return unless buffer == @current_buffer
-        return if @layout_snapshot
-
-        @data_lines = buffer.lines if buffer.respond_to?(:lines)
-        ensure_cursor_visible
-        redraw
-      end
-
       def scroll_viewport_up # rubocop:disable Naming/PredicateMethod -- this action changes the viewport
         return false unless @top.positive?
 

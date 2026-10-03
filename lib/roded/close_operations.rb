@@ -16,8 +16,7 @@ module Roded
     end
 
     def render_buffer_removal
-      @frontends.each { |frontend| frontend.render(@current_buffer) }
-      broadcast_command(Command.new(:render, {}))
+      publish_ui_update(UIUpdate.new(:render, {}))
     end
   end
 
@@ -115,8 +114,8 @@ module Roded
       clear_pending_save_confirmation
       @focus = :buffer
       broadcast_focus
-      broadcast_command(Command.new(:minibuffer_clear, {}))
-      broadcast_command(Command.new(:render, {}))
+      publish_ui_update(UIUpdate.new(:minibuffer_clear, {}))
+      publish_ui_update(UIUpdate.new(:render, {}))
     end
 
     def remove_buffer(buffer)
@@ -138,7 +137,7 @@ module Roded
 
     def finish_quit
       @stop_requested = true
-      broadcast_command(Command.new(:quit, {}))
+      publish_ui_update(UIUpdate.new(:quit, {}))
     end
   end
 end

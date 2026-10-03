@@ -22,6 +22,8 @@ class FakeFrontend
 
   def handle_command(command)
     commands << command
+    messages << command.payload.fetch(:text) if command.type == :message
+    self.focus = command.payload.fetch(:focus) if command.type == :focus
   end
 
   def display_message(message)

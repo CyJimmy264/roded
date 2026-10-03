@@ -65,13 +65,11 @@ module Roded
       def add_buffer(buffer)
         @buffers << buffer
         @current_buffer ||= buffer
-        buffer.add_observer(self)
-        update(buffer)
+        @data_lines = @current_buffer.lines
       end
 
       def remove_buffer(buffer)
         @buffers.delete(buffer)
-        buffer.remove_observer(self)
       end
 
       private

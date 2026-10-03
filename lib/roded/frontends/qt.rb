@@ -15,6 +15,7 @@ module Roded
       UI_COMMAND_ACTIONS = {
         minibuffer_render: :minibuffer,
         picker_render: :picker,
+        message: :message,
         clipboard_write: :clipboard_write,
         minibuffer_clear: :minibuffer_clear
       }.freeze
@@ -35,19 +36,6 @@ module Roded
 
       def input_source_id
         :qt
-      end
-
-      def add_buffer(buffer)
-        buffer.add_observer(self)
-        render(buffer) if buffer == @application.current_buffer
-      end
-
-      def remove_buffer(buffer)
-        buffer.remove_observer(self)
-      end
-
-      def update(buffer)
-        render(buffer) if buffer == @application.current_buffer
       end
 
       def render(buffer = nil)
@@ -122,7 +110,7 @@ module Roded
 
       def command_payload(command)
         return command.payload.dup.freeze if command.type == :minibuffer_render
-        return command.payload.fetch(:text) if command.type == :clipboard_write
+        return command.payload.fetch(:text) if %i[clipboard_write message].include?(command.type)
 
         command.payload
       end
