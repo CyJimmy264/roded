@@ -103,5 +103,20 @@ RSpec.describe "Qt shortcut routing" do
   ensure
     view&.close
   end
+
+  it "sends Qt wheel movement to the core viewport with its source and window" do
+    events = []
+    application = Object.new
+    application.define_singleton_method(:push_event) { |event| events << event }
+    frontend_router = Roded::Frontends::QtInputRouter.new(
+      application, translator, Roded::Frontends::QtClipboardBridge.new, :qt
+    )
+
+    expect(frontend_router.enqueue_wheel(angle_delta_y: 120, pixel_delta_y: 0, window_id: 42)).to eq(:consume)
+
+    expect(events).to eq([
+                           Roded::Event.new(:scroll_by, { amount: -3, source_id: :qt, window_id: 42 })
+                         ])
+  end
 end
 # rubocop:enable Metrics/BlockLength

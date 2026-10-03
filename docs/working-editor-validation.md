@@ -683,6 +683,25 @@ File save здесь сохраняет текстовое представле�
 - Полный RSpec: **208 examples, 0 failures**. RuboCop снизился с исходных
   **87 до 77 offenses**; целевые Qt caret/renderer/pane/spec файлы чисты.
 
+## 2026-10-03 — ручная проверка Qt Super shortcut
+
+- Пользователь физически проверил в живом Qt UI сочетание `M-s-k`: закрытие
+  текущего buffer работает. Это подтверждает доставку и действие именно этого
+  сочетания в его окружении; остальные Super shortcuts остаются непроверенными.
+
+## 2026-10-03 — Qt wheel прокручивает core viewport
+
+- Wheel-событие панели Qt передаёт количество строк, source и window id в
+  `Event(:scroll_by)`; CommandHandler изменяет core viewport, сохраняя point.
+  Qt scrollbar восстанавливается из snapshot `top_line`, включая отложенную
+  раскладку документа. Page size берётся из реальных page/single шагов Qt.
+- Qt Widgets 6.11.2 offscreen: настоящий `QTextEdit` с 100 строками после
+  `top_line: 30` показывает scrollbar на 30 строках. Router spec проверяет
+  wheel delta и source/window; Qt UI/shortcut и Application specs: **80 examples,
+  0 failures**. Полный RSpec: **210 examples, 0 failures**. Изменённые файлы
+  проходят RuboCop; общий gate всё ещё сообщает **63 offenses в 106 files**
+  (тот же count, что до этого изменения).
+
 ## 2026-10-03 — табличная маршрутизация core input events
 
 - `CommandHandler` заменил большой ветвящийся `case` на декларативные event maps

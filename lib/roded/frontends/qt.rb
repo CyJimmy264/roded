@@ -99,7 +99,8 @@ module Roded
       end
 
       def page_size(_window_id = nil)
-        [@view.editor.height / 20, 1].max
+        scroll_bar = @view.editor.vertical_scroll_bar
+        [scroll_bar.page_step / [scroll_bar.single_step, 1].max, 1].max
       end
 
       private

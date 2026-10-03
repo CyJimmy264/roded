@@ -182,3 +182,25 @@ RSpec.describe Roded::Frontends::QtEditorWindow, "horizontal scrolling" do
     expect(view.editor.horizontal_scroll_bar.value).to be > 0
   end
 end
+
+RSpec.describe Roded::Frontends::QtEditorWindow, "vertical scrolling" do
+  include_context "Qt editor window lifecycle"
+
+  it "restores the core top line in the real Qt vertical scrollbar" do
+    view = described_class.new
+    @views << view
+    view.show
+    lines = (1..100).map { |number| "line #{number}" }.join("\n")
+    view.render_layout(
+      tree: { window_id: 101 }, active_window_id: 101,
+      windows: [{
+        id: 101, text: lines, point: { row: 0, col: 0 }, top_line: 30,
+        name: "long", active: true
+      }]
+    )
+    QApplication.process_events
+
+    scroll_bar = view.editor.vertical_scroll_bar
+    expect(scroll_bar.value).to eq(30 * scroll_bar.single_step)
+  end
+end

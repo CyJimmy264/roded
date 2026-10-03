@@ -19,18 +19,13 @@ module Roded
         apply_theme
       end
 
-      def on_key_press(&callback)
-        @key_callback = callback
-        @panes.each { |id, pane| pane.bind(id, callback) }
-      end
+      def on_key_press(&callback) = bind_callback(:key_callback, callback)
 
-      def on_close(&)
-        @window.on(:close, &)
-      end
+      def on_wheel(&callback) = bind_callback(:wheel_callback, callback)
 
-      def on_resize(&)
-        @window.on(:resize, &)
-      end
+      def on_close(&) = @window.on(:close, &)
+
+      def on_resize(&) = @window.on(:resize, &)
 
       def show(_payload = nil)
         @window.resize(960, 640)
@@ -40,7 +35,7 @@ module Roded
 
       def render(snapshot)
         pane = pane_for(:single)
-        pane.bind(:single, @key_callback)
+        bind_pane(:single, pane)
         pane.render(snapshot)
         @splitter_tree.mount_single(pane.container)
         @editor_area = pane.container
@@ -60,16 +55,10 @@ module Roded
       end
 
       def render_minibuffer(payload) = @echo_area.render_minibuffer(payload)
-
       def render_picker(payload) = @echo_area.render_picker(payload)
-
       def clear_minibuffer = @echo_area.clear
-
       def display_message(message) = @echo_area.display(message)
-
-      def close
-        @window.hide
-      end
+      def close = @window.hide
 
       private
 
@@ -99,7 +88,16 @@ module Roded
       end
 
       def bind_panes(records)
-        records.each_key { |id| pane_for(id).bind(id, @key_callback) }
+        records.each_key { |id| bind_pane(id, pane_for(id)) }
+      end
+
+      def bind_pane(id, pane)
+        pane.bind(id, @key_callback, @wheel_callback)
+      end
+
+      def bind_callback(name, callback)
+        instance_variable_set("@#{name}", callback)
+        @panes.each { |id, pane| bind_pane(id, pane) }
       end
 
       def render_panes(records)

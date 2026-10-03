@@ -37,6 +37,10 @@ module Roded
       @editor.scroll_viewport(direction * distance)
     end
 
+    def scroll_by(event)
+      @editor.scroll_viewport(event.payload.fetch(:amount))
+    end
+
     def operate_on_buffer(event)
       method, argument = BUFFER_OPERATIONS.fetch(event.type)
       args = buffer_operation_arguments(argument, event.payload)

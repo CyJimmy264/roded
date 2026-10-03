@@ -101,6 +101,7 @@ module Roded
                           .merge(
                             query_replace: :begin_query_replace,
                             custom_command: :execute_custom_command,
+                            scroll_by: :scroll_by,
                             render: :render_event,
                             cancel: :render_event,
                             noop: :ignore_event

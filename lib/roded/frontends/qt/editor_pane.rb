@@ -23,18 +23,24 @@ module Roded
         @subscribed = false
       end
 
-      def bind(window_id, callback)
+      def bind(window_id, callback, wheel_callback = nil)
         @window_id = window_id
         @key_callback = callback
+        @wheel_callback = wheel_callback
         subscribe_keys
+        subscribe_wheel
       end
 
       def render(snapshot)
+        @snapshot = snapshot
         text = snapshot.fetch(:text).gsub("\r\n", "\n")
         marker = QtCursorMapper.marker_for(text)
         snapshot = snapshot.merge(cursor_marker: marker)
         @editor.set_html(QtEditorHtmlRenderer.new(text, snapshot, marker).render)
         QtCursorMapper.place(@editor, snapshot, text)
+        restore_scroll(snapshot)
+        schedule_scroll_restore
+        subscribe_layout
         @modeline.set_text(snapshot[:modeline] || modeline_for(snapshot))
       end
 
@@ -47,6 +53,38 @@ module Roded
           @key_callback.call(payload.merge(window_id: @window_id))
         end
         @subscribed = true
+      end
+
+      def subscribe_layout
+        return if @layout_subscribed
+
+        @editor.on(:resize) { restore_scroll(@snapshot) if @snapshot }
+        @layout_subscribed = true
+      end
+
+      def subscribe_wheel
+        return if @wheel_subscribed || !@wheel_callback
+
+        @editor.on(:wheel) do |payload|
+          @wheel_callback.call(payload.merge(window_id: @window_id))
+        end
+        @wheel_subscribed = true
+      end
+
+      def restore_scroll(snapshot)
+        top_line = snapshot.fetch(:top_line, 0).to_i
+        scroll_bar = @editor.vertical_scroll_bar
+        scroll_bar.set_value(top_line * scroll_bar.single_step)
+      end
+
+      def schedule_scroll_restore
+        return if @scroll_timer&.is_active
+
+        @scroll_timer ||= QTimer.new(@editor)
+        @scroll_timer.set_single_shot(true)
+        @scroll_timer.connect("timeout") { |_payload| restore_scroll(@snapshot) }
+        @scroll_timer.set_interval(0)
+        @scroll_timer.start
       end
 
       def modeline_for(snapshot)
