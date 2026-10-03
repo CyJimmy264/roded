@@ -594,5 +594,26 @@ File save здесь сохраняет текстовое представле�
   файлах; 10 файлов модели/providers и specs прошли целевой RuboCop без
   offenses. `command_handler.rb` уже содержит крупные метрики и другие lint
   violations, поэтому в эту чистую выборку не входит.
-- `git diff --check` проходит. Curses и Qt picker layout/resize/preview и
-  физическая клавиатура Qt остаются незакрытыми критериями этапа.
+- `git diff --check` проходит. Provider coverage, line search/replace и
+  физическая клавиатура Qt остаются незакрытыми критериями.
+
+## 2026-10-03 — picker viewport и resize в curses/Qt
+
+- Общий `PickerViewport` ограничивает число строк доступной высотой и сохраняет
+  выбранный candidate в видимой части. Curses сохраняет место для minibuffer;
+  Qt учитывает фактическую высоту echo widget.
+- Curses обрабатывает `SIGWINCH`, обновляет curses screen и запрашивает свежий
+  snapshot core. Qt resize event также проходит в core и возвращает render
+  snapshot в GUI thread.
+- Настоящий curses PTY: `TERM=xterm-256color`, 6×80 → 3×80 во время picker,
+  прокрутка, cancel и `C-x C-c`; завершение с code 0, без ошибок в выводе.
+  `RODED_LOG_PATH` и `XDG_CONFIG_HOME` указывали на `/tmp`, desktop/X11 не
+  использовался.
+- Qt Widgets **6.11.2**, gem `qt` **0.1.9**, backend **offscreen**: настоящий
+  `QWidget` получил resize event; в окне 240×180 echo widget высотой 134 px
+  показывает выбранный candidate из списка и ограничивает текст шестью строками
+  вместе с query. Picker/Qt specs и resize routing: **8 examples, 0 failures**;
+  семь целевых Ruby/spec файлов прошли RuboCop без offenses.
+- Полный `bundle exec rake`: **195 examples, 0 failures**; полный RuboCop —
+  **87 offenses** в 103 файлах. Provider coverage и line search/replace остаются
+  незакрытыми пунктами этапа 6.

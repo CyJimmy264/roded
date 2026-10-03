@@ -11,6 +11,16 @@ RSpec.describe Roded::Application do
     application.instance_variable_set(:@frontends, [frontend])
   end
 
+  it "rerenders frontend snapshots after a resize event" do
+    application.startup
+    frontend.commands.clear
+
+    application.handle_event(Roded::Event.new(:resize, {}))
+
+    expect(frontend.commands.last.type).to eq(:render)
+    expect(frontend.commands.last.payload[:editor_snapshot][:windows]).not_to be_empty
+  end
+
   it "opens the command minibuffer from M-x and broadcasts its state" do
     application.handle_event(Roded::Event.new(:key, { key: "Esc" }))
     application.handle_event(Roded::Event.new(:key, { key: "x" }))

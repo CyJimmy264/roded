@@ -22,6 +22,7 @@ module Roded
         @stdin = $stdin
         @wake_r, @wake_w = IO.pipe
         @wake_w.sync = true
+        install_resize_handler
         @minibuffer_view = Curses::Minibuffer.new(@screen)
         @minibuffer_state = nil
         draw_placeholder
@@ -42,6 +43,7 @@ module Roded
       def close
         disable_bracketed_paste
         ::Curses.close_screen
+        Signal.trap("WINCH", @previous_winch_handler) if @previous_winch_handler
         @wake_r&.close
         @wake_w&.close
       end
@@ -104,7 +106,7 @@ module Roded
         key = read_key
         logger.debug("next_event: read_key: #{key.inspect}")
         return Event.new(:noop, {}) unless key
-        return Event.new(:quit, {}) if key == :quit_signal
+        return handle_wake_event if key == :quit_signal
         return Event.new(:paste, { text: key.text }) if key.is_a?(CursesInputDecoder::PasteInput)
 
         Event.new(:key, { key: })
@@ -178,9 +180,28 @@ module Roded
       end
 
       def read_key
-        key = @input_decoder.read_key(@stdin, @wake_r)
-        drain_wake_pipe if key == :quit_signal
-        key
+        @input_decoder.read_key(@stdin, @wake_r)
+      end
+
+      def install_resize_handler
+        @resize_pending = false
+        @previous_winch_handler = Signal.trap("WINCH") do
+          @resize_pending = true
+          wake_getch
+        end
+      end
+
+      def handle_wake_event
+        drain_wake_pipe
+        return resize_event if @resize_pending
+
+        Event.new(:quit, {})
+      end
+
+      def resize_event
+        @resize_pending = false
+        ::Curses.resizeterm(0, 0)
+        Event.new(:resize, {})
       end
 
       def enable_bracketed_paste
@@ -398,10 +419,16 @@ module Roded
       def render_picker_overlay
         return unless @picker_state
 
-        candidates = @picker_state[:candidates]
-        start_row = [@screen.maxy - candidates.length - 2, 0].max
-        candidates.each_with_index do |candidate, index|
-          marker = index == @picker_state[:selected_index] ? "> " : "  "
+        render_picker_rows(PickerViewport.slice(
+                             @picker_state[:candidates], @picker_state[:selected_index],
+                             limit: [@screen.maxy - 2, 0].max
+                           ))
+      end
+
+      def render_picker_rows(rows)
+        start_row = [@screen.maxy - rows[:candidates].length - 2, 0].max
+        rows[:candidates].each_with_index do |candidate, index|
+          marker = index == rows[:selected_index] ? "> " : "  "
           write_at(start_row + index, 0, "#{marker}#{candidate}", @screen.maxx)
         end
       end

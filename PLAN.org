@@ -170,7 +170,9 @@ undo и modified state согласованы. FileService и edit history — �
 - [X] Переиспользуемый picker model/provider API, live orderless filtering и
   history запросов; история и редактирование draft покрыты specs.
 - [ ] Providers: commands, buffers, file paths, project/root files, lines, KillRing.
-- [ ] Navigation/accept/cancel, empty/Unicode candidates, list scrolling/resize.
+- [X] Navigation/accept/cancel, empty/Unicode candidates, list scrolling/resize;
+  bounded snapshots preserve selection, curses PTY handles a live shrink, Qt
+  real-widget layout keeps the selected candidate visible in a short window.
 - [ ] Preview отменяется с восстановлением исходного view/buffer/point.
 - [ ] C-s line search, forward/backward search, goto-line и query-replace.
 - [X] `C-h b` / `M-x describe-bindings` показывают actual keymap и registry;

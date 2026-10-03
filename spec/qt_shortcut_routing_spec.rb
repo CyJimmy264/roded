@@ -85,5 +85,23 @@ RSpec.describe "Qt shortcut routing" do
 
     expect(application.current_buffer.to_s).to eq("\nbinding.irb")
   end
+
+  it "routes real Qt resize events back to the core" do
+    events = []
+    application = Object.new
+    application.define_singleton_method(:push_event) { |event| events << event }
+    view = Roded::Frontends::QtEditorWindow.new
+    frontend_router = Roded::Frontends::QtInputRouter.new(
+      application, translator, Roded::Frontends::QtClipboardBridge.new, :qt
+    )
+    frontend_router.connect(view) { nil }
+    view.show
+    view.window.resize(540, 360)
+    QApplication.process_events
+
+    expect(events.map(&:type)).to include(:resize)
+  ensure
+    view&.close
+  end
 end
 # rubocop:enable Metrics/BlockLength

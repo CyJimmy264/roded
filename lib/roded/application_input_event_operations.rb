@@ -4,6 +4,7 @@ module Roded
     def handle_event(event)
       return handle_repl_api_event(event) if event.type == :repl_api_call
       return append_ruby_repl_result(event.payload) if event.type == :repl_result
+      return broadcast_command(Command.new(:render, {})) if event.type == :resize
       return handle_system_event(event) if system_event?(event)
 
       process_frontend_input(event)

@@ -75,4 +75,18 @@ RSpec.describe Roded::Picker do
     expect(snapshot[:candidates][snapshot[:selected_index]]).to eq(picker.selected)
   end
 end
+
+RSpec.describe Roded::PickerViewport do
+  it "keeps the selected candidate visible in a short viewport" do
+    result = described_class.slice(%w[a b c d e f], 5, limit: 2)
+
+    expect(result).to eq(candidates: %w[e f], selected_index: 1)
+  end
+
+  it "returns no rows when the frontend has no candidate space" do
+    result = described_class.slice(%w[a b], 1, limit: 0)
+
+    expect(result).to eq(candidates: [], selected_index: 0)
+  end
+end
 # rubocop:enable Metrics/BlockLength
