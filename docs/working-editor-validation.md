@@ -373,7 +373,13 @@ File save здесь сохраняет текстовое представле�
   остаётся открытым.
 - В том же desktop-сеансе Super-комбинации не появились в журнале Qt key events;
   вероятен перехват оконным менеджером. Проверка Super на физической клавиатуре
-  остаётся открытой. XTest/xdotool — синтетический ввод и не вызывает sound API.
+  остаётся открытой. Позднее обнаружен desktop smoke-скрипт
+  `/tmp/roded_qt_smoke.rb`, запускавшийся под `DISPLAY=:0`. Пользовательское
+  предупреждение с заголовком `roded_qt_smoke.rb` и путём
+  `~/.config/roded_qt_smoke.rbrc` похоже на попытку этого процесса записать
+  config вне writable roots sandbox. Причинность не доказана; xdotool напрямую
+  не вызывает sound API, но его ввод мог активировать приложение/оконный менеджер,
+  поэтому нельзя исключить связь с увиденной модалкой или звуком.
 - Keymap теперь маршрутизирует доступные aliases `M-s-j`, `M-s-k`, `M-s-c`,
   `s-w`, `s-,`, `s-.`, `C-<` и `C->` к существующим save/buffer/window
   действиям. Specs проверяют фактический результат CommandRouter; это не
@@ -511,10 +517,12 @@ File save здесь сохраняет текстовое представле�
   REPL core API edit в открытый buffer `target`; `QTextEdit` получил актуальный
   snapshot `qt-repl-visible`. UI pump и event queue были живыми. Тест использовал
   core input events, а не реальные QKeyEvent.
-- На этом этапе я не запускал `xdotool`: curses проверен через PTY, Qt — через
-  offscreen backend. Ранее xdotool применялся только для synthetic desktop key
-  checks; звук не диагностирован. Реальный desktop REPL keyboard smoke остаётся
-  открытым. `STDOUT` constant и произвольные native writes не перехватываются.
+- До этого этапа xdotool уже применялся для synthetic desktop key checks;
+  desktop smoke не следует считать изолированным только потому, что команда
+  запущена в sandbox. После обнаружения возможной связи новые desktop key
+  injections не выполнялись. Источник звука не диагностирован. Реальный desktop
+  REPL keyboard smoke остаётся открытым. `STDOUT` constant и произвольные native
+  writes не перехватываются.
 - Этап 8 подтверждён curses PTY, Qt real-widget offscreen smoke и integration specs.
   Отдельный physical Qt key smoke остаётся в этапе 9 вместе с Super shortcuts;
   direct writes через `STDOUT` constant/native file descriptors ограничены
