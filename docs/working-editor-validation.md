@@ -3,6 +3,19 @@
 Этот журнал содержит воспроизводимые результаты текущей ветки. Исторический
 отчёт ревизии остаётся в `architecture-review-2026-10-03.md`.
 
+## 2026-10-03 — bracketed paste в настоящем curses TUI
+
+- Curses включает terminal bracketed-paste mode, собирает `ESC[200~` …
+  `ESC[201~` в один `Event(:paste)` и сохраняет bytes после закрывающего маркера
+  для следующего ввода. Фрагментированный start marker также покрыт spec.
+- `spec/curses_input_decoder_spec.rb`: 4 примера, 0 failures; decoder/spec
+  проходят RuboCop без offenses. Настоящий PTY
+  (`TERM=xterm-256color`, 24×80, Ruby 3.4.2) вставил `alpha\nвторой` через
+  bracketed-paste sequence, сохранил файл через `C-x C-s` и завершил curses
+  через `C-x C-c`; exit code 0, сохранён точный UTF-8 текст без final newline.
+- Полный RSpec после выделения decoder: **152 примера, 0 failures**.
+- Clipboard paste в Qt пока не направлен в core `:paste` contract.
+
 ## 2026-10-03 — Unicode position transforms между views
 
 - Добавлен end-to-end core scenario с греческой буквой, emoji вне BMP и

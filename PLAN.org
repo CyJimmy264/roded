@@ -127,7 +127,10 @@ file roundtrip не теряет текст. Коммит этапа до шир
 - [X] Базовая delta history для insert/delete/backspace/newline/kill-line,
   undo/redo commands, undo до saved state и явная группировка в core.
 - [X] Core `:paste` event вставляет многострочный UTF-8 текст одной edit
-  операцией; curses bracketed paste и Qt clipboard delivery остаются открытыми.
+  операцией; curses отправляет bracketed paste как один paste event.
+- [X] Curses bracketed-paste decoder tolerates fragmented start marker and
+  preserves subsequent input bytes.
+- [ ] Qt clipboard delivery проходит через core `:paste` event.
 - [X] `C-k` на EOL удаляет newline (в том числе final newline), сохраняет его
   в KillRing; соседние kill-команды объединяются до следующей команды.
 - [X] Undo до saved state.

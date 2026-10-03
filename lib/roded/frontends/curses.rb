@@ -1,5 +1,6 @@
 require "curses"
 require_relative "curses/minibuffer"
+require_relative "curses/input_decoder"
 
 module Roded
   module Frontends
@@ -14,10 +15,11 @@ module Roded
         @buffers = []
         @current_buffer = nil
         @top = 0
-        @input_buffer = +"".b
+        @input_decoder = CursesInputDecoder.new
         init_curses
+        enable_bracketed_paste
         initialize_colors
-        @stdin = STDIN
+        @stdin = $stdin
         @wake_r, @wake_w = IO.pipe
         @wake_w.sync = true
         @minibuffer_view = Curses::Minibuffer.new(@screen)
@@ -38,6 +40,7 @@ module Roded
       end
 
       def close
+        disable_bracketed_paste
         ::Curses.close_screen
         @wake_r&.close
         @wake_w&.close
@@ -102,6 +105,7 @@ module Roded
         logger.debug("next_event: read_key: #{key.inspect}")
         return Event.new(:noop, {}) unless key
         return Event.new(:quit, {}) if key == :quit_signal
+        return Event.new(:paste, { text: key.text }) if key.is_a?(CursesInputDecoder::PasteInput)
 
         Event.new(:key, { key: })
       end
@@ -174,105 +178,19 @@ module Roded
       end
 
       def read_key
-        readable, = IO.select([@stdin, @wake_r])
-        return nil unless readable
-
-        if readable.include?(@wake_r)
-          drain_wake_pipe
-          return :quit_signal
-        end
-
-        read_input_key
-      rescue IO::WaitReadable
-        decode_input_buffer
+        key = @input_decoder.read_key(@stdin, @wake_r)
+        drain_wake_pipe if key == :quit_signal
+        key
       end
 
-      def read_escape_sequence
-        sequence = +""
-        loop do
-          sequence << @stdin.read_nonblock(1)
-        rescue IO::WaitReadable
-          break
-        end
-
-        logger.debug("read_escape_sequence: #{sequence.inspect}")
-
-        return "Esc" if sequence.empty?
-
-        if sequence.start_with?("[")
-          return "Up" if sequence == "[A"
-          return "Down" if sequence == "[B"
-          return "Right" if sequence == "[C"
-          return "Left" if sequence == "[D"
-          return "Delete" if sequence == "[3~"
-        end
-
-        if sequence.start_with?("O")
-          return "Up" if sequence == "OA"
-          return "Down" if sequence == "OB"
-          return "Right" if sequence == "OC"
-          return "Left" if sequence == "OD"
-        end
-
-        utf8 = sequence.dup.force_encoding("UTF-8")
-        return "M-#{utf8}" if utf8.valid_encoding?
-
-        return "M-#{normalize_input(sequence)}" if sequence.length == 1
-
-        "Esc"
+      def enable_bracketed_paste
+        $stdout.write("\e[?2004h")
+        $stdout.flush
       end
 
-      def read_input_key
-        loop do
-          ch = @stdin.read_nonblock(1)
-          return nil unless ch
-
-          if ch == "\e"
-            @input_buffer.clear
-            return read_escape_sequence
-          end
-
-          @input_buffer << ch
-          key = decode_input_buffer
-          return key if key
-        end
-      rescue IO::WaitReadable
-        decode_input_buffer
-      end
-
-      def decode_input_buffer
-        return nil if @input_buffer.empty?
-
-        utf8 = @input_buffer.dup.force_encoding("UTF-8")
-        if utf8.valid_encoding?
-          @input_buffer.clear
-          return normalize_input(utf8)
-        end
-
-        expected = expected_utf8_length(@input_buffer.getbyte(0))
-        @input_buffer.clear if expected.nil? || @input_buffer.bytesize >= expected
-
-        nil
-      end
-
-      def expected_utf8_length(byte)
-        return 1 if byte < 0x80
-        return 2 if byte.between?(0xC0, 0xDF)
-        return 3 if byte.between?(0xE0, 0xEF)
-        return 4 if byte.between?(0xF0, 0xF7)
-
-        nil
-      end
-
-      def normalize_input(ch)
-        return "Enter" if ["\n", "\r"].include?(ch)
-        return "Backspace" if ["\u007F", "\b"].include?(ch)
-
-        codepoint = ch.ord
-        return "C-SPC" if codepoint.zero?
-        return "C-#{(codepoint + 96).chr}" if codepoint.between?(1, 26)
-
-        ch
+      def disable_bracketed_paste
+        $stdout.write("\e[?2004l")
+        $stdout.flush
       end
 
       def ensure_cursor_visible(_direction = nil)
