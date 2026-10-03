@@ -1266,3 +1266,13 @@ File save здесь сохраняет текстовое представле�
   Ctrl+/ undo, `C-c r d` redo, scratch startup and keyboard quit. Qt Widgets
   **6.11.2**, gem `qt` **0.2.0**; screenshots/log:
   `/tmp/roded-qt-live-smoke.3g2v5k`. Neither live check used desktop `DISPLAY`.
+
+## 2026-10-04 — remove legacy console status bar
+
+- `Roded::Window` is the logical editor view with independent point/mark and
+  viewport state. The unused legacy `Roded::StatusBar` wrote directly to stdout
+  and is no longer loaded or packaged; curses and Qt each render their own
+  modeline. Updated `AGENTS.md` to describe the current core modules and avoid
+  reintroducing the stdout presentation class.
+- `rg -n 'StatusBar' lib spec` returns no references. `bundle exec rake`:
+  **282 examples, 0 failures**; RuboCop: **147 files, 0 offenses**.

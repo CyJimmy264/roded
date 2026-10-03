@@ -46,7 +46,6 @@ require_relative "roded/minibuffer"
 require_relative "roded/window"
 require_relative "roded/window_layout"
 require_relative "roded/application"
-require_relative "roded/status_bar"
 
 require_relative "roded/version"
 

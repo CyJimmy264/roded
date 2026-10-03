@@ -1,7 +1,7 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-- `lib/roded` holds the core editor classes (Application, Buffer, Window, StatusBar, Minibuffer, Event/Command, Logging); curses and Qt frontends live in `lib/roded/frontends`.
+- `lib/roded` holds the core editor classes (Application, Buffer, Window, Minibuffer, Event/Command, Logging); curses and Qt frontends live in `lib/roded/frontends`. Modelines belong to the frontends; do not add a console `StatusBar` that writes directly to stdout.
 - Binaries: `bin/roded` entrypoint, `bin/console` for IRB sandboxing, `bin/setup` for bootstrapping.
 - Tests sit in `spec` with shared config in `spec/spec_helper.rb`; default Rake task runs tests and lint.
 - Packaging/metadata lives in `roded.gemspec`; docs in `docs/`; built gems accumulate in `pkg/`.

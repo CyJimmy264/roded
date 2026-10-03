@@ -184,7 +184,8 @@ undo и modified state согласованы. FileService и edit history — �
 - [ ] Robust input decode: function keys, Meta, Unicode, prefixes, paste, EOF.
 - [ ] Default/native UI rendering нигде не меняет domain model.
 - [X] Удалить пустой неиспользуемый `frontends/curses/window.rb` wrapper.
-- [ ] Удалить/переопределить console Window/StatusBar.
+- [X] Replace the old console Window with the logical view model and remove the
+  unused stdout-writing StatusBar; modelines are frontend presentation.
 - [X] Реальный PTY/curses smoke: два файла, split, edit, save, quit —
   подтверждён 2026-10-03; подробности в validation log.
 - [X] C-n/C-p внутри видимой области обновляют только затронутые строки, а
