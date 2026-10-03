@@ -195,6 +195,23 @@ File save здесь сохраняет текстовое представле�
   компонентов: **0 offenses**. Общий RuboCop по-прежнему падает на накопленном
   долге; `bundle exec rake` пока не проходит.
 
+## 2026-10-03 — region, cut/copy/yank
+
+- Добавлены `C-SPC`, `C-w`, `M-w`, `C-y`; выбор текста удаляется одной
+  undo-операцией, KillRing хранит удалённый текст, readonly buffer отклоняет
+  region delete. Buffer extraction/deletion сохраняет UTF-8 и CRLF.
+- Curses нормализует terminal NUL в `C-SPC`; живой PTY (`TERM=xterm-256color`)
+  подтвердил ввод `abc`, установку mark, выделение движением, `C-w`, `C-y` и
+  возврат текста к `abc`. Закрытие dirty scratch прошло через discard prompt,
+  процесс завершился с exit code 0 и вернул terminal mode.
+- Qt pane теперь использует `QTextEdit` read-only presentation и формирует HTML
+  selection из immutable core snapshot. Runtime probe gem 0.1.9 подтвердил
+  `QTextEdit#set_html`; offscreen Qt test проверяет escaping, сохранение текста
+  и выделение региона. Mouse-driven selection/clipboard в desktop UI ещё не
+  проверены.
+- Полный RSpec: **105 examples, 0 failures**. Новые core/curses изменения пока
+  увеличили RuboCop debt; общий `bundle exec rake` остаётся красным.
+
 ## 2026-10-03 — этап 2, подэтап: source routing и загрузка core
 
 - `bundle exec rspec`: **45 examples, 0 failures**.

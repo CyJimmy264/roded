@@ -35,6 +35,27 @@ RSpec.describe Roded::Frontends::QtEditorWindow do
     expect(view.editor).to equal(view.instance_variable_get(:@panes).fetch(202).editor)
   end
 
+  it "renders the core region as a Qt text selection" do
+    view = described_class.new
+    @views << view
+    view.render_layout(
+      tree: { window_id: 101 },
+      active_window_id: 101,
+      windows: [
+        {
+          id: 101, text: "a<b\nc", point: { row: 0, col: 3 }, mark: { row: 0, col: 1 },
+          name: "doc", active: true
+        }
+      ]
+    )
+
+    editor = view.editor
+    expect(editor).to be_a(QTextEdit)
+    expect(editor.to_plain_text).to eq("a<b\nc")
+    expect(editor.to_html).to include("#3e4451")
+    expect(editor.to_html).to include("&lt;b")
+  end
+
   it "collapses back to the remaining Qt pane after a window is deleted" do
     view = described_class.new
     @views << view

@@ -58,6 +58,26 @@ RSpec.describe Roded::Application do
     expect(buffer.to_s).to eq("")
   end
 
+  it "cuts and yanks a marked region with undoable buffer edits" do
+    application.startup
+    buffer = application.current_buffer
+    buffer.lines = ["abcdef"]
+    application.current_window.point = { row: 0, col: 1 }
+
+    application.handle_event(Roded::Event.new(:key, { key: "C-SPC" }))
+    application.handle_event(Roded::Event.new(:key, { key: "C-f" }))
+    application.handle_event(Roded::Event.new(:key, { key: "C-w" }))
+
+    expect(buffer.to_s).to eq("acdef")
+    expect(application.kill_ring.last).to eq("b")
+    expect(application.current_window.mark).to be_nil
+    expect(buffer.undo).to be(true)
+    expect(buffer.to_s).to eq("abcdef")
+
+    application.handle_event(Roded::Event.new(:key, { key: "C-y" }))
+    expect(buffer.to_s).to eq("abbcdef")
+  end
+
   it "keeps buffer positions in the active window while switching buffers" do
     application.startup
     window = application.current_window

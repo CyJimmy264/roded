@@ -5,7 +5,7 @@ module Roded
     end
 
     def handle(event)
-      @editor.kill_ring.break_sequence unless event.type == :kill_line
+      @editor.kill_ring.break_sequence unless %i[kill_line kill_region].include?(event.type)
       return handle_minibuffer_event(event) if @editor.focus == :minibuffer
 
       handle_buffer_event(event)
@@ -42,6 +42,14 @@ module Roded
       when :kill_line
         @editor.current_buffer&.kill_line(@editor.kill_ring)
         @editor.broadcast_command(Command.new(:render, {}))
+      when :set_mark
+        @editor.set_mark
+      when :kill_region
+        @editor.kill_region
+      when :copy_region
+        @editor.copy_region
+      when :yank
+        @editor.yank
       when :save_buffer
         filename = @editor.current_buffer&.filename
         filename ? @editor.save_file(filename) : @editor.start_minibuffer(:save, "Save file as: ")

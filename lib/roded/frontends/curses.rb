@@ -258,6 +258,7 @@ module Roded
         return "Backspace" if ch == "\u007F" || ch == "\b"
 
         codepoint = ch.ord
+        return "C-SPC" if codepoint.zero?
         return "C-#{(codepoint + 96).chr}" if codepoint.between?(1, 26)
 
         ch
@@ -324,7 +325,7 @@ module Roded
         first_line = visible_origin(item[:point][:row], item[:top_line], text_height)
         left_column = horizontal_origin(item[:point][:col], item[:left_column], width)
         item[:lines].slice(first_line, text_height).to_a.each_with_index do |line, index|
-          write_at(y + index, x, line[left_column..].to_s, width)
+          draw_buffer_line(item, line, first_line + index, y + index, x, width, left_column)
         end
         modeline_row = y + height - 1
         point = item[:point]
@@ -338,6 +339,36 @@ module Roded
         cursor_y = cursor_y.clamp(y, [y + text_height - 1, y].max)
         cursor_x = cursor_x.clamp(x, x + width - 1)
         @screen.setpos(cursor_y, cursor_x)
+      end
+
+      def draw_buffer_line(item, line, buffer_row, screen_row, x, width, left_column)
+        selection = selection_columns(item, buffer_row, line.length)
+        return write_at(screen_row, x, line[left_column..].to_s, width) unless selection
+
+        first, last = selection.map { |column| (column - left_column).clamp(0, width) }
+        first, last = last, first if last < first
+        text = line[left_column..].to_s
+        write_at(screen_row, x, text[0...first].to_s, width)
+        @screen.attron(Curses::A_REVERSE) do
+          selected = text[first...last].to_s
+          selected = " " if selected.empty? && first == last
+          write_at(screen_row, x + first, selected, width - first)
+        end
+        write_at(screen_row, x + last, text[last..].to_s, width - last)
+      end
+
+      def selection_columns(item, row, line_length)
+        mark = item[:mark]
+        point = item[:point]
+        return unless mark && mark != point
+
+        first, last = [mark, point].sort_by { |position| [position[:row], position[:col]] }
+        return unless row.between?(first[:row], last[:row])
+
+        start_column = row == first[:row] ? first[:col] : 0
+        end_column = row == last[:row] ? last[:col] : line_length
+        end_column = [end_column, line_length].min
+        [start_column, end_column]
       end
 
       def visible_origin(point, origin, span)

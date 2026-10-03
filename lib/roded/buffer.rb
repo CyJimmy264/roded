@@ -178,6 +178,37 @@ module Roded
       end
     end
 
+    def region_text(start_position, end_position)
+      start_position, end_position = ordered_positions(start_position, end_position)
+      return "" if start_position == end_position
+
+      first_row, first_col = start_position.values_at(:row, :col)
+      last_row, last_col = end_position.values_at(:row, :col)
+      return @lines[first_row][first_col...last_col].to_s if first_row == last_row
+
+      segments = [@lines[first_row][first_col..].to_s]
+      segments.concat(@lines[(first_row + 1)...last_row])
+      segments << @lines[last_row][0...last_col].to_s
+      segments.join(@line_ending)
+    end
+
+    def delete_region(start_position, end_position)
+      return false if readonly
+
+      start_position, end_position = ordered_positions(start_position, end_position)
+      return false if start_position == end_position
+
+      first_row, first_col = start_position.values_at(:row, :col)
+      last_row, last_col = end_position.values_at(:row, :col)
+      record_edit(first_row, last_row - first_row + 1, 1) do
+        prefix = @lines[first_row][0...first_col]
+        suffix = @lines[last_row][last_col..].to_s
+        @lines[first_row..last_row] = [prefix + suffix]
+        @cursor_pos = { row: first_row, col: first_col }
+      end
+      true
+    end
+
     def move_cursor_left
       @cursor_pos[:col] = [@cursor_pos[:col] - 1, 0].max
       notify_observers
@@ -335,6 +366,15 @@ module Roded
         lines: @lines.slice(row, line_count).map(&:dup), cursor: @cursor_pos.dup,
         line_ending: @line_ending.dup, final_newline: @final_newline
       }
+    end
+
+    def ordered_positions(first, second)
+      positions = [first, second].map do |position|
+        row = position.fetch(:row, 0).to_i.clamp(0, @lines.length - 1)
+        col = position.fetch(:col, 0).to_i.clamp(0, @lines[row].length)
+        { row:, col: }
+      end
+      positions.sort_by { |position| [position[:row], position[:col]] }
     end
 
     def paste_snapshot(text)

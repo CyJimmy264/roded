@@ -191,6 +191,28 @@ RSpec.describe Roded::Buffer do
     end
   end
 
+  describe "region edits" do
+    it "extracts and deletes a UTF-8 region across CRLF lines as one undo step" do
+      buffer.load_text("aαb\r\ncd")
+
+      expect(buffer.region_text({ row: 0, col: 1 }, { row: 1, col: 1 })).to eq("αb\r\nc")
+      buffer.delete_region({ row: 0, col: 1 }, { row: 1, col: 1 })
+
+      expect(buffer.to_s).to eq("ad")
+      expect(buffer.cursor_pos).to eq({ row: 0, col: 1 })
+      expect(buffer.undo).to be(true)
+      expect(buffer.to_s).to eq("aαb\r\ncd")
+    end
+
+    it "does not delete a region in a readonly buffer" do
+      buffer.load_text("abc")
+      buffer.readonly = true
+
+      expect(buffer.delete_region({ row: 0, col: 0 }, { row: 0, col: 2 })).to be(false)
+      expect(buffer.to_s).to eq("abc")
+    end
+  end
+
   describe "readonly mode" do
     before do
       buffer.lines = %w[abc def]

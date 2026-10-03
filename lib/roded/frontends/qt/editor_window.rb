@@ -124,7 +124,7 @@ module Roded
       def apply_theme
         @window.set_style_sheet(
           "QWidget { background: #292b34; color: #bbc2cf; } " \
-          "QPlainTextEdit { background: #282c34; color: #bbc2cf; border: 0; " \
+          "QTextEdit { background: #282c34; color: #bbc2cf; border: 0; " \
           "selection-background-color: #3e4451; } QLabel { padding: 4px; }"
         )
       end

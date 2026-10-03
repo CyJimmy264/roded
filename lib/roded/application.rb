@@ -237,6 +237,43 @@ module Roded
       changed
     end
 
+    def set_mark
+      return unless current_window
+
+      current_window.mark = current_window.point
+      broadcast_command(Command.new(:render, {}))
+    end
+
+    def copy_region
+      region = active_region
+      return display_message("No active region.") unless region
+
+      kill_ring.break_sequence
+      kill_ring.push(current_buffer.region_text(*region))
+      display_message("Region copied.")
+    end
+
+    def kill_region
+      region = active_region
+      return display_message("No active region.") unless region
+
+      text = current_buffer.region_text(*region)
+      return unless current_buffer.delete_region(*region)
+
+      kill_ring.push(text)
+      current_window.mark = nil
+      broadcast_command(Command.new(:render, {}))
+    end
+
+    def yank
+      text = kill_ring.last
+      return display_message("Kill ring is empty.") unless text
+
+      current_buffer.insert_text(text)
+      current_window.mark = nil
+      broadcast_command(Command.new(:render, {}))
+    end
+
     def next_buffer
       activate_relative_buffer(1)
     end
@@ -300,6 +337,12 @@ module Roded
     end
 
     private
+
+    def active_region
+      return unless current_window&.mark
+
+      [current_window.mark, current_window.point]
+    end
 
     def minibuffer_submit_handler
       @minibuffer_submit_handler ||= MinibufferSubmitHandler.new(self)
