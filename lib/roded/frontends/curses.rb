@@ -67,6 +67,8 @@ module Roded
       def update(buffer)
         return unless buffer == @current_buffer
 
+        return if @layout_snapshot && @layout_snapshot[:windows].length > 1
+
         @data_lines = buffer.lines if buffer.respond_to?(:lines)
         ensure_cursor_visible
         redraw
@@ -116,6 +118,8 @@ module Roded
         logger.debug("handle_command: #{command.type}")
         case command.type
         when :move_cursor
+          return if @layout_snapshot && @layout_snapshot[:windows].length > 1
+
           direction = command.payload[:direction]
           if %i[up down].include?(direction)
             send("scroll_#{direction}")
@@ -124,7 +128,8 @@ module Roded
             redraw
           end
         when :render
-          redraw
+          snapshot = command.payload[:editor_snapshot]
+          snapshot ? render_layout(snapshot) : redraw
         when :minibuffer_render
           @minibuffer_state = command.payload
           render_minibuffer_overlay
@@ -281,6 +286,80 @@ module Roded
         place_cursor
         render_minibuffer_overlay
         @screen.refresh
+      end
+
+      def render_layout(snapshot)
+        @layout_snapshot = snapshot
+        @screen.clear
+        area_height = [@screen.maxy - 1, 1].max
+        rectangles = layout_rectangles(
+          snapshot[:tree], 0, 0, @screen.maxx, area_height
+        )
+        records = snapshot[:windows].to_h { |item| [item[:id], item] }
+        rectangles.each { |id, x, y, width, height| draw_window(records[id], x, y, width, height) }
+        render_minibuffer_overlay
+        @screen.refresh
+      end
+
+      def layout_rectangles(tree, x, y, width, height)
+        return [[tree[:window_id], x, y, width, height]] if tree[:window_id]
+
+        if tree[:direction] == :vertical
+          first_width = width / 2
+          layout_rectangles(tree[:first], x, y, first_width, height) +
+            layout_rectangles(tree[:second], x + first_width, y,
+                              width - first_width, height)
+        else
+          first_height = height / 2
+          layout_rectangles(tree[:first], x, y, width, first_height) +
+            layout_rectangles(tree[:second], x, y + first_height,
+                              width, height - first_height)
+        end
+      end
+
+      def draw_window(item, x, y, width, height)
+        return unless item
+
+        text_height = [height - 1, 0].max
+        first_line = visible_origin(item[:point][:row], item[:top_line], text_height)
+        left_column = horizontal_origin(item[:point][:col], item[:left_column], width)
+        item[:lines].slice(first_line, text_height).to_a.each_with_index do |line, index|
+          write_at(y + index, x, line[left_column..].to_s, width)
+        end
+        modeline_row = y + height - 1
+        point = item[:point]
+        active_marker = item[:active] ? "*" : "-"
+        mode = "#{active_marker} #{item[:name]}  #{point[:row] + 1}:#{point[:col] + 1}"
+        write_at(modeline_row, x, mode, width)
+        return unless item[:active] && height.positive? && width.positive?
+
+        cursor_y = y + point[:row] - first_line
+        cursor_x = x + point[:col] - left_column
+        cursor_y = cursor_y.clamp(y, [y + text_height - 1, y].max)
+        cursor_x = cursor_x.clamp(x, x + width - 1)
+        @screen.setpos(cursor_y, cursor_x)
+      end
+
+      def visible_origin(point, origin, span)
+        return point if point < origin
+        return point - span + 1 if span.positive? && point >= origin + span
+
+        origin
+      end
+
+      def horizontal_origin(point, origin, span)
+        return point if point < origin
+        return point - span + 1 if span.positive? && point >= origin + span
+
+        origin
+      end
+
+      def write_at(row, column, text, width)
+        return unless row.between?(0, @screen.maxy - 1) && column.between?(0, @screen.maxx - 1)
+        return unless width.positive?
+
+        @screen.setpos(row, column)
+        @screen.addstr(text.to_s[0, width])
       end
 
       def place_cursor

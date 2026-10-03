@@ -1,11 +1,13 @@
 require "qt"
 require_relative "qt/key_translator"
+require_relative "qt/editor_pane"
+require_relative "qt/splitter_tree"
 require_relative "qt/editor_window"
 require_relative "qt/ui_dispatcher"
 
 module Roded
   module Frontends
-    # Connects the shared editor core to a single Qt desktop window.
+      # Connects the shared editor core to a Qt desktop window.
     class Qt
       attr_reader :view
 
@@ -41,6 +43,10 @@ module Roded
         buffer ||= @application.current_buffer
         return unless buffer
 
+        if @application.current_window
+          @ui_dispatcher.post(:layout, @application.editor_snapshot)
+          return
+        end
         @ui_dispatcher.post(:render, buffer_snapshot(buffer))
       end
 
@@ -50,7 +56,10 @@ module Roded
 
       def handle_command(command)
         case command.type
-        when :render, :move_cursor
+        when :render
+          snapshot = command.payload[:editor_snapshot]
+          snapshot ? @ui_dispatcher.post(:layout, snapshot) : render
+        when :move_cursor
           render
         when :minibuffer_render
           @ui_dispatcher.post(:minibuffer, command.payload.dup.freeze)
@@ -96,7 +105,11 @@ module Roded
 
       def enqueue_key(payload)
         key = @key_translator.translate(payload)
-        @application.push_event(Event.new(:key, { key: key, source_id: input_source_id })) if key
+        if key
+          @application.push_event(
+            Event.new(:key, { key:, source_id: input_source_id, window_id: payload[:window_id] })
+          )
+        end
         :consume
       end
 

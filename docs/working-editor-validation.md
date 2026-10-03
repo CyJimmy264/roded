@@ -165,8 +165,31 @@ File save здесь сохраняет текстовое представле�
 - Проверки: **91 examples, 0 failures**. Specs покрывают две модели view на
   общем buffer, независимые point/mark, clamp и восстановление позиции после
   buffer switching. RuboCop по `window.rb` и `window_spec.rb` чистый.
-- Несколько окон ещё не переключаются/не отображаются; edit deltas пока не
-  преобразуют point/mark других views. Этапы 2 и 5 остаются открытыми.
+- На момент того среза окна ещё не отображались; это было закрыто последующим
+  этапом split windows ниже. Этапы 2 и 5 в целом остаются открытыми.
+
+## 2026-10-03 — split windows и UI-проверка
+
+- Добавлены вложенное дерево окон и команды `C-x 2`, `C-x 3`, `C-x o`,
+  `C-x 0`, `C-x 1`; curses показывает split panes, отдельные modelines и
+  общее содержимое одного buffer. Другие views получают преобразование
+  point/mark при edit и undo.
+- В реальном PTY (`TERM=xterm-256color`, 24×80, Ruby 3.4.2) выполнены split,
+  переход во второе окно, вставка `A`, переход обратно, undo и quit. Процесс
+  завершился с exit code 0 и восстановил alternate screen. Предыдущие PTY
+  прогоны этого этапа также проверили `C-x 3` и `C-x 0`.
+- `QT_QPA_PLATFORM=offscreen bundle exec rspec spec/qt_editor_window_spec.rb`
+  создал реальные `QPlainTextEdit` и `QSplitter`, проверил два child pane и
+  collapse после удаления окна. Desktop Qt запущен с gem `qt` 0.1.9 на X11
+  (`DISPLAY=:0`); XTest/xdotool доставил `C-x` и `2` в core. На снимке desktop
+  разделение pane не удалось подтвердить визуально, поэтому Qt layout smoke
+  остаётся открытым.
+- В том же desktop-сеансе Super-комбинации не появились в журнале Qt key events;
+  вероятен перехват оконным менеджером. Проверка Super на физической клавиатуре
+  остаётся открытой. XTest/xdotool — синтетический ввод и не вызывает sound API.
+- Полный набор RSpec: **99 examples, 0 failures**. RuboCop новых Qt pane/splitter
+  компонентов: **0 offenses**. Общий RuboCop по-прежнему падает на накопленном
+  долге; `bundle exec rake` пока не проходит.
 
 ## 2026-10-03 — этап 2, подэтап: source routing и загрузка core
 

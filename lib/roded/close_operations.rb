@@ -97,11 +97,13 @@ module Roded
 
     def remove_buffer(buffer)
       @buffers.delete(buffer)
+      buffer.remove_edit_observer(self)
       @frontends.each { |frontend| frontend.remove_buffer(buffer) if frontend.respond_to?(:remove_buffer) }
       add_buffer(Buffer.new("*scratch*")) if @buffers.empty?
       @current_buffer = @buffers.first
       @windows.each { |window| window.buffer = @current_buffer if window.buffer == buffer }
       @frontends.each { |frontend| frontend.render(@current_buffer) }
+      broadcast_command(Command.new(:render, {}))
       display_message("Buffer killed.")
     end
 

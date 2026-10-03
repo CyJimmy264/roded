@@ -30,6 +30,7 @@ module Roded
       def apply(action, payload)
         case action
         when :render then @view.render(payload)
+        when :layout then @view.render_layout(payload)
         when :message then @view.display_message(payload)
         when :minibuffer then @view.render_minibuffer(payload)
         when :minibuffer_clear then @view.clear_minibuffer

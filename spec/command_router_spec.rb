@@ -18,6 +18,14 @@ RSpec.describe Roded::CommandRouter do
     expect(second).to eq(Roded::Event.new(:request_quit, {}))
   end
 
+  it "routes window split and navigation bindings" do
+    expect(route_sequence("C-x", "2")).to eq(Roded::Event.new(:split_horizontal, {}))
+    expect(route_sequence("C-x", "3")).to eq(Roded::Event.new(:split_vertical, {}))
+    expect(route_sequence("C-x", "o")).to eq(Roded::Event.new(:other_window, {}))
+    expect(route_sequence("C-x", "0")).to eq(Roded::Event.new(:delete_window, {}))
+    expect(route_sequence("C-x", "1")).to eq(Roded::Event.new(:delete_other_windows, {}))
+  end
+
   it "resolves meta bindings through escape prefix" do
     first = router.route("Esc")
     second = router.route("x")
@@ -61,6 +69,10 @@ RSpec.describe Roded::CommandRouter do
     expect(custom_router.route("C-c").type).to eq(:prefix_pending)
     expect(custom_router.route("r").type).to eq(:prefix_pending)
     expect(custom_router.route("r")).to eq(Roded::Event.new(:ruby_repl, {}))
+  end
+
+  def route_sequence(*keys)
+    keys.map { |key| router.route(key) }.last
   end
 end
 # rubocop:enable Metrics/BlockLength

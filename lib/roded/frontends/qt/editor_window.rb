@@ -1,29 +1,27 @@
+require_relative "editor_pane"
+require_relative "echo_area"
+require_relative "splitter_tree"
+
 module Roded
   module Frontends
-    # Presents shared editor state through Qt widgets without owning document text.
+    # Presents editor snapshots in a tree of read-only Qt panes.
     class QtEditorWindow
-      # TODO(qt): HACK — qt 0.1.9 omits QTextCursor::MoveOperation enum names.
-      # Workaround: use Qt's public integer values to place the read-only view cursor.
-      # Extend the binding to expose this enum, then replace these values with named constants.
-      MOVE_START = 1
-      MOVE_DOWN = 12
-      MOVE_RIGHT = 19
-
-      attr_reader :window, :editor
+      attr_reader :window, :editor, :editor_area
 
       def initialize
         @window = QWidget.new
         @window.set_window_title("Roded")
-        @editor = QPlainTextEdit.new(@window)
-        @editor.set_read_only(true)
-        @modeline = QLabel.new(@window)
-        @minibuffer = QLabel.new(@window)
+        @content_host = QWidget.new(@window)
+        @content_layout = QVBoxLayout.new(@content_host)
+        @echo_area = QtEchoArea.new(@window)
+        initialize_panes
         build_layout
-        set_theme
+        apply_theme
       end
 
-      def on_key_press(&)
-        @editor.on(:key_press, &)
+      def on_key_press(&callback)
+        @key_callback = callback
+        @panes.each { |id, pane| pane.bind(id, callback) }
       end
 
       def on_close(&)
@@ -37,28 +35,35 @@ module Roded
       def show
         @window.resize(960, 640)
         @window.show
-        @editor.set_focus
+        @editor&.set_focus
       end
 
       def render(snapshot)
-        @editor.set_plain_text(snapshot.fetch(:text))
-        place_cursor(snapshot.fetch(:row), snapshot.fetch(:col))
-        @modeline.set_text(snapshot.fetch(:modeline))
+        pane = pane_for(:single)
+        pane.bind(:single, @key_callback)
+        pane.render(snapshot)
+        @splitter_tree.mount_single(pane.container)
+        @editor_area = pane.container
+        @editor = pane.editor
+        @editor.set_focus
       end
 
-      def render_minibuffer(payload)
-        prompt = payload[:prompt].to_s
-        text = payload[:text].to_s
-        @minibuffer.set_text("#{prompt}#{text}")
+      def render_layout(snapshot)
+        records = snapshot[:windows].to_h { |item| [item[:id], item] }
+        migrate_single_pane(records)
+        bind_panes(records)
+        remove_stale_panes(records.keys)
+        render_panes(records)
+        @splitter_tree.mount(snapshot[:tree]) { |id| @panes.fetch(id) }
+        @editor_area = @splitter_tree.root
+        activate_editor(snapshot[:active_window_id])
       end
 
-      def clear_minibuffer
-        @minibuffer.clear
-      end
+      def render_minibuffer(payload) = @echo_area.render_minibuffer(payload)
 
-      def display_message(message)
-        @minibuffer.set_text(message.to_s)
-      end
+      def clear_minibuffer = @echo_area.clear
+
+      def display_message(message) = @echo_area.display(message)
 
       def close
         @window.hide
@@ -66,26 +71,62 @@ module Roded
 
       private
 
-      def build_layout
-        layout = QVBoxLayout.new(@window)
-        layout.add_widget(@editor)
-        layout.add_widget(@modeline)
-        layout.add_widget(@minibuffer)
+      def initialize_panes
+        @panes = {}
+        @pane_pool = []
+        @splitter_tree = QtSplitterTree.new(@window, @content_layout)
+        @editor = nil
+        @editor_area = nil
+        @active_window_id = nil
       end
 
-      def set_theme
+      def build_layout
+        layout = QVBoxLayout.new(@window)
+        layout.add_widget(@content_host)
+        layout.add_widget(@echo_area.widget)
+      end
+
+      def pane_for(id)
+        @panes[id] ||= @pane_pool.pop || QtEditorPane.new(@window)
+      end
+
+      def migrate_single_pane(records)
+        return unless @panes.key?(:single) && !records.key?(:single) && records.any?
+
+        @panes[records.keys.first] = @panes.delete(:single)
+      end
+
+      def bind_panes(records)
+        records.each_key { |id| pane_for(id).bind(id, @key_callback) }
+      end
+
+      def render_panes(records)
+        records.each { |id, item| @panes.fetch(id).render(item) }
+      end
+
+      def remove_stale_panes(active_ids)
+        (@panes.keys - active_ids).each do |id|
+          pane = @panes.delete(id)
+          pane.container.hide
+          pane.container.set_parent(@window)
+          @pane_pool << pane
+        end
+      end
+
+      def activate_editor(active_id)
+        return unless @panes.key?(active_id)
+
+        @editor = @panes.fetch(active_id).editor
+        @editor.set_focus if active_id != @active_window_id
+        @active_window_id = active_id
+      end
+
+      def apply_theme
         @window.set_style_sheet(
           "QWidget { background: #292b34; color: #bbc2cf; } " \
           "QPlainTextEdit { background: #282c34; color: #bbc2cf; border: 0; " \
           "selection-background-color: #3e4451; } QLabel { padding: 4px; }"
         )
-      end
-
-      def place_cursor(row, col)
-        @editor.move_cursor(MOVE_START)
-        row.times { @editor.move_cursor(MOVE_DOWN) }
-        col.times { @editor.move_cursor(MOVE_RIGHT) }
-        @editor.ensure_cursor_visible
       end
     end
   end

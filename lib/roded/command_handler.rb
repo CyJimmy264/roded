@@ -57,6 +57,16 @@ module Roded
         @editor.next_buffer
       when :kill_buffer
         @editor.kill_current_buffer
+      when :split_horizontal
+        @editor.split_window(:horizontal)
+      when :split_vertical
+        @editor.split_window(:vertical)
+      when :other_window
+        @editor.other_window
+      when :delete_window
+        @editor.delete_window
+      when :delete_other_windows
+        @editor.delete_other_windows
       when :undo
         @editor.undo
       when :redo

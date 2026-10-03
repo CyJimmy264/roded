@@ -146,15 +146,15 @@ undo и modified state согласованы. FileService и edit history — �
 - [ ] Emacs-подобный dark UI, modeline and echo/minibuffer.
 - [X] Next/previous buffer, exact-name/path switch and kill clean buffer.
 - [ ] Picker/completion, dirty-buffer save/discard/cancel, basename disambiguation.
-- [ ] Horizontal/vertical split, other/delete/only window; последний view сохраняется.
-- [ ] Один buffer в двух окнах: общий текст, независимые point/mark/positions.
+- [X] Horizontal/vertical split, other/delete/only window; последний view сохраняется.
+- [X] Один buffer в двух окнах: общий текст, независимые point/mark/positions.
 - [ ] Viewport follows point с горизонтальным scrolling; page size из text area.
 - [ ] Custom line/page scrolling с явно определённой core/view policy.
 - [ ] Resize/small screen, prompts/picker overlays, сохранение active view.
 - [ ] Robust input decode: function keys, Meta, Unicode, prefixes, paste, EOF.
 - [ ] Default/native UI rendering нигде не меняет domain model.
 - [ ] Удалить/переопределить console Window/StatusBar и пустые wrappers.
-- [ ] Первый реальный PTY/curses smoke: несколько файлов, split, edit, save, quit.
+- [ ] Реальный PTY/curses smoke: несколько файлов, split, edit, save, quit.
 
 Критерий: основной file/window scenario выполняется в настоящем TUI.
 

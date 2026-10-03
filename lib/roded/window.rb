@@ -37,6 +37,23 @@ module Roded
       remember_position
     end
 
+    def copy
+      window = self.class.new(@buffer)
+      window.point = @point
+      window.mark = @mark
+      window.top_line = @top_line
+      window.left_column = @left_column
+      window
+    end
+
+    def transform_positions(change)
+      @point = transform_position(@point, change)
+      @mark = transform_position(@mark, change) if @mark
+      clamp_point
+      clamp_mark
+      remember_position
+    end
+
     private
 
     def remember_position
@@ -53,6 +70,28 @@ module Roded
 
       @mark[:row] = @mark[:row].clamp(0, @buffer.lines.length - 1)
       @mark[:col] = @mark[:col].clamp(0, @buffer.lines[@mark[:row]].length)
+    end
+
+    def transform_position(position, change)
+      return position if position_before?(position, change.start)
+      return change.new_end.dup if position_before?(position, change.old_end)
+
+      map_position_after_edit(position, change)
+    end
+
+    def position_before?(position, other)
+      (position[:row] <=> other[:row]).negative? ||
+        (position[:row] == other[:row] && position[:col] < other[:col])
+    end
+
+    def map_position_after_edit(position, change)
+      row_delta = change.new_end[:row] - change.old_end[:row]
+      if position[:row] == change.old_end[:row]
+        return { row: change.new_end[:row],
+                 col: change.new_end[:col] + position[:col] - change.old_end[:col] }
+      end
+
+      { row: position[:row] + row_delta, col: position[:col] }
     end
   end
 end

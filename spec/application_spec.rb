@@ -43,7 +43,8 @@ RSpec.describe Roded::Application do
 
     application.process_command("redo")
     expect(buffer.to_s).to eq("a")
-    expect(frontend.commands.last).to eq(Roded::Command.new(:render, {}))
+    expect(frontend.commands.last.type).to eq(:render)
+    expect(frontend.commands.last.payload[:editor_snapshot][:windows].first[:text]).to eq("a")
   end
 
   it "inserts a paste as one multiline edit" do
@@ -83,6 +84,67 @@ RSpec.describe Roded::Application do
 
     expect(application.current_window.point).to eq({ row: 0, col: 1 })
     expect(application.current_buffer.cursor_pos).to eq({ row: 0, col: 1 })
+  end
+
+  it "transforms the other view point and mark on edits and undo" do
+    application.startup
+    buffer = application.current_buffer
+    buffer.lines = ["abcdef"]
+    first = application.current_window
+    first.point = { row: 0, col: 5 }
+    first.mark = { row: 0, col: 3 }
+    second = application.split_window(:vertical)
+    second.point = { row: 0, col: 1 }
+
+    application.handle_event(Roded::Event.new(:key, { key: "X" }))
+
+    expect(buffer.to_s).to eq("aXbcdef")
+    expect(first.point).to eq({ row: 0, col: 6 })
+    expect(first.mark).to eq({ row: 0, col: 4 })
+    application.undo
+
+    expect(buffer.to_s).to eq("abcdef")
+    expect(first.point).to eq({ row: 0, col: 5 })
+    expect(first.mark).to eq({ row: 0, col: 3 })
+  end
+
+  it "splits, switches, and closes editor windows without closing their buffer" do
+    application.startup
+    buffer = application.current_buffer
+    buffer.lines = ["shared text"]
+    application.current_window.point = { row: 0, col: 2 }
+    first = application.current_window
+
+    second = application.split_window(:vertical)
+    expect(application.windows).to eq([first, second])
+    expect(second.buffer).to equal(buffer)
+    expect(second.point).to eq({ row: 0, col: 2 })
+    second.point = { row: 0, col: 5 }
+    snapshot = application.editor_snapshot
+    expect(snapshot[:windows].map { |item| item[:text] }).to eq(["shared text", "shared text"])
+    expect(snapshot[:tree][:direction]).to eq(:vertical)
+    expect(snapshot[:windows].first[:point]).to be_frozen
+    expect(snapshot[:windows].first[:text]).to be_frozen
+
+    application.other_window
+    expect(application.current_window).to equal(first)
+    expect(first.point).to eq({ row: 0, col: 2 })
+    application.delete_window
+    expect(application.windows).to eq([second])
+    expect(application.buffers).to include(buffer)
+  end
+
+  it "keeps only the active window when deleting other windows" do
+    application.startup
+    first = application.current_window
+    application.split_window(:horizontal)
+    active = application.current_window
+
+    application.delete_other_windows
+
+    expect(application.windows).to eq([active])
+    expect(application.current_window).to equal(active)
+    expect(application.windows).not_to include(first)
   end
 
   it "opens a file and renders the loaded buffer" do

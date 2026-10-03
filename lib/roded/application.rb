@@ -12,6 +12,7 @@ module Roded
     def initialize
       @buffers = []
       @windows = []
+      @window_layout = nil
       @frontends = []
       @frontend_threads = []
       @frontend_sources = {}
@@ -57,17 +58,60 @@ module Roded
 
     def add_buffer(buffer)
       @buffers << buffer
+      buffer.add_edit_observer(self)
       @current_buffer ||= buffer
       @frontends.each { |frontend| frontend.add_buffer(buffer) }
     end
 
     def add_window(window)
-      @windows << window
+      if @window_layout
+        @window_layout.split(@current_window, window, :vertical)
+        @windows = @window_layout.windows
+      else
+        @window_layout = WindowLayout.new(window)
+        @windows = [window]
+      end
       @current_window ||= window
     end
 
     def windows
-      @windows.dup.freeze
+      @window_layout ? @window_layout.windows.freeze : [].freeze
+    end
+
+    def split_window(direction)
+      return unless @current_window
+
+      window = @current_window.copy
+      @window_layout.split(@current_window, window, direction)
+      @windows = @window_layout.windows
+      @current_window = window
+      @current_buffer = window.buffer
+      render_active_window
+      window
+    end
+
+    def other_window
+      return if windows.length < 2
+
+      index = windows.index(@current_window) || 0
+      activate_window(windows[(index + 1) % windows.length])
+    end
+
+    def delete_window
+      return display_message("Cannot delete the only window.") if windows.length < 2
+
+      removed = @current_window
+      @window_layout.remove(removed)
+      @windows = @window_layout.windows
+      activate_window(@windows.first)
+    end
+
+    def delete_other_windows
+      return unless @current_window
+
+      @window_layout.keep(@current_window)
+      @windows = [@current_window]
+      render_active_window
     end
 
     def set_status_bar(status_bar)
@@ -82,8 +126,26 @@ module Roded
     end
 
     def broadcast_command(command)
+      if command.type == :render && current_window
+        payload = command.payload.merge(editor_snapshot: editor_snapshot)
+        command = Command.new(:render, payload.freeze)
+      end
       logger.debug("broadcast_command: #{command.type}")
       @frontends.each { |f| f.handle_command(command) }
+    end
+
+    def editor_snapshot
+      {
+        tree: @window_layout.snapshot_tree,
+        active_window_id: @current_window&.object_id,
+        windows: windows.map { |window| window_snapshot(window) }.freeze
+      }.freeze
+    end
+
+    def buffer_edited(buffer, position_change)
+      windows.each do |window|
+        window.transform_positions(position_change) if window.buffer.equal?(buffer)
+      end
     end
 
     def push_event(event)
@@ -120,6 +182,8 @@ module Roded
       return request_quit(force: true) if SYSTEM_EVENTS.include?(event.type)
       return request_quit if event.type == :close_request
 
+      target_window = windows.find { |window| window.object_id == event.payload[:window_id] }
+      activate_window(target_window) if target_window && !target_window.equal?(@current_window)
       window_before = @current_window
       buffer_before = current_buffer
       buffer_before.cursor_pos = window_before.point if window_before && buffer_before
@@ -129,6 +193,7 @@ module Roded
       if window_before && @current_window.equal?(window_before) && current_buffer.equal?(buffer_before)
         window_before.point = buffer_before.cursor_pos
       end
+      broadcast_command(Command.new(:render, {})) if windows.length > 1
     ensure
       @active_source_id = nil
     end
@@ -250,6 +315,7 @@ module Roded
       @current_window.buffer = buffer if @current_window
       buffer.cursor_pos = @current_window.point if @current_window
       @frontends.each { |frontend| frontend.render(buffer) }
+      broadcast_command(Command.new(:render, {}))
       display_message("File '#{result.path}' opened.")
     end
 
@@ -258,7 +324,35 @@ module Roded
       @current_window.buffer = buffer if @current_window
       buffer.cursor_pos = @current_window.point if @current_window
       @frontends.each { |frontend| frontend.render(buffer) }
+      broadcast_command(Command.new(:render, {}))
       display_message(message) if message
+    end
+
+    def activate_window(window)
+      @current_window = window
+      @current_buffer = window.buffer
+      @current_buffer.cursor_pos = window.point
+      render_active_window
+    end
+
+    def render_active_window
+      @frontends.each { |frontend| frontend.render(current_buffer) }
+      broadcast_command(Command.new(:render, {}))
+    end
+
+    def window_snapshot(window)
+      buffer = window.buffer
+      {
+        id: window.object_id,
+        text: buffer.to_s.dup.freeze,
+        lines: buffer.lines.map { |line| line.dup.freeze }.freeze,
+        point: window.point.dup.freeze,
+        mark: window.mark&.dup&.freeze,
+        name: (buffer.filename || buffer.name || "*scratch*").to_s.dup.freeze,
+        top_line: window.top_line,
+        left_column: window.left_column,
+        active: window.equal?(@current_window)
+      }.freeze
     end
 
     def activate_relative_buffer(direction)

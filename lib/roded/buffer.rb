@@ -6,10 +6,11 @@ module Roded
   # text, such as inserting and deleting characters, and allows other
   # objects to observe its state.
   class Buffer
+    PositionChange = Data.define(:start, :old_end, :new_end)
     Edit = Struct.new(
       :row, :before_lines, :after_lines, :before_cursor, :after_cursor,
       :before_line_ending, :after_line_ending, :before_final_newline, :after_final_newline,
-      keyword_init: true
+      :position_change, keyword_init: true
     )
 
     attr_accessor :filename, :readonly, :file_revision
@@ -24,6 +25,7 @@ module Roded
       @line_ending = "\n"
       @final_newline = false
       @observers = []
+      @edit_observers = []
       @readonly = false
       @saved_text = to_s
       @undo_stack = []
@@ -68,6 +70,14 @@ module Roded
 
     def remove_observer(observer)
       @observers.delete(observer)
+    end
+
+    def add_edit_observer(observer)
+      @edit_observers << observer unless @edit_observers.include?(observer)
+    end
+
+    def remove_edit_observer(observer)
+      @edit_observers.delete(observer)
     end
 
     def notify_observers
@@ -222,7 +232,10 @@ module Roded
       return false if readonly || @undo_stack.empty?
 
       edits = @undo_stack.pop
-      edits.reverse_each { |edit| apply_edit(edit, :before) }
+      edits.reverse_each do |edit|
+        apply_edit(edit, :before)
+        notify_position_change(inverse_change(edit.position_change))
+      end
       @redo_stack << edits
       notify_observers
       true
@@ -232,7 +245,10 @@ module Roded
       return false if readonly || @redo_stack.empty?
 
       edits = @redo_stack.pop
-      edits.each { |edit| apply_edit(edit, :after) }
+      edits.each do |edit|
+        apply_edit(edit, :after)
+        notify_position_change(edit.position_change)
+      end
       @undo_stack << edits
       notify_observers
       true
@@ -305,10 +321,12 @@ module Roded
         row:, before_lines: before.fetch(:lines), after_lines: after.fetch(:lines),
         before_cursor: before.fetch(:cursor), after_cursor: after.fetch(:cursor),
         before_line_ending: before.fetch(:line_ending), after_line_ending: after.fetch(:line_ending),
-        before_final_newline: before.fetch(:final_newline), after_final_newline: after.fetch(:final_newline)
+        before_final_newline: before.fetch(:final_newline), after_final_newline: after.fetch(:final_newline),
+        position_change: position_change(row, before.fetch(:lines), after.fetch(:lines))
       )
       @undo_group_depth.positive? ? @undo_group_edits << edit : @undo_stack << [edit]
       @redo_stack.clear
+      notify_position_change(edit.position_change)
       notify_observers
     end
 
@@ -345,6 +363,59 @@ module Roded
       @line_ending = (previous ? edit.before_line_ending : edit.after_line_ending).dup
       @final_newline = previous ? edit.before_final_newline : edit.after_final_newline
       clamp_cursor
+    end
+
+    def position_change(row, before_lines, after_lines)
+      before_text = before_lines.join("\n")
+      after_text = after_lines.join("\n")
+      before_chars = before_text.each_char.to_a
+      after_chars = after_text.each_char.to_a
+      prefix = common_prefix_length(before_chars, after_chars)
+      suffix = common_suffix_length(before_chars, after_chars, prefix)
+      return if prefix == before_chars.length && prefix == after_chars.length
+
+      before_end = before_chars.length - suffix
+      after_end = after_chars.length - suffix
+      PositionChange.new(
+        start: position_at_offset(row, before_chars, prefix),
+        old_end: position_at_offset(row, before_chars, before_end),
+        new_end: position_at_offset(row, after_chars, after_end)
+      )
+    end
+
+    def common_prefix_length(before_chars, after_chars)
+      index = 0
+      index += 1 while index < before_chars.length && index < after_chars.length &&
+                        before_chars[index] == after_chars[index]
+      index
+    end
+
+    def common_suffix_length(before_chars, after_chars, prefix)
+      suffix = 0
+      while suffix < before_chars.length - prefix && suffix < after_chars.length - prefix &&
+            before_chars[-suffix - 1] == after_chars[-suffix - 1]
+        suffix += 1
+      end
+      suffix
+    end
+
+    def position_at_offset(base_row, chars, offset)
+      preceding = chars.take(offset).join
+      parts = preceding.split("\n", -1)
+      parts = [""] if parts.empty?
+      { row: base_row + parts.length - 1, col: parts.last.length }.freeze
+    end
+
+    def inverse_change(change)
+      return unless change
+
+      PositionChange.new(start: change.start, old_end: change.new_end, new_end: change.old_end)
+    end
+
+    def notify_position_change(change)
+      return unless change
+
+      @edit_observers.each { |observer| observer.buffer_edited(self, change) }
     end
 
     def move_cursor_by_page(delta)
