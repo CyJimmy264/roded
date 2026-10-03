@@ -63,6 +63,8 @@ module Roded
           render
         when :minibuffer_render
           @ui_dispatcher.post(:minibuffer, command.payload.dup.freeze)
+        when :picker_render
+          @ui_dispatcher.post(:picker, command.payload)
         when :minibuffer_clear
           @ui_dispatcher.post(:minibuffer_clear)
         when :quit

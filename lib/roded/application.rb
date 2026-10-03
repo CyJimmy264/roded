@@ -20,9 +20,11 @@ module Roded
       @status_bar = nil
       @minibuffer = Minibuffer.new
       @minibuffer_kind = nil
+      @picker = nil
       @focus = :buffer
       @keymap = Keymap.load
       @command_registry = CommandRegistry.new
+      @file_path_provider = FilePathProvider.new
       register_builtin_commands
       @kill_ring = KillRing.new
       @current_buffer = nil
@@ -192,7 +194,8 @@ module Roded
       buffer_before.cursor_pos = window_before.point if window_before && buffer_before
       @active_source_id = event.payload.fetch(:source_id, :default)
       routed_event = route_input_event(event)
-      @last_yank = nil if routed_event && !%i[yank yank_pop].include?(routed_event.type)
+      preserve_yank = %i[yank yank_pop].include?(routed_event&.type) || @focus == :minibuffer
+      @last_yank = nil if routed_event && !preserve_yank
       @command_handler.handle(routed_event) if routed_event
       if window_before && @current_window.equal?(window_before) && current_buffer.equal?(buffer_before)
         window_before.point = buffer_before.cursor_pos
@@ -304,6 +307,23 @@ module Roded
       broadcast_command(Command.new(:render, {}))
     end
 
+    def choose_yank_pop(text)
+      return if text.to_s.empty?
+
+      ring_index = kill_ring.items.index(text) || 0
+      previous = @last_yank&.fetch(:buffer).equal?(current_buffer) ? @last_yank : nil
+      start = previous ? previous.fetch(:start) : current_window.point.dup
+      current_buffer.with_undo_group do
+        if previous
+          current_buffer.delete_region(previous.fetch(:start), previous.fetch(:finish))
+        end
+        current_buffer.insert_text(text)
+      end
+      @last_yank = { buffer: current_buffer, start:, finish: current_buffer.cursor_pos, index: ring_index }
+      current_window.mark = nil
+      broadcast_command(Command.new(:render, {}))
+    end
+
     def scroll_viewport(amount)
       return unless current_window
 
@@ -346,10 +366,12 @@ module Roded
 
     def start_minibuffer(kind, prompt)
       @minibuffer_kind = kind
+      @picker = picker_for(kind)
       @focus = :minibuffer
       broadcast_focus
       @minibuffer.start(prompt)
       render_minibuffer
+      render_picker
     end
 
     def render_minibuffer
@@ -361,8 +383,34 @@ module Roded
       )
     end
 
+    def move_picker(amount)
+      return unless @picker
+
+      @picker.move(amount)
+      render_picker
+    end
+
+    def refresh_picker
+      return unless @picker
+
+      @picker.update_query(@minibuffer.text)
+      render_picker
+    end
+
+    def render_picker
+      return unless @picker
+
+      payload = @picker.snapshot.merge(prompt: @minibuffer.prompt).freeze
+      broadcast_command(Command.new(:picker_render, payload))
+    end
+
+    def selected_picker_value
+      @picker&.selected
+    end
+
     def cancel_minibuffer
       @minibuffer.cancel
+      @picker = nil
       @minibuffer_kind = nil
       clear_pending_close_state
       clear_pending_save_confirmation
@@ -375,6 +423,8 @@ module Roded
     def submit_minibuffer
       text = @minibuffer.submit
       kind = @minibuffer_kind
+      text = selected_picker_value || text if @picker
+      @picker = nil
       @minibuffer_kind = nil
       @focus = :buffer
       broadcast_focus
@@ -401,6 +451,16 @@ module Roded
       @command_registry.register("next-buffer") { |editor| editor.next_buffer }
       @command_registry.register("previous-buffer") { |editor| editor.previous_buffer }
       @command_registry.register("kill-buffer") { |editor| editor.kill_current_buffer }
+    end
+
+    def picker_for(kind)
+      candidates = case kind
+                   when :command then command_names
+                   when :switch_buffer then @buffers.map(&:name)
+                   when :kill_ring then kill_ring.items
+                   when :open, :save, :save_as then @file_path_provider.candidates
+                   end
+      Picker.new(candidates) if candidates
     end
 
     def active_region

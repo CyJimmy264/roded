@@ -33,6 +33,7 @@ module Roded
         when :layout then @view.render_layout(payload)
         when :message then @view.display_message(payload)
         when :minibuffer then @view.render_minibuffer(payload)
+        when :picker then @view.render_picker(payload)
         when :minibuffer_clear then @view.clear_minibuffer
         when :quit then quit
         end

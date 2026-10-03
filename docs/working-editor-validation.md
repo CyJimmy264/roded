@@ -248,6 +248,28 @@ File save здесь сохраняет текстовое представле�
 - Автоматические проверки: **112 examples, 0 failures**. Full lint и живой Qt
   smoke для Super resizing пока не зелёные/не подтверждены.
 
+## 2026-10-03 — command/buffer/KillRing picker
+
+- Введена общая core-модель picker: независимые orderless query terms без
+  учёта регистра, стабильный порядок, C-n/C-p, пустой список и immutable UI
+  snapshot. Пустой query не исполняет/выбирает случайный первый элемент.
+- `M-x` и `C-x b` показывают кандидатов в curses и Qt echo area; `M-y` теперь
+  открывает KillRing picker и после выбора заменяет предыдущий yank одной
+  undo-группой. Обычные клавиши редактируют query, стрелки/C-n/C-p меняют
+  selection, Enter принимает, C-g отменяет.
+- Find/save path picker получает tracked и untracked Git пути через
+  `git ls-files --exclude-standard`; Git ignores соблюдаются. Вне Git обходятся
+  файлы под текущим root с exclusions для `.git`, cache и generated dirs.
+- Полный RSpec: **121 examples, 0 failures**. Реальный curses PTY
+  (`TERM=xterm-256color`, 24×80) показал список `M-x`, query `q` сузил его до
+  `quit`, Enter выполнил команду и процесс завершился с exit code 0. Второй
+  PTY сценарий вызвал `C-x C-f`, отфильтровал `GOAL.md`, открыл файл из picker,
+  затем штатно вышел; exit code 0.
+- Qt offscreen widget проверяет показ query и выбранного candidate. Picker Qt
+  пока не прошёл полный desktop acceptance. Project/line-search providers и
+  picker resize/scroll ещё не готовы. Полный RuboCop не зелёный; новые picker
+  и file-path provider files lint чистые.
+
 ## 2026-10-03 — этап 2, подэтап: source routing и загрузка core
 
 - `bundle exec rspec`: **45 examples, 0 failures**.

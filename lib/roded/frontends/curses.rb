@@ -138,8 +138,12 @@ module Roded
         when :minibuffer_render
           @minibuffer_state = command.payload
           render_minibuffer_overlay
+        when :picker_render
+          @picker_state = command.payload
+          render_picker_overlay
         when :minibuffer_clear
           @minibuffer_state = nil
+          @picker_state = nil
           @minibuffer_view.clear
         when :quit
           wake_getch
@@ -291,6 +295,7 @@ module Roded
         end
         place_cursor
         render_minibuffer_overlay
+        render_picker_overlay
         @screen.refresh
       end
 
@@ -304,6 +309,7 @@ module Roded
         records = snapshot[:windows].to_h { |item| [item[:id], item] }
         rectangles.each { |id, x, y, width, height| draw_window(records[id], x, y, width, height) }
         render_minibuffer_overlay
+        render_picker_overlay
         @screen.refresh
       end
 
@@ -416,6 +422,17 @@ module Roded
           text: @minibuffer_state[:text],
           cursor: @minibuffer_state[:cursor]
         )
+      end
+
+      def render_picker_overlay
+        return unless @picker_state
+
+        candidates = @picker_state[:candidates]
+        start_row = [@screen.maxy - candidates.length - 2, 0].max
+        candidates.each_with_index do |candidate, index|
+          marker = index == @picker_state[:selected_index] ? "> " : "  "
+          write_at(start_row + index, 0, "#{marker}#{candidate}", @screen.maxx)
+        end
       end
 
       def wake_getch

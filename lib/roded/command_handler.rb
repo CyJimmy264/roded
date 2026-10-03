@@ -71,7 +71,7 @@ module Roded
       when :yank
         @editor.yank
       when :yank_pop
-        @editor.yank_pop
+        @editor.start_minibuffer(:kill_ring, "M-y ")
       when :shrink_window_horizontally
         @editor.resize_window(-0.05)
       when :enlarge_window_horizontally
@@ -135,6 +135,8 @@ module Roded
 
     def handle_minibuffer_event(event)
       case event.type
+      when :move_down, :move_up
+        @editor.move_picker(event.type == :move_down ? 1 : -1)
       when :move_left
         @editor.minibuffer.move_left
         @editor.render_minibuffer
@@ -144,12 +146,15 @@ module Roded
       when :backspace
         @editor.minibuffer.backspace
         @editor.render_minibuffer
+        @editor.refresh_picker
       when :delete
         @editor.minibuffer.delete_char
         @editor.render_minibuffer
+        @editor.refresh_picker
       when :insert_char
         @editor.minibuffer.insert_char(event.payload[:char])
         @editor.render_minibuffer
+        @editor.refresh_picker
       when :cancel
         @editor.cancel_minibuffer
       when :enter

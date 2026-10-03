@@ -12,6 +12,14 @@ module Roded
         @widget.set_text("#{payload[:prompt]}#{payload[:text]}")
       end
 
+      def render_picker(payload)
+        header = "#{payload[:prompt]}#{payload[:query]}"
+        lines = payload[:candidates].each_with_index.map do |candidate, index|
+          "#{index == payload[:selected_index] ? ">" : " "} #{candidate}"
+        end
+        @widget.set_text(([header] + lines).join("\n"))
+      end
+
       def clear
         @widget.clear
       end

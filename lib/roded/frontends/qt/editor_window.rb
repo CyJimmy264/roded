@@ -61,6 +61,8 @@ module Roded
 
       def render_minibuffer(payload) = @echo_area.render_minibuffer(payload)
 
+      def render_picker(payload) = @echo_area.render_picker(payload)
+
       def clear_minibuffer = @echo_area.clear
 
       def display_message(message) = @echo_area.display(message)

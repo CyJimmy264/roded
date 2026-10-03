@@ -17,9 +17,11 @@ RSpec.describe Roded::Application do
 
     expect(application.focus).to eq(:minibuffer)
     expect(frontend.focus).to eq(:minibuffer)
-    expect(frontend.commands.last).to eq(
+    expect(frontend.commands).to include(
       Roded::Command.new(:minibuffer_render, { prompt: "M-x ", text: "", cursor: 0 })
     )
+    expect(frontend.commands.last.type).to eq(:picker_render)
+    expect(frontend.commands.last.payload[:candidates]).to include("quit", "redo")
   end
 
   it "submits M-x quit through routed key events" do
@@ -31,6 +33,29 @@ RSpec.describe Roded::Application do
     expect(frontend.focus).to eq(:buffer)
     expect(frontend.commands).to include(Roded::Command.new(:quit, {}))
     expect(application.instance_variable_get(:@stop_requested)).to be(true)
+  end
+
+  it "filters the M-x picker and accepts the selected command" do
+    application.startup
+    %w[Esc x u n d o Enter].each do |key|
+      application.handle_event(Roded::Event.new(:key, { key: }))
+    end
+
+    expect(application.focus).to eq(:buffer)
+    expect(application.instance_variable_get(:@picker)).to be_nil
+    picker_commands = frontend.commands.select { |command| command.type == :picker_render }
+    expect(picker_commands.last.payload[:candidates]).to eq(["undo"])
+  end
+
+  it "moves the selected M-x candidate with C-n and C-p" do
+    application.start_minibuffer(:command, "M-x ")
+    application.minibuffer.insert_char("u")
+    application.refresh_picker
+    expect(application.selected_picker_value).to eq("kill-buffer")
+    application.handle_event(Roded::Event.new(:key, { key: "C-n" }))
+    expect(application.selected_picker_value).to eq("next-buffer")
+    application.handle_event(Roded::Event.new(:key, { key: "C-p" }))
+    expect(application.selected_picker_value).to eq("kill-buffer")
   end
 
   it "executes one registered command through M-x and its key binding" do
@@ -113,6 +138,8 @@ RSpec.describe Roded::Application do
     expect(buffer.to_s).to eq("|second|")
     application.handle_event(Roded::Event.new(:key, { key: "Esc" }))
     application.handle_event(Roded::Event.new(:key, { key: "y" }))
+    application.handle_event(Roded::Event.new(:key, { key: "C-n" }))
+    application.handle_event(Roded::Event.new(:key, { key: "Enter" }))
     expect(buffer.to_s).to eq("|first|")
 
     expect(buffer.undo).to be(true)
