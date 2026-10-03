@@ -157,7 +157,8 @@ undo и modified state согласованы. FileService и edit history — �
 - [ ] Robust input decode: function keys, Meta, Unicode, prefixes, paste, EOF.
 - [ ] Default/native UI rendering нигде не меняет domain model.
 - [ ] Удалить/переопределить console Window/StatusBar и пустые wrappers.
-- [ ] Реальный PTY/curses smoke: несколько файлов, split, edit, save, quit.
+- [X] Реальный PTY/curses smoke: два файла, split, edit, save, quit —
+  подтверждён 2026-10-03; подробности в validation log.
 
 Критерий: основной file/window scenario выполняется в настоящем TUI.
 

@@ -83,6 +83,16 @@
 - После изменения полный `bundle exec rake`: **168 examples, 0 failures**;
   общий RuboCop gate всё ещё падает на **88 offenses в 96 files**.
 
+## 2026-10-03 — multi-file curses acceptance через PTY
+
+- Команда: `bundle exec bin/roded <first.rb>` в PTY 24×80 с
+  `TERM=xterm-256color`, Ruby 3.4.2, Qt/ffi gems из `/tmp/roded-qt-gems` и
+  логом `/tmp/roded-curses-accept.log`.
+- Через реальный curses input выполнены `C-x 3`, `C-x C-f <second.rb>`, ввод
+  `B`, `C-x C-s`, `C-x C-c`. Процесс завершился с кодом **0**, второй файл
+  сохранён как `Bsecond = true\n`; терминальная сессия выдала 12 132 bytes.
+- Проверка прошла в изолированном PTY; desktop display и xdotool не использовались.
+
 ## 2026-10-03 — Qt clipboard paste через общий core event
 
 - Runtime probe qt 0.1.9 / Qt Widgets 6.11.2: `QApplication.clipboard`
