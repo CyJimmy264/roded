@@ -26,6 +26,17 @@ RSpec.describe Roded::CommandRouter do
     expect(route_sequence("C-x", "1")).to eq(Roded::Event.new(:delete_other_windows, {}))
   end
 
+  it "routes Super aliases to existing editor actions" do
+    expect(router.route("M-s-j")).to eq(Roded::Event.new(:save_buffer, {}))
+    expect(router.route("M-s-k")).to eq(Roded::Event.new(:kill_buffer, {}))
+    expect(router.route("M-s-c")).to eq(Roded::Event.new(:delete_window, {}))
+    expect(router.route("s-w")).to eq(Roded::Event.new(:other_window, {}))
+    expect(router.route("s-,")).to eq(Roded::Event.new(:previous_buffer, {}))
+    expect(router.route("s-.")).to eq(Roded::Event.new(:next_buffer, {}))
+    expect(router.route("C-<")).to eq(Roded::Event.new(:previous_buffer, {}))
+    expect(router.route("C->")).to eq(Roded::Event.new(:next_buffer, {}))
+  end
+
   it "resolves meta bindings through escape prefix" do
     first = router.route("Esc")
     second = router.route("x")
