@@ -222,3 +222,18 @@ RSpec.describe Roded::Frontends::QtEditorWindow, "tab display" do
     expect(clipboard.read_text).to eq("b")
   end
 end
+
+RSpec.describe Roded::Frontends::QtEditorWindow, "visible caret" do
+  include_context "Qt editor window lifecycle"
+
+  it "marks the core point with a high-contrast underline" do
+    view = described_class.new
+    render_qt_snapshot(view, "abc", 1)
+    view.show
+    QApplication.process_events
+
+    expect(view.editor.to_html).to include("#61afef")
+    expect(view.editor.q_inspect[:properties][:cursorWidth]).to eq(2)
+    expect(view.editor.has_focus).to be(true)
+  end
+end

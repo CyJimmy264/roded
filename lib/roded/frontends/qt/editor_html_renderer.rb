@@ -58,7 +58,7 @@ module Roded
       end
 
       def segment_style(line, row, first, last)
-        token_style(row, first, last) + overlay_style(line, row, first, last)
+        token_style(row, first, last) + overlay_style(line, row, first, last) + caret_style(line, row, first, last)
       end
 
       def token_style(row, first, last)
@@ -74,6 +74,15 @@ module Roded
         return "background-color: #3e4451;" if covers?(selected_columns(line, row), first, last)
 
         ""
+      end
+
+      def caret_style(line, row, first, last)
+        point = @snapshot[:point]
+        return "" unless point && point[:row] == row && !line.empty?
+
+        column = point[:col].clamp(0, line.length)
+        column = [column - 1, 0].max if column == line.length
+        column.between?(first, last - 1) ? "text-decoration: underline; text-decoration-color: #61afef;" : ""
       end
 
       def selected_columns(line, row)

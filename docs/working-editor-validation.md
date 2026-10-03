@@ -729,6 +729,18 @@ File save здесь сохраняет текстовое представле�
   at **63 offenses in 107 files**; all files changed in this slice pass targeted
   RuboCop.
 
+## 2026-10-03 — видимый Qt caret
+
+- Реальный Qt `QTextEdit` сохраняет core caret и получает ширину системного
+  caret 2 px. Presentation HTML подчёркивает текущий символ контрастной синей
+  линией; это остаётся заметно даже пока native caret мигает или окно теряет
+  focus. Текст, syntax colors, region и search overlay сохраняют свои стили.
+- Offscreen widget проверяет cursorWidth, активный focus и HTML caret marker;
+  Qt editor window specs: **10 examples, 0 failures**; полный RSpec:
+  **212 examples, 0 failures**. Ручную видимость caret в пользовательском desktop
+  следует подтвердить после следующего запуска. Общий RuboCop пока сообщает
+  прежние **63 offenses**.
+
 ## 2026-10-03 — табличная маршрутизация core input events
 
 - `CommandHandler` заменил большой ветвящийся `case` на декларативные event maps

@@ -22,6 +22,7 @@ module Roded
         @editor.set_read_only(true)
         @editor.set_undo_redo_enabled(false)
         @editor.set_context_menu_policy(::Qt::NoContextMenu)
+        @editor.set_cursor_width(2)
         # TODO(qt): HACK — qt 0.1.9 omits QTextEdit::LineWrapMode constants.
         # Workaround: use the documented NoWrap enum value 0.
         # Generate LineWrapMode constants in qt, then replace this value with NoWrap.
