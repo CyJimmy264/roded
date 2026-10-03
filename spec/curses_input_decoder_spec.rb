@@ -13,6 +13,44 @@ RSpec.describe Roded::Frontends::CursesKeyTranslator do
     expect(decoder.send(:normalize_input, "\u007F")).to eq("Backspace")
     expect(decoder.send(:normalize_input, "Ж")).to eq("Ж")
   end
+
+  it "maps xterm navigation and function-key sequences" do
+    translator = described_class.new
+    sequences = {
+      "[H" => "Home", "[F" => "End", "[5~" => "PageUp", "[6~" => "PageDown",
+      "[3~" => "Delete", "[18~" => "F7", "OP" => "F1", "[24~" => "F12"
+    }
+
+    decoded = sequences.to_h do |sequence, _key|
+      [sequence, translator.translate_escape(sequence)]
+    end
+    expect(decoded).to eq(sequences)
+  end
+end
+
+RSpec.describe Roded::Frontends::CursesInputDecoder do
+  it "decodes UTF-8 characters read across terminal bytes" do
+    decoder = described_class.new
+    input, writer, wake_reader, wake_writer = decoder_pipes
+    writer.write("Ж🙂")
+
+    expect(decoder.read_key(input, wake_reader)).to eq("Ж")
+    expect(decoder.read_key(input, wake_reader)).to eq("🙂")
+  ensure
+    [input, writer, wake_reader, wake_writer].compact.each(&:close)
+  end
+end
+
+RSpec.describe Roded::Frontends::CursesInputDecoder do
+  it "returns EOF when terminal input is closed" do
+    decoder = described_class.new
+    input, writer, wake_reader, wake_writer = decoder_pipes
+    writer.close
+
+    expect(decoder.read_key(input, wake_reader)).to be_nil
+  ensure
+    [input, writer, wake_reader, wake_writer].compact.each { |pipe| pipe.close unless pipe.closed? }
+  end
 end
 
 RSpec.describe Roded::Frontends::CursesInputDecoder do
@@ -60,6 +98,13 @@ RSpec.describe Roded::Frontends::Curses do
 
     expect(event.type).to eq(:paste)
     expect(event.payload).to eq(text: "first\nsecond")
+  end
+
+  it "propagates terminal EOF to the runtime" do
+    frontend = described_class.allocate
+    allow(frontend).to receive(:read_key).and_return(nil)
+
+    expect(frontend.next_event).to be_nil
   end
 end
 

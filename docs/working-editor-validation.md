@@ -1284,6 +1284,28 @@ File save здесь сохраняет текстовое представле�
   `bundle exec rake`: **283 examples, 0 failures**; RuboCop: **148 files, 0
   offenses**. `bash -n script/qt_live_smoke.sh` and `git diff --check` pass.
 
+## 2026-10-04 — curses function keys, Unicode bytes and EOF
+
+- Curses decodes xterm navigation, paging and function sequences, including
+  F7 (`ESC [ 18 ~`) for Save. UTF-8 characters are reassembled across the
+  decoder's one-byte reads. Pipe EOF and PTY `EIO` now propagate as frontend EOF
+  so the application runtime can run terminal cleanup instead of spinning on
+  noop input.
+- `spec/curses_input_decoder_spec.rb` covers control bytes, NUL, Unicode,
+  xterm Home/End/PageUp/PageDown/Delete/F7/F1/F12, fragmented bracketed paste,
+  and EOF. `script/curses_live_smoke.rb` sends F7 to the actual curses process;
+  the file remains byte-for-byte unchanged and the log records the `F7` token.
+  The same PTY verifies both terminal `0x1f` (`C-_`) and `C-x u` undo by
+  saving the buffer after each transition; typing and bracketed-paste redo
+  restore the exact edited bytes. It also cancels a dirty quit and confirms
+  edits survive before a final clean quit. `spec/application_spec.rb` covers
+  choosing between same-basename buffers using their full paths.
+- The private PTY smoke passed for `M-</M->`, `C-n`, typing, bracketed paste,
+  `C-_`, `C-x u`, `C-c r d`, F7 save, dirty-quit cancel/undo and clean quit;
+  log: `/tmp/roded-curses-smoke.20261004-319015-farc30`.
+- `bundle exec rake`: **288 examples, 0 failures**; RuboCop: **148 files, 0
+  offenses**.
+
 ## 2026-10-04 — remove legacy console status bar
 
 - `Roded::Window` is the logical editor view with independent point/mark and

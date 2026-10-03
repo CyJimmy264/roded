@@ -7,7 +7,13 @@ module Roded
       KEY_BINDINGS = {
         "[A".b => "Up", "OA".b => "Up", "[B".b => "Down", "OB".b => "Down",
         "[C".b => "Right", "OC".b => "Right", "[D".b => "Left", "OD".b => "Left",
-        "[3~".b => "Delete"
+        "[H".b => "Home", "OH".b => "Home", "[1~".b => "Home",
+        "[F".b => "End", "OF".b => "End", "[4~".b => "End",
+        "[2~".b => "Insert", "[3~".b => "Delete", "[5~".b => "PageUp", "[6~".b => "PageDown",
+        "OP".b => "F1", "OQ".b => "F2", "OR".b => "F3", "OS".b => "F4",
+        "[11~".b => "F1", "[12~".b => "F2", "[13~".b => "F3", "[14~".b => "F4",
+        "[15~".b => "F5", "[17~".b => "F6", "[18~".b => "F7", "[19~".b => "F8",
+        "[20~".b => "F9", "[21~".b => "F10", "[23~".b => "F11", "[24~".b => "F12"
       }.freeze
       SEQUENCES = KEY_BINDINGS.keys.freeze
 
@@ -79,6 +85,8 @@ module Roded
         read_input_key(stdin, wake_reader)
       rescue IO::WaitReadable
         decode_input_buffer
+      rescue EOFError, Errno::EIO
+        nil
       end
 
       private

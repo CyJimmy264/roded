@@ -528,6 +528,23 @@ RSpec.describe Roded::Application do
     end
   end
 
+  it "disambiguates same-basename buffers by their full paths" do
+    Dir.mktmpdir("roded-same-basename") do |directory|
+      first = File.join(directory, "one", "note.rb")
+      second = File.join(directory, "two", "note.rb")
+      FileUtils.mkdir_p([File.dirname(first), File.dirname(second)])
+      File.write(first, "first")
+      File.write(second, "second")
+      application.startup([first, second])
+
+      ["C-x", "b", *first.chars, "Enter"].each do |key|
+        application.handle_event(Roded::Event.new(:key, { key: }))
+      end
+
+      expect(application.current_buffer.filename).to eq(first)
+    end
+  end
+
   it "prompts for a path when saving an unnamed buffer with C-x C-s" do
     buffer = Roded::Buffer.new("*scratch*")
     buffer.insert_char("scratch")

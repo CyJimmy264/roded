@@ -6,7 +6,7 @@ module Roded
         logger.debug("next_event: read_key")
         key = read_key
         logger.debug("next_event: read_key: #{key.inspect}")
-        return Event.new(:noop, {}) unless key
+        return unless key
         return handle_wake_event if key == :quit_signal
         return Event.new(:paste, { text: key.text }) if key.is_a?(CursesInputDecoder::PasteInput)
 

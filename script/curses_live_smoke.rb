@@ -44,12 +44,22 @@ def save_smoke_buffer(session, expected)
   send_smoke_input(session, "\x18", 0.3)
   send_smoke_input(session, "\x13", 0.8)
   wait_for_file_text(session.fetch(:source_path), expected, session.fetch(:reader), session.fetch(:captured))
+  session[:saved_text] = expected
 end
 
 def exercise_typing_undo_redo(session)
   send_smoke_input(session, "XYZ", 0.4)
   save_smoke_buffer(session, session.fetch(:edited_text))
-  send_smoke_input(session, "\x1f", 0.4)
+  exercise_undo_redo(session, "\x1f")
+  exercise_undo_redo(session, "\x18u")
+  send_smoke_input(session, "\e[18~", 0.4)
+  wait_for_file_text(
+    session.fetch(:source_path), session.fetch(:edited_text), session.fetch(:reader), session.fetch(:captured)
+  )
+end
+
+def exercise_undo_redo(session, undo_keys)
+  send_smoke_input(session, undo_keys, 0.4)
   save_smoke_buffer(session, session.fetch(:original_text))
   send_smoke_input(session, "\x03rd", 0.4)
   save_smoke_buffer(session, session.fetch(:edited_text))
@@ -71,6 +81,21 @@ def exercise_curses_undo_redo(session)
   send_smoke_input(session, "\x0e", 0.8)
   exercise_typing_undo_redo(session)
   exercise_paste_undo_redo(session)
+  exercise_curses_close_cancel(session)
+end
+
+def exercise_curses_close_cancel(session)
+  saved_text = session.fetch(:saved_text)
+  send_smoke_input(session, "Q", 0.3)
+  send_quit_sequence(session)
+  send_smoke_input(session, "c\r", 0.5)
+  wait_for_file_text(session.fetch(:source_path), saved_text, session.fetch(:reader), session.fetch(:captured))
+  send_smoke_input(session, "\x1f", 0.4)
+  wait_for_file_text(session.fetch(:source_path), saved_text, session.fetch(:reader), session.fetch(:captured))
+  send_quit_sequence(session)
+end
+
+def send_quit_sequence(session)
   send_smoke_input(session, "\x18", 0.3)
   send_smoke_input(session, "\x03", 0.3)
 end
@@ -130,16 +155,18 @@ required_log_entries = [
   'next_event: read_key: "C-n"',
   "publish_ui_update: move_cursor",
   'next_event: read_key: "C-_"',
+  'next_event: read_key: "F7"',
   "event received: paste",
   'next_event: read_key: "C-c"',
   'next_event: read_key: "r"',
   'next_event: read_key: "d"',
   'next_event: read_key: "C-x"',
+  'next_event: read_key: "u"',
   "publish_ui_update: quit"
 ]
 missing_entries = required_log_entries.reject { |entry| log.include?(entry) }
 abort "curses smoke exited #{exit_status.inspect}; missing #{missing_entries.inspect}; files: #{smoke_dir}" unless
   exit_status&.zero? && missing_entries.empty? && !log.include?("Editor runtime failed")
 
-puts "curses live smoke passed (M-</M->, C-n, typing, bracketed paste, C-_, C-c r d, save/quit); " \
+puts "curses live smoke passed (M-</M->, C-n, typing, bracketed paste, C-_, C-x u, C-c r d, F7 save, quit cancel); " \
      "output=#{captured.bytesize} bytes; logs=#{smoke_dir}"

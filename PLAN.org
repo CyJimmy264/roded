@@ -181,7 +181,9 @@ undo и modified state согласованы. FileService и edit history — �
   comes from the input source and active view. `docs/keybindings.md` documents
   the distinction from ordinary cursor/page movement.
 - [ ] Resize/small screen, prompts/picker overlays, сохранение active view.
-- [ ] Robust input decode: function keys, Meta, Unicode, prefixes, paste, EOF.
+- [X] Robust input decoding covers terminal navigation/function sequences,
+  Meta and control keys, multibyte UTF-8, command prefixes, bracketed paste and
+  EOF propagation. `F7` is checked as the terminal Save binding in a private PTY.
 - [ ] Default/native UI rendering нигде не меняет domain model.
 - [X] Удалить пустой неиспользуемый `frontends/curses/window.rb` wrapper.
 - [X] Replace the old console Window with the logical view model and remove the
