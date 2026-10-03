@@ -1,7 +1,7 @@
 module Roded
   # A view over a buffer with independent cursor, mark, and viewport state.
   class Window
-    attr_reader :buffer, :point, :mark
+    attr_reader :buffer
     attr_accessor :top_line, :left_column
 
     def initialize(buffer)
@@ -31,10 +31,18 @@ module Roded
       remember_position
     end
 
+    def point
+      @point.dup.freeze
+    end
+
     def mark=(position)
       @mark = position && { row: position.fetch(:row, 0).to_i, col: position.fetch(:col, 0).to_i }
       clamp_mark
       remember_position
+    end
+
+    def mark
+      @mark&.dup&.freeze
     end
 
     def copy

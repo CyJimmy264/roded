@@ -11,7 +11,9 @@ RSpec.describe Roded::Window do
     expect(other.point).to eq({ row: 0, col: 0 })
     expect(other.mark).to be_nil
     expect(window.point).to eq({ row: 0, col: 2 })
+    expect(window.point).to be_frozen
     expect(window.mark).to eq({ row: 0, col: 1 })
+    expect(window.mark).to be_frozen
   end
 end
 

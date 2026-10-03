@@ -52,6 +52,17 @@ RSpec.describe Roded::Buffer do
     end
   end
 
+  it "returns immutable snapshots instead of exposing document internals" do
+    buffer.load_text("abc")
+
+    expect(buffer.lines).to be_frozen
+    expect(buffer.lines.first).to be_frozen
+    expect(buffer.cursor_pos).to be_frozen
+    expect(buffer.line_at_cursor).to be_frozen
+    expect { buffer.lines.first << "changed" }.to raise_error(FrozenError)
+    expect(buffer.to_s).to eq("abc")
+  end
+
   describe "#backspace" do
     it "removes the character before the cursor" do
       buffer.lines = ["abc"]

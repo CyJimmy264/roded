@@ -14,7 +14,7 @@ module Roded
     )
 
     attr_accessor :filename, :readonly, :file_revision
-    attr_reader :lines, :cursor_pos, :line_ending, :final_newline, :name
+    attr_reader :line_ending, :final_newline, :name
 
     def initialize(name = nil)
       @name = name
@@ -62,6 +62,14 @@ module Roded
     def cursor_pos=(position)
       @cursor_pos = { row: position.fetch(:row, 0).to_i, col: position.fetch(:col, 0).to_i }
       clamp_cursor
+    end
+
+    def lines
+      @lines.map { |line| line.dup.freeze }.freeze
+    end
+
+    def cursor_pos
+      @cursor_pos.dup.freeze
     end
 
     def add_observer(observer)
@@ -315,7 +323,7 @@ module Roded
     end
 
     def line_at_cursor
-      @lines[@cursor_pos[:row]]
+      @lines[@cursor_pos[:row]].dup.freeze
     end
 
     def cursor_row

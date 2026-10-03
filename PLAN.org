@@ -78,7 +78,7 @@ file roundtrip не теряет текст. Коммит этапа до шир
 - [ ] Определить Buffer text/history и EditorWindow point/mark/active buffer;
   логический window tree принадлежит session, physical geometry — frontend.
 - [ ] Перенести cursor ownership из Buffer с сохранением существующих scenarios.
-- [ ] Контролируемый edit API не отдаёт изменяемые live lines/cursor наружу;
+- [X] Контролируемый edit API не отдаёт изменяемые live lines/cursor наружу;
   инварианты readonly/positions соблюдаются на каждом входе.
 - [ ] KillRing обновляется из edit result, Buffer не получает KillRing dependency.
 - [ ] Единая публикация UI-state заменяет observers/direct-render/broadcast mix;

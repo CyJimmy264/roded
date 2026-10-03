@@ -212,6 +212,16 @@ File save здесь сохраняет текстовое представле�
 - Полный RSpec: **105 examples, 0 failures**. Новые core/curses изменения пока
   увеличили RuboCop debt; общий `bundle exec rake` остаётся красным.
 
+## 2026-10-03 — immutable snapshots для document/view state
+
+- `Buffer#lines`, `#cursor_pos`, `#line_at_cursor` и `Window#point/#mark`
+  отдают замороженные копии. Внешний читатель больше не может менять живой
+  текст или позицию без edit API. Specs проверяют freeze и отсутствие обходного
+  изменения документа.
+- Полный RSpec после изменений: **106 examples, 0 failures**. Требования к
+  единому command registry, history encapsulation и single-writer REPL API
+  остаются открытыми; этап 2 не завершён.
+
 ## 2026-10-03 — этап 2, подэтап: source routing и загрузка core
 
 - `bundle exec rspec`: **45 examples, 0 failures**.
