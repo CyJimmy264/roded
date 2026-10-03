@@ -1,5 +1,6 @@
 class FakeFrontend
-  attr_accessor :focus, :page_size
+  attr_accessor :focus
+  attr_writer :page_size
   attr_reader :commands, :messages, :renders, :buffers
 
   def initialize(page_size: 3)

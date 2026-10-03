@@ -540,6 +540,47 @@ RSpec.describe Roded::Application do
     end
   end
 
+  it "offers to reload external changes and resets the buffer baseline" do
+    Tempfile.create("roded-reload-conflict") do |file|
+      file.write("original")
+      file.flush
+      application.startup
+      application.open_file(file.path)
+      buffer = application.current_buffer
+      buffer.insert_char("x")
+      File.write(file.path, "external\ncontent")
+
+      application.save_file(file.path)
+      expect(application.minibuffer.prompt).to include("Reload, overwrite, or cancel")
+      answer_minibuffer(application, "reload")
+
+      expect(buffer.to_s).to eq("external\ncontent")
+      expect(buffer.modified?).to be(false)
+      expect(buffer.file_revision).not_to be_nil
+      expect(application.current_window.point).to eq({ row: 0, col: 0 })
+      expect(application.focus).to eq(:buffer)
+    end
+  end
+
+  it "preserves local edits when an external reload cannot be validated" do
+    Tempfile.create("roded-invalid-reload") do |file|
+      file.write("original")
+      file.flush
+      application.startup
+      application.open_file(file.path)
+      buffer = application.current_buffer
+      buffer.insert_char("x")
+      File.binwrite(file.path, "\0binary")
+
+      application.save_file(file.path)
+      answer_minibuffer(application, "reload")
+
+      expect(buffer.to_s).to eq("xoriginal")
+      expect(buffer.modified?).to be(true)
+      expect(application.focus).to eq(:buffer)
+    end
+  end
+
   it "exits its event loop on routed C-x C-c and closes the frontend" do
     events = %w[C-x C-c].map { |key| Roded::Event.new(:key, { key: key }) }
     scripted_frontend = ScriptedFrontend.new(events)

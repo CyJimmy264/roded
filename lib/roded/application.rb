@@ -3,6 +3,7 @@ module Roded
   # or the minibuffer depending on current focus.
   class Application
     include Logging
+    include FileReloadOperations
     include FileOperations
     include CloseOperations
     include PickerOperations

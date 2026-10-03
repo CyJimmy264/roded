@@ -120,7 +120,7 @@ file roundtrip не теряет текст. Коммит этапа до шир
 - [X] Save-as path prompt, cancel and overwrite confirmation.
 - [X] Атомарная запись, permissions/symlinks и обнаружение внешнего изменения.
 - [X] Overwrite/cancel response for existing save-as targets and changed files.
-- [ ] Reload choice when the file changed on disk.
+- [X] Reload/overwrite/cancel choice when the file changed on disk.
 - [X] Buffer tracks modified state against saved text; loads and successful saves
   reset the baseline, while failed/conflicting saves preserve dirty state.
 - [X] Save/discard/cancel при kill-buffer/quit, включая все dirty buffers.

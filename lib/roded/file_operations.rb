@@ -26,7 +26,7 @@ module Roded
 
       write_saved_buffer(buffer, filename, overwrite)
     rescue FileService::Conflict => e
-      request_overwrite_confirmation(buffer, filename, "#{e.message}. Overwrite? (y/n) ")
+      request_disk_conflict_resolution(buffer, filename, e.message)
       false
     rescue StandardError => e
       display_message("Error saving file: #{e.message}")
@@ -44,6 +44,8 @@ module Roded
     def handle_overwrite_confirmation(response)
       pending = @pending_save_confirmation
       return unless pending
+
+      return handle_disk_conflict_response(pending, response) if pending[:disk_conflict]
 
       case response.to_s.strip.downcase
       when "y", "yes", "overwrite" then overwrite_pending_save(pending)
