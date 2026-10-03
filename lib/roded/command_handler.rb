@@ -160,6 +160,8 @@ module Roded
       case event.type
       when :move_down, :move_up
         @editor.move_picker(event.type == :move_down ? 1 : -1)
+      when :scroll_line_up, :scroll_line_down
+        @editor.move_picker_history(event.type == :scroll_line_up ? -1 : 1)
       when :move_left
         @editor.minibuffer.move_left
         @editor.render_minibuffer

@@ -7,6 +7,7 @@ module Roded
     include FileOperations
     include CloseOperations
     include PickerOperations
+    include PickerProviderOperations
     include SearchOperations
     include QueryReplaceOperations
     include RubyReplOperations

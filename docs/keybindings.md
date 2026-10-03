@@ -52,10 +52,11 @@ recentf/savehist/save-place не обязательны для этой верс
 | `C-c C-c`, `C-c C-k` | Выполнить ввод REPL / прервать выполняющийся Ruby-код |
 | `C-c C-p`, `C-c C-n` | Предыдущая / следующая команда в истории REPL |
 
-В picker: `C-n/C-p`, Up/Down, Enter, `C-g`; обычный ввод меняет query,
-Backspace/Delete редактируют query. В prompts текстовые editing keys имеют
-предсказуемое поведение. Context keymaps не перехватывают global cancel и
-системное завершение runtime.
+В picker: `C-n/C-p`, Up/Down перемещают выбор, `M-p/M-n` листают историю query,
+Enter принимает, `C-g` отменяет; обычный ввод меняет query, Backspace/Delete
+редактируют query. В prompts текстовые editing keys имеют предсказуемое
+поведение. Context keymaps не перехватывают global cancel и системное завершение
+runtime.
 
 В Qt clipboard использует `C-S-c` для copy region, `C-S-x` для cut region и
 `C-S-v` для paste. Они проходят через core region/`:paste` действия; `C-v`

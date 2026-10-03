@@ -167,7 +167,8 @@ undo и modified state согласованы. FileService и edit history — �
 
 * Этап 6 — P1: общий picker, поиск и справка
 
-- [ ] Переиспользуемый picker model/provider API, live orderless filtering и history.
+- [X] Переиспользуемый picker model/provider API, live orderless filtering и
+  history запросов; история и редактирование draft покрыты specs.
 - [ ] Providers: commands, buffers, file paths, project/root files, lines, KillRing.
 - [ ] Navigation/accept/cancel, empty/Unicode candidates, list scrolling/resize.
 - [ ] Preview отменяется с восстановлением исходного view/buffer/point.

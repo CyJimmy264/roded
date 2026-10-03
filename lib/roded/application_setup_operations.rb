@@ -32,6 +32,7 @@ module Roded
       @minibuffer = Minibuffer.new
       @minibuffer_kind = nil
       @picker = nil
+      @picker_query_history = {}
       @focus = :buffer
       @keymap = Keymap.load
       @configuration_warning = @keymap.load_warning

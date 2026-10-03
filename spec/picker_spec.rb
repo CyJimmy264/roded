@@ -1,3 +1,4 @@
+# rubocop:disable Metrics/BlockLength
 RSpec.describe Roded::Picker do
   it "filters candidates by case-insensitive orderless query terms" do
     picker = described_class.new(["Open File", "Save Buffer", "buffer switch"])
@@ -33,4 +34,45 @@ RSpec.describe Roded::Picker do
     picker.move(1)
     expect(picker.selected).to eq("undo")
   end
+
+  it "walks query history and restores the current draft" do
+    picker = described_class.new(%w[open undo], history: %w[open undo])
+    picker.update_query("draft")
+
+    expect(picker.move_history(-1)).to eq("undo")
+    expect(picker.move_history(-1)).to eq("open")
+    expect(picker.move_history(1)).to eq("undo")
+    expect(picker.move_history(1)).to eq("draft")
+  end
+
+  it "records only non-empty queries and avoids consecutive duplicates" do
+    picker = described_class.new(%w[open undo])
+    picker.update_query("open")
+    picker.commit_query
+    picker.commit_query
+    picker.update_query("")
+    picker.commit_query
+
+    expect(picker.history).to eq(["open"])
+    expect(picker.history).to be_frozen
+  end
+
+  it "matches Unicode query terms independent of order" do
+    picker = described_class.new(["путь 🙂 файл", "другой путь"])
+
+    picker.update_query("ФАЙЛ 🙂")
+
+    expect(picker.candidates).to eq(["путь 🙂 файл"])
+  end
+
+  it "keeps the selected candidate visible in a bounded snapshot" do
+    picker = described_class.new(20.times.map { |index| "candidate-#{index}" })
+    picker.update_query("candidate")
+    12.times { picker.move(1) }
+    snapshot = picker.snapshot(limit: 3)
+
+    expect(snapshot[:candidates].length).to eq(3)
+    expect(snapshot[:candidates][snapshot[:selected_index]]).to eq(picker.selected)
+  end
 end
+# rubocop:enable Metrics/BlockLength

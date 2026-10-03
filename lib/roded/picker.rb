@@ -1,21 +1,43 @@
 module Roded
   # Query and selection state shared by interactive candidate lists.
   class Picker
-    attr_reader :query, :selected_index, :candidates
+    attr_reader :query, :selected_index, :candidates, :history
 
-    def initialize(candidates)
+    def initialize(candidates, history: [])
       @source = Array(candidates).map { |candidate| candidate.to_s.dup.freeze }.freeze
+      @history = Array(history).map { |query| query.to_s.dup.freeze }.freeze
       @query = ""
       @selected_index = 0
       @moved = false
+      @history_index = nil
+      @history_draft = nil
       refresh
     end
 
     def update_query(value)
-      @query = value.to_s.dup
-      @selected_index = 0
-      @moved = false
-      refresh
+      @history_index = nil
+      @history_draft = nil
+      replace_query(value)
+    end
+
+    def move_history(amount)
+      return if history.empty?
+
+      if amount.to_i.negative?
+        move_history_previous
+      else
+        move_history_next
+      end
+      query
+    end
+
+    def commit_query
+      return history if query.empty? || history.last == query
+
+      @history = (history + [query.dup.freeze]).freeze
+      @history_index = nil
+      @history_draft = nil
+      history
     end
 
     def move(amount)
@@ -41,6 +63,33 @@ module Roded
     end
 
     private
+
+    def move_history_previous
+      @history_draft = query.dup if @history_index.nil?
+      @history_index = [(@history_index || history.length) - 1, 0].max
+      replace_query(history.fetch(@history_index))
+    end
+
+    def move_history_next
+      return if @history_index.nil?
+
+      if @history_index >= history.length - 1
+        @history_index = nil
+        draft = @history_draft || ""
+        @history_draft = nil
+        replace_query(draft)
+      else
+        @history_index += 1
+        replace_query(history.fetch(@history_index))
+      end
+    end
+
+    def replace_query(value)
+      @query = value.to_s.dup
+      @selected_index = 0
+      @moved = false
+      refresh
+    end
 
     def refresh
       terms = query.downcase.split

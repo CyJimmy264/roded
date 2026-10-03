@@ -23,6 +23,14 @@ module Roded
       render_picker
     end
 
+    def move_picker_history(amount)
+      return unless @picker
+
+      @minibuffer.replace_text(@picker.move_history(amount))
+      render_minibuffer
+      render_picker
+    end
+
     def refresh_picker
       return unless @picker
 
@@ -42,25 +50,6 @@ module Roded
     end
 
     private
-
-    def picker_for(kind)
-      provider = picker_providers[kind]
-      candidates = provider&.call
-      Picker.new(candidates) if candidates
-    end
-
-    def picker_providers
-      {
-        command: -> { command_names },
-        switch_buffer: -> { buffers.map(&:name) },
-        kill_ring: -> { kill_ring.items },
-        line_search: -> { line_candidates },
-        major_mode: -> { SyntaxHighlighter::MODES.map(&:to_s) },
-        open: -> { @file_path_provider.candidates },
-        save: -> { @file_path_provider.candidates },
-        save_as: -> { @file_path_provider.candidates }
-      }
-    end
 
     def replace_yank(text, previous)
       start = previous ? previous.fetch(:start) : current_window.point.dup
@@ -107,12 +96,6 @@ module Roded
       broadcast_focus
       render_minibuffer
       render_picker
-    end
-
-    def line_candidates
-      current_buffer.lines.each_with_index.map do |line, index|
-        format("%<line>4d: %<text>s", line: index + 1, text: line)
-      end
     end
   end
 end

@@ -59,6 +59,24 @@ RSpec.describe Roded::Application do
     expect(application.selected_picker_value).to eq("kill-buffer")
   end
 
+  it "recalls accepted picker queries with M-p and restores the draft with M-n" do
+    application.start_minibuffer(:command, "M-x ")
+    "unknown-command".each_char { |character| application.minibuffer.insert_char(character) }
+    application.refresh_picker
+    application.submit_minibuffer
+
+    application.start_minibuffer(:command, "M-x ")
+    "draft".each_char { |character| application.minibuffer.insert_char(character) }
+    application.refresh_picker
+    application.handle_event(Roded::Event.new(:key, { key: "M-p" }))
+
+    expect(application.minibuffer.text).to eq("unknown-command")
+
+    application.handle_event(Roded::Event.new(:key, { key: "M-n" }))
+
+    expect(application.minibuffer.text).to eq("draft")
+  end
+
   it "executes one registered command through M-x and its key binding" do
     application.startup
     calls = 0

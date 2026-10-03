@@ -580,3 +580,19 @@ File save здесь сохраняет текстовое представле�
 - Page-size выбор учитывает input source; отдельные editor views и их геометрия
   ещё не введены. UI пока не сведён к одному immutable snapshot, поэтому этап 2
   остаётся открытым.
+
+## 2026-10-03 — picker query history и разделение providers
+
+- Picker хранит отдельную историю принятых непустых запросов каждого типа;
+  `M-p/M-n` в активном picker листают её, а в buffer сохраняют scroll bindings.
+  Возврат вперёд восстанавливает query draft, введённый до просмотра истории.
+- Provider API вынесен в отдельный модуль; picker сохраняет live orderless
+  filtering и selection snapshot. Specs покрывают Unicode-поиск, историю,
+  duplicate suppression, восстановление draft и возврат принятого M-x query.
+- Целевые specs: **68 examples, 0 failures**; полный `bundle exec rake`:
+  **190 examples, 0 failures**. Полный RuboCop сообщает **87 offenses** в 102
+  файлах; 10 файлов модели/providers и specs прошли целевой RuboCop без
+  offenses. `command_handler.rb` уже содержит крупные метрики и другие lint
+  violations, поэтому в эту чистую выборку не входит.
+- `git diff --check` проходит. Curses и Qt picker layout/resize/preview и
+  физическая клавиатура Qt остаются незакрытыми критериями этапа.

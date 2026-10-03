@@ -39,6 +39,8 @@ module Roded
       @picker_query = @picker&.query
       return if resume_path_picker_if_directory?(kind)
 
+      save_picker_query_history(kind)
+
       complete_minibuffer_submission(kind, selected_picker_value || text)
     end
 
@@ -62,6 +64,13 @@ module Roded
 
       continue_path_picker(selected, kind)
       true
+    end
+
+    def save_picker_query_history(kind)
+      return unless @picker
+
+      @picker.commit_query
+      @picker_query_history[kind] = @picker.history
     end
 
     def minibuffer_submit_handler

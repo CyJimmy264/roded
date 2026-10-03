@@ -36,6 +36,11 @@ module Roded
       @buffer.join
     end
 
+    def replace_text(value)
+      @buffer = value.to_s.each_char.to_a
+      @cursor = @buffer.length
+    end
+
     def move_left
       @cursor = [@cursor - 1, 0].max
     end
