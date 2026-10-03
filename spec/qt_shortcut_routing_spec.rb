@@ -118,5 +118,25 @@ RSpec.describe "Qt shortcut routing" do
                            Roded::Event.new(:scroll_by, { amount: -3, source_id: :qt, window_id: 42 })
                          ])
   end
+
+  it "routes Super arrow resizing through the Qt input adapter into core layout" do
+    application = Roded::Application.new
+    application.startup
+    frontend_router = Roded::Frontends::QtInputRouter.new(
+      application, translator, Roded::Frontends::QtClipboardBridge.new, :qt
+    )
+    application.handle_event(Roded::Event.new(:split_vertical, {}))
+    payload = {
+      key: Qt::Key_Right,
+      modifiers: Qt::MetaModifier,
+      text: "",
+      window_id: application.current_window.object_id
+    }
+
+    frontend_router.enqueue_key(payload)
+    application.handle_event(application.instance_variable_get(:@event_queue).pop)
+
+    expect(application.editor_snapshot[:tree][:ratio]).to eq(0.45)
+  end
 end
 # rubocop:enable Metrics/BlockLength

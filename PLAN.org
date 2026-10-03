@@ -236,7 +236,8 @@ replace обратимы. Provider/history/preview не становятся cur
   caret and retains horizontal scrolling after resize.
 - [ ] Tab display width and horizontal scroll synchronization with core views.
 - [ ] Все обязательные Super/Menu aliases из таблицы, включая Alt+Super/punctuation.
-- [ ] s-Left/s-Right resizing split и configurable combinations.
+- [X] Qt widget applies the core split ratio; core routing tests cover Super arrow resize.
+- [ ] Physical s-Left/s-Right desktop smoke and configurable key combinations.
 - [ ] Native close -> save/discard/cancel; отмена сохраняет рабочее desktop window.
 - [ ] UI-thread/snapshot/feedback-loop/REPL/shutdown integration checks.
 - [X] Real-widget offscreen tests cover layout, Unicode caret, syntax, region,

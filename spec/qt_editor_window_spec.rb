@@ -237,3 +237,30 @@ RSpec.describe Roded::Frontends::QtEditorWindow, "visible caret" do
     expect(view.editor.has_focus).to be(true)
   end
 end
+
+RSpec.describe Roded::Frontends::QtEditorWindow, "split resizing" do
+  include_context "Qt editor window lifecycle"
+
+  it "applies the core split ratio to the real Qt splitter" do
+    view = described_class.new
+    @views << view
+    view.show
+    view.window.resize(960, 480)
+    windows = [101, 202].map do |id|
+      { id:, text: "pane #{id}", point: { row: 0, col: 0 }, name: "#{id}.txt", active: id == 101 }
+    end
+    base = { direction: :vertical, first: { window_id: 101 }, second: { window_id: 202 } }
+    view.render_layout(tree: base.merge(ratio: 0.5), active_window_id: 101, windows:)
+    QApplication.process_events
+    view.render_layout(tree: base.merge(ratio: 0.7), active_window_id: 101, windows:)
+    QApplication.process_events
+
+    widths = view.instance_variable_get(:@panes).values.map { |pane| pane.container.width }
+    expect(widths.first.to_f / widths.sum).to be_within(0.05).of(0.7)
+
+    view.window.resize(1060, 480)
+    QApplication.process_events
+    widths = view.instance_variable_get(:@panes).values.map { |pane| pane.container.width }
+    expect(widths.first.to_f / widths.sum).to be_within(0.05).of(0.7)
+  end
+end

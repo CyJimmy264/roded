@@ -127,3 +127,19 @@
 - **Verification:** the offscreen widget reports property value `NoContextMenu`;
   `spec/qt_shortcut_routing_spec.rb` checks both Menu key routes.
 - **Removal:** none; the Qt binding exposes the needed API and enum.
+
+## Applying the core split ratio
+
+- **Location:** `lib/roded/frontends/qt/splitter_tree.rb`.
+- **Observed binding:** qt 0.1.9 / Qt Widgets 6.11.2.
+- **Gap:** `QSplitter#sizes` and `QSplitter#setSizes(QList<int>)` are not exposed;
+  `setStretchFactor` changes later resize distribution but does not immediately
+  apply a changed core ratio to the current panes.
+- **Reproducer:** `QSplitter#methods` contains `set_stretch_factor` but no
+  `sizes`/`set_sizes`. Updating stretch factors after show left the pane ratio
+  unchanged in a real widget.
+- **Workaround:** seed the two child widget sizes from the immutable core ratio
+  before adding them to the native splitter. A real offscreen split reaches a
+  70/30 ratio and retains it through a window resize.
+- **Removal:** expose `QSplitter#sizes/#setSizes` in qt and set the target size
+  vector directly.

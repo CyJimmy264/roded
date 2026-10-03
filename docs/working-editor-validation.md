@@ -741,6 +741,20 @@ File save здесь сохраняет текстовое представле�
   следует подтвердить после следующего запуска. Общий RuboCop пока сообщает
   прежние **63 offenses**.
 
+## 2026-10-03 — Qt split ratio и Super arrows
+
+- Qt synthetic Super+Right payload проходит через `QtInputRouter` и меняет
+  core split ratio. Настоящий offscreen `QSplitter` отображает переданный ratio
+  как 70/30 и сохраняет его при resize окна. Ранее тест выявил, что один
+  `setStretchFactor` не применял новое отношение сразу; Qt adapter теперь
+  задаёт стартовые размеры child widgets из core snapshot.
+- `qtimetrap` specs тоже запускают настоящее Qt UI и проверяют observable widget
+  state после обработки событий; здесь проверены реальные размеры дочерних
+  widgets, а не только структура splitter. Physical `s-Left/s-Right` остаются
+  в очереди пользовательских desktop checks. Полный RSpec: **214 examples,
+  0 failures**. RuboCop снизился с **63 до 62 offenses в 107 files**; изменённые
+  Qt files проходят targeted lint.
+
 ## 2026-10-03 — табличная маршрутизация core input events
 
 - `CommandHandler` заменил большой ветвящийся `case` на декларативные event maps
