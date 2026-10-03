@@ -198,6 +198,36 @@ RSpec.describe Roded::Application do
     expect(first.mark).to eq({ row: 0, col: 3 })
   end
 
+  it "transforms Unicode view points and marks on edits, undo, and redo" do
+    application.startup
+    buffer = application.current_buffer
+    buffer.load_text("α😊e\u0301z")
+    first = application.current_window
+    first.point = { row: 0, col: 1 }
+    first.mark = { row: 0, col: 4 }
+    second = application.split_window(:vertical)
+    second.point = { row: 0, col: 3 }
+    second.mark = { row: 0, col: 1 }
+
+    application.handle_event(Roded::Event.new(:key, { key: "X" }))
+
+    expect(buffer.to_s).to eq("α😊eX\u0301z")
+    expect(first.point).to eq({ row: 0, col: 1 })
+    expect(first.mark).to eq({ row: 0, col: 5 })
+    expect(second.point).to eq({ row: 0, col: 4 })
+    expect(second.mark).to eq({ row: 0, col: 1 })
+
+    application.undo
+    expect(buffer.to_s).to eq("α😊e\u0301z")
+    expect(first.mark).to eq({ row: 0, col: 4 })
+    expect(second.point).to eq({ row: 0, col: 3 })
+
+    application.redo
+    expect(buffer.to_s).to eq("α😊eX\u0301z")
+    expect(first.mark).to eq({ row: 0, col: 5 })
+    expect(second.point).to eq({ row: 0, col: 4 })
+  end
+
   it "splits, switches, and closes editor windows without closing their buffer" do
     application.startup
     buffer = application.current_buffer

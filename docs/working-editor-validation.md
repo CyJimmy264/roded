@@ -3,6 +3,18 @@
 Этот журнал содержит воспроизводимые результаты текущей ветки. Исторический
 отчёт ревизии остаётся в `architecture-review-2026-10-03.md`.
 
+## 2026-10-03 — Unicode position transforms между views
+
+- Добавлен end-to-end core scenario с греческой буквой, emoji вне BMP и
+  combining mark: insertion между code points корректирует point/mark второго
+  view, а undo/redo возвращают позиции на правильные Unicode границы.
+- Проверяется вместе с существующим сценарием ASCII edits в двух views.
+  `spec/application_spec.rb`: 58 примеров, 0 failures.
+- Сверил Qt test approach с локальным qtimetrap: его integration specs создают
+  реальные widgets, прокачивают Qt event loop через `QApplication.process_events`
+  и проверяют видимое состояние после действия; этот паттерн оставляю для
+  дальнейшей Qt parity проверки.
+
 ## 2026-10-03 — reload после внешнего изменения файла
 
 - При конфликте сохранения доступны reload, overwrite и cancel. Reload сначала

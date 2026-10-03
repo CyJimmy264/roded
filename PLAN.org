@@ -133,7 +133,7 @@ file roundtrip не теряет текст. Коммит этапа до шир
 - [X] Undo до saved state.
 - [ ] Undo/redo для всех обязательных edits; grouping и paste transactions.
 - [ ] Mark/region, kill/copy/yank/KillRing и readonly на всех edit entrypoints.
-- [ ] Unicode position transforms корректируют point/mark всех views на edits/undo.
+- [X] Unicode position transforms корректируют point/mark всех views на edits/undo.
 - [ ] Word/document movement, tabs/indent, multiline paste и длинные строки.
 - [ ] Headless integration open/edit/save/close/quit и failure/cancel cases.
 
