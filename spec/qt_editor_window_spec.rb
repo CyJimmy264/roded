@@ -71,7 +71,7 @@ RSpec.describe Roded::Frontends::QtEditorWindow, "region rendering" do
     editor = view.editor
     expect(editor).to be_a(QTextEdit)
     expect(editor.property("contextMenuPolicy")).to eq("NoContextMenu")
-    expect(editor.to_plain_text).to eq("a<b\nc")
+    expect(editor.to_plain_text).to eq("a<b \nc")
     expect(editor.to_html).to include("#3e4451")
     expect(editor.to_html).to include("&lt;b</span>")
   end
@@ -92,7 +92,7 @@ RSpec.describe Roded::Frontends::QtEditorWindow, "Unicode syntax rendering" do
       }]
     )
 
-    expect(view.editor.to_plain_text).to eq("x = \"🙂\"; 42")
+    expect(view.editor.to_plain_text).to eq("x = \"🙂\"; 42 ")
     expect(view.editor.to_html).to include("#d19a66")
   end
 end
@@ -341,6 +341,19 @@ RSpec.describe Roded::Frontends::QtEditorWindow, "startup focus" do
 
     expect(view.window.focus_widget).to equal(view.editor)
   end
+
+  it "restores keyboard focus after the window manager activates the window" do
+    view = described_class.new
+    render_qt_snapshot(view, "opened file", 0)
+    view.show
+    deadline = Process.clock_gettime(Process::CLOCK_MONOTONIC) + 0.2
+    while Process.clock_gettime(Process::CLOCK_MONOTONIC) < deadline
+      QApplication.process_events
+      sleep 0.01
+    end
+
+    expect(view.window.focus_widget).to equal(view.editor)
+  end
 end
 
 RSpec.describe Roded::Frontends::QtEditorWindow, "empty scratch" do
@@ -400,15 +413,16 @@ RSpec.describe Roded::Frontends::QtEditorWindow, "final newline row" do
     expect(view.editor.text_cursor.position).to eq(2)
   end
 
-  it "keeps the end-of-line caret after text instead of highlighting the last character" do
+  it "shows the end-of-line caret in a cell after the text" do
     view = described_class.new
     view.render_layout(
       tree: { window_id: 101 }, active_window_id: 101,
       windows: [{ id: 101, text: "abc", point: { row: 0, col: 3 }, name: "doc", active: true }]
     )
 
-    expect(view.editor.to_html).not_to include("background-color: #61afef")
+    expect(view.editor.to_html).to include("background-color:#61afef")
     expect(view.editor.text_cursor.position).to eq(3)
+    expect(view.editor.to_plain_text).to eq("abc ")
   end
 end
 

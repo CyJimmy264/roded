@@ -44,12 +44,13 @@ fi
 
 sleep 0.5
 xdotool windowfocus --sync "$window_id"
-xdotool mousemove --window "$window_id" 120 80 click 1
 xdotool key --clearmodifiers alt+shift+period
 sleep 0.3
 import -window "$window_id" "$smoke_dir/final-newline-caret.png"
 xdotool type --clearmodifiers x
 xdotool key --clearmodifiers space
+sleep 0.8
+import -window "$window_id" "$smoke_dir/end-of-line-caret.png"
 xdotool key --clearmodifiers ctrl+x
 sleep 0.2
 xdotool key --clearmodifiers ctrl+s

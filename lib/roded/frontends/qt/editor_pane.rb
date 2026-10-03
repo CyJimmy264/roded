@@ -43,7 +43,7 @@ module Roded
       def render(snapshot)
         @snapshot = snapshot
         text = snapshot.fetch(:text).gsub("\r\n", "\n")
-        @mouse_input.text = text
+        @mouse_input.update(text:, snapshot:)
         render_text(snapshot, text)
         restore_scroll(snapshot)
         schedule_scroll_restore

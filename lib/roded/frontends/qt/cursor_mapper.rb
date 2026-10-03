@@ -9,25 +9,25 @@ module Roded
         editor.ensure_cursor_visible
       end
 
-      def self.position_at(editor, horizontal, vertical, text)
+      def self.position_at(editor, horizontal, vertical, text, snapshot = nil)
         point = ::Qt::QPoint.new
         point.set_x(horizontal.to_i)
         point.set_y(vertical.to_i)
         cursor = editor.cursor_for_position(point)
-        core_position(text, cursor.position)
+        core_position(text, cursor.position, snapshot)
       end
 
-      def self.core_position(text, offset)
+      def self.core_position(text, offset, snapshot = nil)
         lines = lines_for(text)
-        row, line_offset = position_in_lines(lines, offset)
+        row, line_offset = position_in_lines(lines, offset, snapshot)
         { row:, col: core_column(lines.fetch(row), line_offset) }
       end
 
-      def self.position_in_lines(lines, offset)
-        remaining = offset.to_i.clamp(0, document_length(lines))
+      def self.position_in_lines(lines, offset, snapshot = nil)
+        remaining = offset.to_i.clamp(0, document_length(lines, snapshot))
         lines.each_with_index do |line, row|
           expanded = expanded_line(line)
-          line_length = rendered_line_length(line, expanded)
+          line_length = rendered_line_length(line, expanded) + end_of_line_marker_length(line, row, snapshot)
           return [row, remaining] if remaining <= line_length
 
           remaining -= line_length + 1
@@ -35,8 +35,15 @@ module Roded
         [lines.length - 1, lines.last.length]
       end
 
-      def self.document_length(lines)
-        lines.sum { |line| rendered_line_length(line, expanded_line(line)) + 1 } - 1
+      def self.document_length(lines, snapshot = nil)
+        lines.each_with_index.sum do |line, row|
+          rendered_line_length(line, expanded_line(line)) + end_of_line_marker_length(line, row, snapshot) + 1
+        end - 1
+      end
+
+      def self.end_of_line_marker_length(line, row, snapshot)
+        point = snapshot && snapshot[:point]
+        point && point[:row] == row && point[:col] >= line.length && !line.empty? ? 1 : 0
       end
 
       def self.utf16_offset(text, point)

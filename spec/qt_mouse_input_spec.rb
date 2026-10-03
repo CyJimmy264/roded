@@ -33,6 +33,15 @@ RSpec.describe Roded::Frontends::QtCursorMapper do
   end
 end
 
+RSpec.describe Roded::Frontends::QtCursorMapper, "EOL caret offsets" do
+  it "accounts for the visible end-of-line caret cell in mouse offsets" do
+    snapshot = { point: { row: 0, col: 3 } }
+
+    expect(described_class.core_position("abc\nx", 4, snapshot)).to eq(row: 0, col: 3)
+    expect(described_class.core_position("abc\nx", 5, snapshot)).to eq(row: 1, col: 0)
+  end
+end
+
 RSpec.describe "Qt QTextEdit mouse hit testing" do
   it "uses QTextEdit hit testing to locate a mouse caret" do
     application = QApplication.new(0, ["roded-mouse-spec"])

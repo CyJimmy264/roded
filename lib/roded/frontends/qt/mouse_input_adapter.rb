@@ -21,7 +21,10 @@ module Roded
         subscribe
       end
 
-      attr_writer :text
+      def update(text:, snapshot:)
+        @text = text
+        @snapshot = snapshot
+      end
 
       private
 
@@ -39,7 +42,7 @@ module Roded
 
         @editor.set_focus
         position = QtCursorMapper.position_at(
-          @editor, payload.fetch(:x, 0), payload.fetch(:y, 0), @text
+          @editor, payload.fetch(:x, 0), payload.fetch(:y, 0), @text, @snapshot
         )
         @callback.call(payload.merge(mouse_action: action, position:, window_id: @window_id))
       end

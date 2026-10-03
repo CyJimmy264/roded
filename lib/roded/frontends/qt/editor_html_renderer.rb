@@ -1,4 +1,5 @@
 require_relative "tab_expander"
+require_relative "eol_caret_renderer"
 
 module Roded
   module Frontends
@@ -26,9 +27,10 @@ module Roded
       def render_line(line, row)
         cursor_column = cursor_column_for(row, line.length)
         boundaries = line_boundaries(line, row, cursor_column)
-        boundaries.each_cons(2).map do |first, last|
+        content = boundaries.each_cons(2).map do |first, last|
           render_segment(line, row, first, last)
         end.join
+        content + QtEolCaretRenderer.render(@snapshot[:point], row, line.length)
       end
 
       def render_block(line, row)
