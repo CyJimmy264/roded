@@ -48,6 +48,7 @@ module Roded
         readonly: buffer.readonly,
         point: window.point.dup.freeze,
         mark: window.mark&.dup&.freeze,
+        highlight: window.highlight,
         name: (buffer.filename || buffer.name || "*scratch*").to_s.dup.freeze,
         top_line: window.top_line,
         left_column: window.left_column,

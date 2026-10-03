@@ -657,5 +657,8 @@ File save здесь сохраняет текстовое представле�
   0 failures**.
 - Полный `bundle exec rake`: **205 examples, 0 failures**. RuboCop — **87 offenses**
   в 105 файлах; новое geometry adapter и его specs проходят RuboCop.
-- Region/search highlight colors и проверка reverse-video selection остаются
-  открытыми критериями этапа 7.
+- Настоящий curses PTY с `TERM=xterm-256color` вывел search match чёрным на
+  жёлтом, а region — reverse-video. С `TERM=vt100` search match перешёл в
+  standout, region сохранил reverse-video. Qt offscreen проверил жёлтый фон
+  отдельного search range в реальном `QTextEdit`; mark продолжает отображаться
+  как отдельное выделение.

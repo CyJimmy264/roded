@@ -12,8 +12,10 @@ module Roded
       row = picker_line_row(candidate)
       return display_message("No matching line.") unless valid_picker_row?(row)
 
-      column = matching_column(current_buffer.lines.fetch(row), @picker_query.to_s)
-      move_to_position(row, column)
+      query = @picker_query.to_s
+      column = matching_column(current_buffer.lines.fetch(row), query)
+      highlight = { start: { row:, col: column }, finish: { row:, col: column + query.length } }
+      move_to_position(row, column, highlight:)
     end
 
     def move_picker(amount)

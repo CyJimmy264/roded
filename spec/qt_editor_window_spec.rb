@@ -94,6 +94,21 @@ RSpec.describe Roded::Frontends::QtEditorWindow, "Unicode syntax rendering" do
     expect(view.editor.to_plain_text).to eq("x = \"🙂\"; 42")
     expect(view.editor.to_html).to include("#d19a66")
   end
+
+  it "renders search ranges with a distinct background color" do
+    view = described_class.new
+    @views << view
+    view.render_layout(
+      tree: { window_id: 101 }, active_window_id: 101,
+      windows: [{
+        id: 101, text: "needle row", point: { row: 0, col: 0 },
+        highlight: { start: { row: 0, col: 0 }, finish: { row: 0, col: 6 } },
+        name: "doc", active: true
+      }]
+    )
+
+    expect(view.editor.to_html).to include("#e5c07b")
+  end
 end
 
 RSpec.describe Roded::Frontends::QtEditorWindow, "split cleanup" do

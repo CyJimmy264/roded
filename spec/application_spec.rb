@@ -970,6 +970,22 @@ RSpec.describe Roded::Application do
     expect(application.current_window.point).to eq({ row: 0, col: 0 })
   end
 
+  it "highlights a search match until point moves" do
+    application.startup
+    application.current_buffer.lines = ["x needle row"]
+    application.current_window.point = { row: 0, col: 0 }
+    application.current_buffer.cursor_pos = application.current_window.point
+    application.search("needle", :forward)
+
+    expect(application.editor_snapshot[:windows].first[:highlight]).to eq(
+      start: { row: 0, col: 2 }, finish: { row: 0, col: 8 }
+    )
+
+    application.handle_event(Roded::Event.new(:key, { key: "C-f" }))
+
+    expect(application.editor_snapshot[:windows].first[:highlight]).to be_nil
+  end
+
   it "supports query replace, skip, replace all, and undo" do
     application.startup
     buffer = application.current_buffer
@@ -980,11 +996,18 @@ RSpec.describe Roded::Application do
     application.submit_minibuffer
     "fox".each_char { |character| application.minibuffer.insert_char(character) }
     application.submit_minibuffer
+    expect(application.editor_snapshot[:windows].first[:highlight]).to eq(
+      start: { row: 0, col: 0 }, finish: { row: 0, col: 3 }
+    )
     application.confirm_query_replace("n")
+    expect(application.editor_snapshot[:windows].first[:highlight]).to eq(
+      start: { row: 0, col: 8 }, finish: { row: 0, col: 11 }
+    )
     application.confirm_query_replace("y")
     application.confirm_query_replace("!")
 
     expect(buffer.to_s).to eq("cat dog fox fox")
+    expect(application.editor_snapshot[:windows].first[:highlight]).to be_nil
     expect(buffer.undo).to be(true)
     expect(buffer.to_s).to eq("cat dog fox cat")
     expect(buffer.undo).to be(true)

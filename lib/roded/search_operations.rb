@@ -16,7 +16,7 @@ module Roded
       position = find_match(query.to_s, direction)
       return display_message("No match for '#{query}'.") unless position
 
-      move_to_position(*position)
+      move_to_position(*position, highlight: match_range(position, query))
       display_message("Found '#{query}'.")
     end
 
@@ -55,10 +55,16 @@ module Roded
       direction == :forward ? folded_line.index(folded_query, offset) : folded_line.rindex(folded_query, offset)
     end
 
-    def move_to_position(row, column)
+    def move_to_position(row, column, highlight: nil)
       current_window.point = { row:, col: column }
       current_buffer.cursor_pos = current_window.point
+      current_window.highlight = highlight
       broadcast_command(Command.new(:render, {}))
+    end
+
+    def match_range(position, query)
+      row, column = position
+      { start: { row:, col: column }, finish: { row:, col: column + query.length } }
     end
   end
 end

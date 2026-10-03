@@ -8,6 +8,7 @@ module Roded
       @buffer = buffer
       @point = buffer.cursor_pos.dup
       @mark = nil
+      @highlight = nil
       @top_line = 0
       @left_column = 0
       @position_memory = {}.compare_by_identity
@@ -22,11 +23,13 @@ module Roded
       end
       @point = point.dup
       @mark = mark&.dup
+      @highlight = nil
       clamp_point
     end
 
     def point=(position)
       @point = { row: position.fetch(:row, 0).to_i, col: position.fetch(:col, 0).to_i }
+      @highlight = nil
       clamp_point
       remember_position
     end
@@ -45,6 +48,19 @@ module Roded
       @mark&.dup&.freeze
     end
 
+    def highlight=(range)
+      @highlight = if range
+                     {
+                       start: normalize_highlight_position(range.fetch(:start)),
+                       finish: normalize_highlight_position(range.fetch(:finish))
+                     }
+                   end
+    end
+
+    def highlight
+      @highlight&.transform_values { |position| position.dup.freeze }&.freeze
+    end
+
     def copy
       window = self.class.new(@buffer)
       window.point = @point
@@ -57,12 +73,19 @@ module Roded
     def transform_positions(change)
       @point = transform_position(@point, change)
       @mark = transform_position(@mark, change) if @mark
+      @highlight = nil
       clamp_point
       clamp_mark
       remember_position
     end
 
     private
+
+    def normalize_highlight_position(position)
+      row = position.fetch(:row, 0).to_i.clamp(0, @buffer.lines.length - 1)
+      col = position.fetch(:col, 0).to_i.clamp(0, @buffer.lines[row].length)
+      { row:, col: }
+    end
 
     def remember_position
       @position_memory[@buffer] = [@point.dup, @mark&.dup]

@@ -307,28 +307,35 @@ module Roded
         text = line[left_column..].to_s
         tokens = item[:tokens]&.[](buffer_row).to_a
         selection = selection_columns(item, buffer_row, line.length)
+        highlight = highlight_columns(item, buffer_row, line.length)
         boundaries = [0, text.length]
         tokens.each do |token|
           boundaries.concat([token[:start] - left_column, token[:finish] - left_column])
         end
         boundaries.concat(selection.map { |column| column - left_column }) if selection
+        boundaries.concat(highlight.map { |column| column - left_column }) if highlight
         boundaries = boundaries.map { |column| column.clamp(0, text.length) }.uniq.sort
         boundaries.each_cons(2) do |first, last|
-          write_styled_segment(item, screen_row, x, text, first, last, width, tokens, selection, left_column)
+          write_styled_segment(item, screen_row, x, text, first, last, width,
+                               tokens, selection, highlight, left_column)
         end
       end
 
-      def write_styled_segment(_item, row, x, text, first, last, width, tokens, selection, left_column)
+      def write_styled_segment(_item, row, x, text, first, last, width, tokens, selection, highlight, left_column)
         return if first >= last
 
         token = tokens.find do |span|
           span[:start] <= first + left_column && span[:finish] >= last + left_column
         end
         selected = selection && first + left_column >= selection.first && last + left_column <= selection.last
+        matched = highlight && first + left_column >= highlight.first && last + left_column <= highlight.last
         cell_offset = CursesTextGeometry.width(text[0...first])
         writer = proc { write_at(row, x + cell_offset, text[first...last], width - cell_offset) }
         if selected
           @screen.attron(::Curses::A_REVERSE, &writer)
+        elsif matched
+          search_attribute = @search_pair ? ::Curses.color_pair(@search_pair) : ::Curses::A_STANDOUT
+          @screen.attron(search_attribute, &writer)
         elsif token && (pair = @color_pairs[token[:category]])
           @screen.attron(::Curses.color_pair(pair), &writer)
         else
@@ -341,7 +348,18 @@ module Roded
         point = item[:point]
         return unless mark && mark != point
 
-        first, last = [mark, point].sort_by { |position| [position[:row], position[:col]] }
+        range_columns([mark, point], row, line_length)
+      end
+
+      def highlight_columns(item, row, line_length)
+        range = item[:highlight]
+        return unless range
+
+        range_columns([range[:start], range[:finish]], row, line_length)
+      end
+
+      def range_columns(positions, row, line_length)
+        first, last = positions.sort_by { |position| [position[:row], position[:col]] }
         return unless row.between?(first[:row], last[:row])
 
         start_column = row == first[:row] ? first[:col] : 0
@@ -389,8 +407,11 @@ module Roded
           ::Curses.init_pair(pair, foreground, background)
           @color_pairs[category] = pair
         end
+        @search_pair = colors.length + 1
+        ::Curses.init_pair(@search_pair, ::Curses::COLOR_BLACK, ::Curses::COLOR_YELLOW)
       rescue StandardError
         @color_pairs = {}
+        @search_pair = nil
       end
 
       def place_cursor

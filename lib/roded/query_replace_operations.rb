@@ -28,6 +28,7 @@ module Roded
     def cancel_query_replace
       start = @query_replace_state&.fetch(:start)
       @query_replace_state = nil
+      current_window.highlight = nil
       move_to_position(start[:row], start[:col]) if start
     end
 
@@ -68,7 +69,8 @@ module Roded
       return nil unless match
 
       state[:position] = match
-      move_to_position(*match)
+      query = state.fetch(:query)
+      move_to_position(*match, highlight: match_range(match, query))
     end
 
     def replace_query_match
@@ -76,6 +78,7 @@ module Roded
       row, column = state.fetch(:position)
       first = { row:, col: column }
       last = { row:, col: column + state.fetch(:query).length }
+      current_window.highlight = { start: first, finish: last }
       current_buffer.with_undo_group do
         current_buffer.delete_region(first, last)
         current_buffer.insert_text(state.fetch(:replacement))
@@ -97,6 +100,7 @@ module Roded
 
     def finish_query_replace
       @query_replace_state = nil
+      current_window.highlight = nil
       cancel_minibuffer if @focus == :minibuffer
       display_message("Query replace finished.")
     end
