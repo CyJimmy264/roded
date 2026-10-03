@@ -12,13 +12,13 @@ module Roded
       return handle_repl_api_event(event) if event.type == :repl_api_call
       return append_ruby_repl_result(event.payload) if event.type == :repl_result
       return handle_mouse_selection(event) if event.type == :mouse_selection
-      return publish_ui_update(UIUpdate.new(:render, {})) if event.type == :resize
+      return handle_resize_event if event.type == :resize
+
       return handle_system_event(event) if system_event?(event)
 
       process_frontend_input(event)
     ensure
-      @active_source_id = nil
-      @active_page_size = nil
+      clear_active_input_context
     end
 
     private
@@ -27,16 +27,32 @@ module Roded
       raise ArgumentError, "expected InputEvent, got #{event.class}" unless event.is_a?(InputEvent)
     end
 
+    def clear_active_input_context
+      @active_source_id = nil
+      @active_page_size = nil
+      @active_page_window_id = nil
+    end
+
     def handle_mouse_selection(event)
       activate_target_window(event)
-      window = current_window
-      return unless window
+      prepare_input_context(event, current_window, current_buffer)
+      return unless current_window
 
-      buffer = window.buffer
+      apply_mouse_selection(event)
+      ensure_current_point_visible
+      publish_ui_update(UIUpdate.new(:render, {}))
+    end
+
+    def apply_mouse_selection(event)
+      window = current_window
       @focus = :buffer
       window.point = event.payload.fetch(:point)
       window.mark = event.payload[:mark]
-      buffer.cursor_pos = window.point
+      window.buffer.cursor_pos = window.point
+    end
+
+    def handle_resize_event
+      ensure_current_point_visible
       publish_ui_update(UIUpdate.new(:render, {}))
     end
 
@@ -57,6 +73,7 @@ module Roded
       prepare_input_context(event, window_before, buffer_before)
       routed_event = dispatch_routed_input(event)
       sync_window_cursor_to_buffer(window_before, buffer_before)
+      ensure_current_point_visible
       publish_ui_update(UIUpdate.new(:render, {})) if snapshot_refresh_required?(routed_event, refresh_snapshot)
     end
 
@@ -82,6 +99,7 @@ module Roded
       sync_buffer_cursor_to_window(window, buffer)
       @active_source_id = event.payload.fetch(:source_id, :default)
       @active_page_size = [event.payload[:page_size].to_i, 1].max if event.payload.key?(:page_size)
+      @active_page_window_id = event.payload[:window_id] || window&.object_id if @active_page_size
     end
 
     def dispatch_routed_input(event)

@@ -59,6 +59,23 @@ module Roded
 
     private
 
+    def ensure_current_point_visible
+      window = current_window
+      return unless window
+
+      visible_rows = page_size
+      window.top_line = visible_origin(window, visible_rows)
+    end
+
+    def visible_origin(window, visible_rows)
+      max_origin = [window.buffer.lines.length - visible_rows, 0].max
+      origin = window.top_line.clamp(0, max_origin)
+      row = window.point.fetch(:row)
+      origin = row if row < origin
+      origin = row - visible_rows + 1 if row >= origin + visible_rows
+      origin.clamp(0, max_origin)
+    end
+
     def update_viewport_origin(origin)
       previous_origin = current_window.top_line
       origin = clamp_viewport_origin(origin)

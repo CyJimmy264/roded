@@ -19,11 +19,19 @@ module Roded
     end
 
     def page_size
-      return @active_page_size if @active_page_size
+      active_page_size || frontend_page_size
+    end
+
+    def active_page_size
+      return unless @active_page_size && current_window&.object_id == @active_page_window_id
+
+      @active_page_size
+    end
+
+    def frontend_page_size
       return 1 if @frontends.empty?
 
-      frontend = @frontends.find { |candidate| @frontend_sources[candidate] == @active_source_id }
-      frontend ||= @frontends.first
+      frontend = active_frontend
       return 1 unless frontend.respond_to?(:page_size)
 
       [frontend.page_size(current_window&.object_id).to_i, 1].max
@@ -37,6 +45,10 @@ module Roded
       available_buffers = buffers
       index = available_buffers.index(current_buffer) || 0
       activate_buffer(available_buffers[(index + direction) % available_buffers.length])
+    end
+
+    def active_frontend
+      @frontends.find { |candidate| @frontend_sources[candidate] == @active_source_id } || @frontends.first
     end
 
     def activate_loaded_file(result)

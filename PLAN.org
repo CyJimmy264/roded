@@ -172,8 +172,14 @@ undo и modified state согласованы. FileService и edit history — �
 - [X] Один buffer в двух окнах: общий текст, независимые point/mark/positions.
 - [X] Curses tabs expand at two-cell stops in rendered text, caret columns and
   horizontal viewport calculations.
-- [ ] Viewport follows point с горизонтальным scrolling; page size из text area.
-- [ ] Custom line/page scrolling с явно определённой core/view policy.
+- [X] Viewport follows point with horizontal scrolling; page size comes from
+  active text area. Core synchronizes vertical origin after keyboard movement,
+  document jumps, mouse selection and resize; curses redraws the full layout
+  when horizontal origin changes.
+- [X] Custom line/page scrolling policy is explicit: core moves viewport and
+  point together to preserve screen row within document bounds; page geometry
+  comes from the input source and active view. `docs/keybindings.md` documents
+  the distinction from ordinary cursor/page movement.
 - [ ] Resize/small screen, prompts/picker overlays, сохранение active view.
 - [ ] Robust input decode: function keys, Meta, Unicode, prefixes, paste, EOF.
 - [ ] Default/native UI rendering нигде не меняет domain model.

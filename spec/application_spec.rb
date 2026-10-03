@@ -1065,6 +1065,26 @@ RSpec.describe Roded::Application do
     expect(application.current_window.point).to eq(row: 1, col: 5)
   end
 
+  it "keeps the viewport origin aligned after cursor movement and later scrolling" do
+    application.startup
+    application.current_buffer.load_text((1..20).map { |number| "line #{number}" }.join("\n"))
+    window_id = application.current_window.object_id
+    page_geometry = { source_id: :qt, window_id:, page_size: 4 }
+
+    4.times { application.handle_event(Roded::Event.new(:key, page_geometry.merge(key: "C-n"))) }
+    expect(application.current_window.point).to eq(row: 4, col: 0)
+    expect(application.current_window.top_line).to eq(1)
+
+    application.handle_event(Roded::Event.new(:key, page_geometry.merge(key: "M->")))
+    expect(application.current_window.point).to eq(row: 19, col: 7)
+    expect(application.current_window.top_line).to eq(16)
+
+    application.handle_event(Roded::Event.new(:scroll_by, page_geometry.merge(amount: -2)))
+
+    expect(application.current_window.point).to eq(row: 17, col: 7)
+    expect(application.current_window.top_line).to eq(14)
+  end
+
   def answer_minibuffer(editor, response)
     response.each_char { |character| editor.minibuffer.insert_char(character) }
     editor.submit_minibuffer

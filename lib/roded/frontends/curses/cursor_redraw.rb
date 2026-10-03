@@ -46,9 +46,10 @@ module Roded
         height = rectangle.height
         text_height = [height - 1, 0].max
         old_first, first = cursor_origins(old_item, item, text_height)
-        return unless old_first == first && text_height.positive?
-
+        old_left_column = horizontal_origin(old_item, width)
         left_column = horizontal_origin(item, width)
+        return unless old_first == first && old_left_column == left_column && text_height.positive?
+
         { old_item:, item:, left:, top:, width:, height:, text_height:, first:, left_column: }
       end
 

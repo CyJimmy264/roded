@@ -1240,3 +1240,29 @@ File save здесь сохраняет текстовое представле�
   file errors/conflicts, shutdown exceptions, and cancel flows.
 - `bundle exec rake`: **280 examples, 0 failures**; RuboCop: **148 files, 0
   offenses**.
+
+## 2026-10-04 — viewport follows point and curses horizontal redraw
+
+- Core now synchronizes `Window#top_line` when routed cursor movement, document
+  jumps, mouse selection, or terminal resize moves the point outside the active
+  text area. The page geometry belongs to the input source and active view;
+  captured event geometry is used without calling the frontend. A regression
+  starts with a four-row viewport, moves `C-n` past its edge, jumps to `M->`,
+  then scrolls back and checks that point and origin remain aligned.
+- Custom `M-p`/`M-n` line scroll and `M-P`/`M-N` page scroll retain the documented
+  core policy: the viewport and point move together, preserving screen row up
+  to document bounds. Application coverage asserts each movement and boundary.
+- Curses incremental redraw now falls back to a full layout render when
+  horizontal scrolling changes the origin; otherwise rows that were not under
+  the caret could keep text from the previous origin. A rendering regression
+  checks both rows use the new origin. Qt real-widget coverage continues to
+  verify caret visibility, scrolling, and scrollbar synchronization.
+- `bundle exec rake`: **282 examples, 0 failures**; RuboCop: **148 files, 0
+  offenses**. `script/curses_live_smoke.rb` passed in private PTY with M-</M->,
+  C-n, typing, bracketed paste, undo/redo, save and quit:
+  `/tmp/roded-curses-smoke.20261004-285671-i61dtu`.
+- `script/qt_live_smoke.sh` passed under private Xvfb and private
+  `XDG_CONFIG_HOME`: 25 keys, wheel, 12 mouse selections, Menu pickers,
+  Ctrl+/ undo, `C-c r d` redo, scratch startup and keyboard quit. Qt Widgets
+  **6.11.2**, gem `qt` **0.2.0**; screenshots/log:
+  `/tmp/roded-qt-live-smoke.3g2v5k`. Neither live check used desktop `DISPLAY`.
