@@ -153,8 +153,11 @@ file roundtrip не теряет текст. Коммит этапа до шир
 - [X] Tab и `indent-region` добавляют по два пробела в текущую строку или
   строки region; `tabify` / `untabify` работают с выбранными строками или всем
   buffer, преобразуют whitespace и группируют edits для undo.
-- [ ] Word/document movement, multiline paste и длинные строки.
-- [ ] Headless integration open/edit/save/close/quit и failure/cancel cases.
+- [X] Word/document movement and bindings; multiline paste is one reversible
+  transaction in core and both frontend paths. Qt real-widget scrolling and
+  curses Unicode/tab viewport geometry cover long lines.
+- [X] Headless integration open/edit/save/close/quit plus error, conflict,
+  failure and cancel paths.
 
 Критерий: файл можно безопасно редактировать и сохранять без потери данных,
 undo и modified state согласованы. FileService и edit history — разные коммиты.

@@ -1050,6 +1050,21 @@ RSpec.describe Roded::Application do
     expect(frontend.commands.last).to eq(Roded::Command.new(:render, {}))
   end
 
+  it "routes word and document boundary bindings to core cursor movement" do
+    application.startup
+    application.current_buffer.load_text("one two\nthree")
+
+    %w[M-f M-f].each { |key| application.handle_event(Roded::Event.new(:key, { key: })) }
+    expect(application.current_window.point).to eq(row: 0, col: 7)
+
+    application.handle_event(Roded::Event.new(:key, { key: "M-b" }))
+    expect(application.current_window.point).to eq(row: 0, col: 4)
+    application.handle_event(Roded::Event.new(:key, { key: "M-<" }))
+    expect(application.current_window.point).to eq(row: 0, col: 0)
+    application.handle_event(Roded::Event.new(:key, { key: "M->" }))
+    expect(application.current_window.point).to eq(row: 1, col: 5)
+  end
+
   def answer_minibuffer(editor, response)
     response.each_char { |character| editor.minibuffer.insert_char(character) }
     editor.submit_minibuffer

@@ -46,14 +46,31 @@ def save_smoke_buffer(session, expected)
   wait_for_file_text(session.fetch(:source_path), expected, session.fetch(:reader), session.fetch(:captured))
 end
 
-def exercise_curses_undo_redo(session)
-  send_smoke_input(session, "\x0e", 0.8)
+def exercise_typing_undo_redo(session)
   send_smoke_input(session, "XYZ", 0.4)
   save_smoke_buffer(session, session.fetch(:edited_text))
   send_smoke_input(session, "\x1f", 0.4)
   save_smoke_buffer(session, session.fetch(:original_text))
   send_smoke_input(session, "\x03rd", 0.4)
   save_smoke_buffer(session, session.fetch(:edited_text))
+end
+
+def exercise_paste_undo_redo(session)
+  pasted_text = "one\nXYZA\nBtwo\nthree\n"
+  send_smoke_input(session, "\e[200~A\nB\e[201~", 0.5)
+  save_smoke_buffer(session, pasted_text)
+  send_smoke_input(session, "\x1f", 0.4)
+  save_smoke_buffer(session, session.fetch(:edited_text))
+  send_smoke_input(session, "\x03rd", 0.4)
+  save_smoke_buffer(session, pasted_text)
+end
+
+def exercise_curses_undo_redo(session)
+  send_smoke_input(session, "\e>", 0.4)
+  send_smoke_input(session, "\e<", 0.4)
+  send_smoke_input(session, "\x0e", 0.8)
+  exercise_typing_undo_redo(session)
+  exercise_paste_undo_redo(session)
   send_smoke_input(session, "\x18", 0.3)
   send_smoke_input(session, "\x03", 0.3)
 end
@@ -81,6 +98,7 @@ exit_status = nil
 
 PTY.spawn(environment, "bundle", "exec", "bin/roded", source_path, chdir: repository) do |reader, writer, pid|
   session = { writer:, reader:, captured:, source_path:, original_text:, edited_text: }
+  sleep 1
   exercise_curses_undo_redo(session)
 
   deadline = Process.clock_gettime(Process::CLOCK_MONOTONIC) + 10
@@ -107,9 +125,12 @@ end
 
 log = File.read(log_path)
 required_log_entries = [
+  'next_event: read_key: "M->"',
+  'next_event: read_key: "M-<"',
   'next_event: read_key: "C-n"',
   "publish_ui_update: move_cursor",
   'next_event: read_key: "C-_"',
+  "event received: paste",
   'next_event: read_key: "C-c"',
   'next_event: read_key: "r"',
   'next_event: read_key: "d"',
@@ -120,5 +141,5 @@ missing_entries = required_log_entries.reject { |entry| log.include?(entry) }
 abort "curses smoke exited #{exit_status.inspect}; missing #{missing_entries.inspect}; files: #{smoke_dir}" unless
   exit_status&.zero? && missing_entries.empty? && !log.include?("Editor runtime failed")
 
-puts "curses live smoke passed (C-n, grouped typing, C-_, C-c r d, save/quit); " \
+puts "curses live smoke passed (M-</M->, C-n, typing, bracketed paste, C-_, C-c r d, save/quit); " \
      "output=#{captured.bytesize} bytes; logs=#{smoke_dir}"

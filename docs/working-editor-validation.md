@@ -1187,7 +1187,7 @@ File save здесь сохраняет текстовое представле�
   Qt widget sequence verifies edit → Ctrl+/ undo → `C-c r d` redo.
 - The undo/redo regression is also exercised in both actual frontends. The
   curses private-PTY smoke sends typed characters, Ctrl+_ undo, `C-c r d` redo,
-  and checks saved file contents. Log: `/tmp/roded-curses-smoke.20261003-257846-bdtw69`.
+  and checks saved file contents. Log: `/tmp/roded-curses-smoke.20261003-277107-n78cfr`.
   The Qt smoke runs in private Xvfb with private `XDG_CONFIG_HOME`, sends the
   corresponding keyboard sequence, waits for the rendered snapshot, and checks
   the visible widget/modeline and saved contents. Log/screenshots:
@@ -1225,3 +1225,18 @@ File save здесь сохраняет текстовое представле�
 - `bundle exec rspec spec/application_spec.rb`: **74 examples, 0 failures**.
   Full `bundle exec rake`: **279 examples, 0 failures**; RuboCop: **148 files,
   0 offenses**.
+
+## 2026-10-03 — movement and bracketed paste in real curses
+
+- Application routing specs verify M-f/M-b word movement and M-</M-> document
+  boundaries. The private curses PTY exercises M-</M->, C-n, typing, and sends
+  an actual bracketed multiline paste (`A`, newline, `B`); it saves, undoes with
+  Ctrl+_, redoes with `C-c r d`, and compares each complete file state. Output:
+  `/tmp/roded-curses-smoke.20261003-277107-n78cfr`.
+- Qt's real QWidget checks that a 300-character unwrapped line scrolls to the
+  caret; curses geometry specs cover horizontal origins, tabs, wide and
+  combining graphemes. The isolated Qt Xvfb smoke also exercises M->.
+- Headless Application integration already covers open/edit/save/close/quit,
+  file errors/conflicts, shutdown exceptions, and cancel flows.
+- `bundle exec rake`: **280 examples, 0 failures**; RuboCop: **148 files, 0
+  offenses**.
