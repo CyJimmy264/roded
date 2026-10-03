@@ -10,6 +10,7 @@ module Roded
     include QueryReplaceOperations
 
     attr_reader :focus, :minibuffer, :kill_ring, :current_window
+
     SYSTEM_EVENTS = %i[quit signal frontend_eof frontend_failure].freeze
 
     def initialize
@@ -29,6 +30,12 @@ module Roded
       @command_registry = CommandRegistry.new
       @file_path_provider = FilePathProvider.new
       @syntax_highlighter = SyntaxHighlighter.new
+      @ruby_editor_api = RubyEditorAPI.new(self)
+      @ruby_repl_buffer = nil
+      @ruby_repl_session = nil
+      @ruby_repl_input_start = nil
+      @ruby_repl_history_index = nil
+      @ruby_repl_history_draft = nil
       register_builtin_commands
       @kill_ring = KillRing.new
       @current_buffer = nil
@@ -179,6 +186,7 @@ module Roded
       restore_signals if manage_signals
       @stop_requested = true
       shutdown_frontends
+      shutdown_ruby_repl
     end
 
     def restore_signal_handlers
@@ -186,6 +194,9 @@ module Roded
     end
 
     def handle_event(event)
+      return handle_repl_api_event(event) if event.type == :repl_api_call
+      return append_ruby_repl_result(event.payload) if event.type == :repl_result
+
       logger.debug("handle_event: #{event.type}")
       logger.debug("handle_event: focus: #{@focus}")
       return request_quit(force: true) if SYSTEM_EVENTS.include?(event.type)
@@ -336,6 +347,78 @@ module Roded
       broadcast_command(Command.new(:render, {}))
     end
 
+    def open_ruby_repl
+      buffer = @buffers.find { |candidate| candidate.name == "*ruby*" }
+      unless buffer
+        buffer = Buffer.new("*ruby*")
+        buffer.load_text("Roded Ruby REPL — C-c C-c evaluates; C-c C-k interrupts.\n> ")
+        buffer.cursor_pos = { row: 1, col: 2 }
+        add_buffer(buffer)
+        @ruby_repl_input_start = { row: 1, col: 2 }
+      end
+      activate_buffer(buffer)
+      @ruby_repl_buffer = buffer
+      if @ruby_repl_input_start.nil?
+        buffer.cursor_pos = { row: buffer.lines.length - 1, col: buffer.lines.last.length }
+        buffer.insert_text("> ")
+        current_window.point = buffer.cursor_pos
+        @ruby_repl_input_start = buffer.cursor_pos
+      end
+      @ruby_repl_session ||= RubyReplSession.new(@ruby_editor_api) { |event| push_event(event) }
+    end
+
+    def evaluate_ruby_repl
+      return display_message("Open *ruby* to evaluate code.") unless current_buffer.equal?(@ruby_repl_buffer)
+
+      code = current_buffer.region_text(@ruby_repl_input_start, current_window.point)
+      return display_message("REPL input is empty.") if code.empty?
+      return display_message("A Ruby expression is already running.") unless @ruby_repl_session.start_evaluation?(code)
+
+      current_buffer.insert_text("\n")
+      current_window.point = current_buffer.cursor_pos
+      broadcast_command(Command.new(:render, {}))
+    end
+
+    def interrupt_ruby_repl
+      return display_message("No Ruby expression is running.") unless @ruby_repl_session&.interrupt
+
+      display_message("Interrupt requested.")
+    end
+
+    def cycle_ruby_repl_history(direction)
+      return unless current_buffer.equal?(@ruby_repl_buffer) && @ruby_repl_session
+
+      history = @ruby_repl_session.history
+      return if history.empty?
+      return if direction.positive? && @ruby_repl_history_index.nil?
+
+      @ruby_repl_history_index ||= history.length
+      if direction.negative?
+        @ruby_repl_history_draft ||= current_buffer.region_text(@ruby_repl_input_start, current_window.point)
+        @ruby_repl_history_index = [@ruby_repl_history_index - 1, 0].max
+        entry = history[@ruby_repl_history_index]
+      else
+        @ruby_repl_history_index = [@ruby_repl_history_index + 1, history.length].min
+        entry = @ruby_repl_history_index == history.length ? @ruby_repl_history_draft.to_s : history[@ruby_repl_history_index]
+      end
+
+      current_buffer.delete_region(@ruby_repl_input_start, current_window.point)
+      current_buffer.insert_text(entry)
+      current_window.point = current_buffer.cursor_pos
+      broadcast_command(Command.new(:render, {}))
+    end
+
+    def request_repl_api(action, *arguments)
+      return dispatch_repl_api(action, arguments) if @core_thread.nil? || Thread.current == @core_thread
+
+      response = Queue.new
+      push_event(Event.new(:repl_api_call, { action:, arguments:, response: }))
+      success, value = response.pop
+      raise value unless success
+
+      value
+    end
+
     def next_buffer
       activate_relative_buffer(1)
     end
@@ -419,11 +502,95 @@ module Roded
 
     private
 
+    def handle_repl_api_event(event)
+      payload = event.payload
+      value = dispatch_repl_api(payload.fetch(:action), payload.fetch(:arguments))
+      payload.fetch(:response) << [true, value]
+    rescue StandardError => e
+      payload.fetch(:response) << [false, e]
+    end
+
+    def dispatch_repl_api(action, arguments)
+      case action
+      when :snapshot then editor_snapshot
+      when :buffers then buffers.map { |buffer| repl_buffer_snapshot(buffer) }.freeze
+      when :current_buffer then repl_buffer_snapshot(current_buffer)
+      when :windows then editor_snapshot.fetch(:windows)
+      when :repl_history then @ruby_repl_session&.history || [].freeze
+      when :insert_text then insert_repl_text(arguments.fetch(0))
+      when :open_file then open_file(arguments.fetch(0))
+      when :save_file then save_repl_file(arguments.fetch(0))
+      when :switch_buffer then switch_buffer(arguments.fetch(0))
+      when :execute_command then execute_command(arguments.fetch(0))
+      when :register_command then register_repl_command(*arguments)
+      else raise ArgumentError, "Unsupported editor API call: #{action}"
+      end
+    end
+
+    def repl_buffer_snapshot(buffer)
+      return unless buffer
+
+      {
+        name: buffer.name.to_s.dup.freeze,
+        filename: buffer.filename&.dup&.freeze,
+        text: buffer.to_s.dup.freeze,
+        mode: buffer.mode,
+        modified: buffer.modified?,
+        readonly: buffer.readonly
+      }.freeze
+    end
+
+    def insert_repl_text(text)
+      current_buffer.insert_text(text.to_s)
+      current_window.point = current_buffer.cursor_pos if current_window
+      broadcast_command(Command.new(:render, {}))
+      current_buffer.to_s.dup.freeze
+    end
+
+    def save_repl_file(path)
+      filename = path || current_buffer.filename
+      raise ArgumentError, "Pass a path to save an unnamed buffer" unless filename
+
+      save_file(filename)
+    end
+
+    def register_repl_command(name, binding, description, action)
+      wrapped = action && ->(_application) { action.call(@ruby_editor_api) }
+      register_command(name, binding:, description:, &wrapped)
+    end
+
+    def append_ruby_repl_result(payload)
+      buffer = @ruby_repl_buffer
+      return unless buffer
+
+      buffer.cursor_pos = { row: buffer.lines.length - 1, col: buffer.lines.last.length }
+      output = payload.fetch(:stdout, payload.fetch(:output, "")).dup
+      stderr = payload.fetch(:stderr, "")
+      output << "[stderr] #{stderr}" unless stderr.empty?
+      output << "=> #{payload[:result]}\n" if payload.key?(:result)
+      output << "#{payload[:error]}\n" if payload[:error]
+      output << "REPL interaction closed.\n" if payload[:exit]
+      output << "> " unless payload[:exit]
+      buffer.insert_text(output)
+      @ruby_repl_session = nil if payload[:exit]
+      @ruby_repl_input_start = payload[:exit] ? nil : buffer.cursor_pos
+      @ruby_repl_history_index = nil
+      @ruby_repl_history_draft = nil
+      current_window.point = buffer.cursor_pos if current_buffer.equal?(buffer) && current_window
+      broadcast_command(Command.new(:render, {}))
+    end
+
+    def shutdown_ruby_repl
+      @ruby_repl_session&.close
+    end
+
     def register_builtin_commands
       @command_registry.register("quit", description: "Quit Roded") { |editor| editor.request_quit }
       @command_registry.register("undo", description: "Undo the last edit") { |editor| editor.undo }
       @command_registry.register("redo", description: "Redo the last edit") { |editor| editor.redo }
-      @command_registry.register("open", description: "Open a file") { |editor| editor.start_minibuffer(:open, "Open file: ") }
+      @command_registry.register("open", description: "Open a file") do |editor|
+        editor.start_minibuffer(:open, "Open file: ")
+      end
       @command_registry.register("save", description: "Save the current buffer") do |editor|
         filename = editor.current_buffer&.filename
         filename ? editor.save_file(filename) : editor.start_minibuffer(:save, "Save file as: ")
@@ -431,7 +598,9 @@ module Roded
       @command_registry.register("save-as", description: "Save as another file") do |editor|
         editor.start_minibuffer(:save_as, "Save as: ")
       end
-      @command_registry.register("switch-buffer") { |editor| editor.start_minibuffer(:switch_buffer, "Buffer name or path: ") }
+      @command_registry.register("switch-buffer") do |editor|
+        editor.start_minibuffer(:switch_buffer, "Buffer name or path: ")
+      end
       @command_registry.register("next-buffer") { |editor| editor.next_buffer }
       @command_registry.register("previous-buffer") { |editor| editor.previous_buffer }
       @command_registry.register("kill-buffer") { |editor| editor.kill_current_buffer }
@@ -447,6 +616,7 @@ module Roded
       @command_registry.register("set-major-mode", description: "Change syntax mode") do |editor|
         editor.start_minibuffer(:major_mode, "Major mode: ")
       end
+      @command_registry.register("ruby-repl", description: "Open the in-process Ruby REPL", &:open_ruby_repl)
     end
 
     def active_region
@@ -523,6 +693,7 @@ module Roded
     end
 
     def main_loop
+      @core_thread = Thread.current
       until @stop_requested
         event = @event_queue.pop
         break unless event
@@ -584,6 +755,7 @@ module Roded
 
       routed = @command_router.route(event.payload[:key], source_id: @active_source_id)
       return unless routed
+
       if routed.type == :prefix_pending
         display_message("#{routed.payload[:prefix]} …")
         return

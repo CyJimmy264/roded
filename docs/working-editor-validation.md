@@ -304,6 +304,35 @@ File save здесь сохраняет текстовое представле�
 - Новые syntax/tokenizer files проходят RuboCop. Полная интеграция подсветки с
   region/search и отдельная monochrome терминальная проверка ещё не сделаны.
 
+## 2026-10-03 — первый сквозной Ruby REPL slice
+
+- `RubyReplSession` держит один in-process binding, историю и отдельный worker.
+  Многострочный код, `puts` / `print`, `$stdout` / `$stderr`, `warn`, exceptions,
+  `exit` и `Thread#raise(Interrupt)` возвращают immutable event в core. Историю
+  можно листать `C-c C-p` / `C-c C-n`; API наружу выдаёт frozen snapshots и
+  направляет edits/команды обратно через core event queue.
+- `editor.register_command` добавляет command и optional key binding из REPL.
+  Integration spec запускает такую команду через binding и M-x; отдельный тест
+  выполняет editor mutation, undo и redo через API и проверяет readonly snapshot.
+- Полный RSpec: **146 examples, 0 failures**. Новые REPL/session specs проходят
+  RuboCop без offenses.
+- Настоящий curses PTY (`TERM=xterm-256color`, Ruby 3.4.2): открыт `*ruby*`,
+  введены многострочное выражение (`=> 3`), `puts` / `warn`, ошибка `RuntimeError:
+  broken` с последующим успешным `=> 4`, interrupt бесконечного Ruby loop, `exit`
+  и выход из изменённого редактора с discard; процесс завершился с exit code 0.
+  Qt Widgets 6.11.2 / gem `qt` 0.1.9: offscreen real-widget smoke исполнил через
+  REPL core API edit в открытый buffer `target`; `QTextEdit` получил актуальный
+  snapshot `qt-repl-visible`. UI pump и event queue были живыми. Тест использовал
+  core input events, а не реальные QKeyEvent.
+- На этом этапе я не запускал `xdotool`: curses проверен через PTY, Qt — через
+  offscreen backend. Ранее xdotool применялся только для synthetic desktop key
+  checks; звук не диагностирован. Реальный desktop REPL keyboard smoke остаётся
+  открытым. `STDOUT` constant и произвольные native writes не перехватываются.
+- Этап 8 подтверждён curses PTY, Qt real-widget offscreen smoke и integration specs.
+  Отдельный physical Qt key smoke остаётся в этапе 9 вместе с Super shortcuts;
+  direct writes через `STDOUT` constant/native file descriptors ограничены
+  особенностями Ruby binding и не входят в перехват `$stdout` / `$stderr`.
+
 ## 2026-10-03 — этап 2, подэтап: source routing и загрузка core
 
 - `bundle exec rspec`: **45 examples, 0 failures**.

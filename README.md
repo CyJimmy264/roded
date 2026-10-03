@@ -39,6 +39,33 @@ Keymap is loaded from `~/.config/roded/keymap.yml` if present. Example:
   type: start_command
 ```
 
+## Ruby REPL
+
+Open the in-process REPL with `C-c r r` or `M-x ruby-repl`. Type Ruby into
+`*ruby*`, run the current input with `C-c C-c`, interrupt a running expression
+with `C-c C-k`, and browse command history with `C-c C-p` / `C-c C-n`. Input may
+span multiple lines. Results, `puts` / `print`, `$stdout` / `$stderr` writes,
+`warn`, and exceptions appear in the REPL buffer; `exit` closes the interaction
+without quitting Roded.
+
+The `editor` object in the REPL exposes a narrow API for inspecting immutable
+snapshots and changing the live editor through its core event loop:
+
+```ruby
+editor.current_buffer
+editor.buffers
+editor.insert_text("hello")
+editor.save_file("notes.txt")
+editor.register_command("insert-greeting", binding: "C-c g") do |api|
+  api.insert_text("Hello from Ruby")
+end
+```
+
+Commands registered this way are available from `M-x` and their optional key
+binding. Ruby expressions run inside the editor process with the current user's
+permissions. Run only trusted code. The API routes editor mutations through the
+core so normal undo, readonly, modified-state, and view-position rules apply.
+
 ## License
 
 Copyright (C) 2025 Maksim Veynberg <mv@cj264.ru>

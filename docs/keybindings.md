@@ -49,6 +49,8 @@ recentf/savehist/save-place не обязательны для этой верс
 | `C-h b`, `M-x describe-bindings` | Справка по bindings |
 | `C-c p f` | Project/root file picker |
 | `C-c r r`, `M-x ruby-repl` | Встроенный Ruby REPL |
+| `C-c C-c`, `C-c C-k` | Выполнить ввод REPL / прервать выполняющийся Ruby-код |
+| `C-c C-p`, `C-c C-n` | Предыдущая / следующая команда в истории REPL |
 
 В picker: `C-n/C-p`, Up/Down, Enter, `C-g`; обычный ввод меняет query,
 Backspace/Delete редактируют query. В prompts текстовые editing keys имеют

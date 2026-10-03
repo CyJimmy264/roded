@@ -80,6 +80,16 @@ module Roded
         @editor.begin_query_replace
       when :project_files
         @editor.start_minibuffer(:open, "Project file: ")
+      when :ruby_repl
+        @editor.open_ruby_repl
+      when :repl_evaluate
+        @editor.evaluate_ruby_repl
+      when :repl_interrupt
+        @editor.interrupt_ruby_repl
+      when :repl_history_previous
+        @editor.cycle_ruby_repl_history(-1)
+      when :repl_history_next
+        @editor.cycle_ruby_repl_history(1)
       when :shrink_window_horizontally
         @editor.resize_window(-0.05)
       when :enlarge_window_horizontally

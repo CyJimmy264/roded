@@ -185,14 +185,14 @@ replace обратимы. Provider/history/preview не становятся cur
 
 * Этап 8 — P1: встроенный programmable Ruby REPL
 
-- [ ] Persistent in-process binding, multiline input, history и *ruby* buffer.
-- [ ] Results/stdout/stderr/exceptions отображаются без повреждения UI.
-- [ ] Инспекция реальных state/buffers/views и документированный mutation API.
-- [ ] Edits из REPL идут через core, поддерживают undo/readonly/modified и все views.
-- [ ] Register command/binding из Ruby, запуск через M-x и клавиатуру.
-- [ ] Simple long evaluation interrupt, exit из REPL, exception recovery и cleanup.
-- [ ] Нет competing state owners или вызовов GUI из REPL worker.
-- [ ] Примеры Ruby API в README проверены; исходники qt live IRB — reference,
+- [X] Persistent in-process binding, multiline input, history и *ruby* buffer.
+- [X] Results/stdout/stderr/exceptions отображаются без повреждения UI.
+- [X] Инспекция реальных state/buffers/views и документированный mutation API.
+- [X] Edits из REPL идут через core, поддерживают undo/readonly/modified и все views.
+- [X] Register command/binding из Ruby, запуск через M-x и клавиатуру.
+- [X] Simple long evaluation interrupt, exit из REPL, exception recovery и cleanup.
+- [X] Нет competing state owners или вызовов GUI из REPL worker.
+- [X] Примеры Ruby API в README проверены; исходники qt live IRB — reference,
   отдельный external IRB вместо доступа к живому state не считается выполнением.
 
 Критерий: из UI можно изменить живой editor и увидеть/отменить результат.
