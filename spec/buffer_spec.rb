@@ -174,8 +174,20 @@ RSpec.describe Roded::Buffer do
       buffer.kill_line(kill_ring)
 
       expect(buffer.lines).to eq(["abcdef"])
-      expect(kill_ring.last).to be_nil
+      expect(kill_ring.last).to eq("\n")
       expect(buffer.cursor_pos).to eq({ row: 0, col: 3 })
+    end
+
+    it "kills a final newline at end of the last line" do
+      buffer.load_text("abc\n")
+      buffer.cursor_pos = { row: 0, col: 3 }
+
+      buffer.kill_line(kill_ring)
+
+      expect(buffer.to_s).to eq("abc")
+      expect(kill_ring.last).to eq("\n")
+      buffer.undo
+      expect(buffer.to_s).to eq("abc\n")
     end
   end
 
@@ -275,6 +287,16 @@ RSpec.describe Roded::Buffer do
       expect(buffer.to_s).to eq("ab")
       expect(buffer.redo).to be(true)
       expect(buffer.to_s).to eq("aПривет\nмирb")
+    end
+
+    it "joins consecutive line kills into one kill-ring item" do
+      buffer.load_text("abc\ndef")
+      ring = Roded::KillRing.new
+      buffer.kill_line(ring)
+      buffer.kill_line(ring)
+
+      expect(buffer.to_s).to eq("def")
+      expect(ring.items).to eq(["abc\n"])
     end
 
     it "groups multiple edits into one undo step and clears redo after a new edit" do

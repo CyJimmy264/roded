@@ -128,6 +128,8 @@ file roundtrip не теряет текст. Коммит этапа до шир
   undo/redo commands, undo до saved state и явная группировка в core.
 - [X] Core `:paste` event вставляет многострочный UTF-8 текст одной edit
   операцией; curses bracketed paste и Qt clipboard delivery остаются открытыми.
+- [X] `C-k` на EOL удаляет newline (в том числе final newline), сохраняет его
+  в KillRing; соседние kill-команды объединяются до следующей команды.
 - [X] Undo до saved state.
 - [ ] Undo/redo для всех обязательных edits; grouping и paste transactions.
 - [ ] Mark/region, kill/copy/yank/KillRing и readonly на всех edit entrypoints.

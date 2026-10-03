@@ -5,6 +5,7 @@ module Roded
     end
 
     def handle(event)
+      @editor.kill_ring.break_sequence unless event.type == :kill_line
       return handle_minibuffer_event(event) if @editor.focus == :minibuffer
 
       handle_buffer_event(event)

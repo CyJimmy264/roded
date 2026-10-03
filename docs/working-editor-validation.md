@@ -144,6 +144,18 @@ File save здесь сохраняет текстовое представле�
 - Событие пока не порождается curses bracketed paste или Qt clipboard; это
   потребуется проверить в настоящих frontend до завершения этапов 5 и 9.
 
+## 2026-10-03 — C-k и последовательные kill-команды
+
+- `C-k` на конце строки теперь удаляет line break и кладёт `\n` в KillRing;
+  при наличии final newline он также удаляется. Повторные kill-команды
+  склеиваются в новую верхнюю запись, а любая другая core-команда завершает
+  последовательность.
+- Undo восстанавливает удалённый separator/final newline. Проверки: **86
+  examples, 0 failures**. `bundle exec rubocop lib/roded/kill_ring.rb
+  spec/kill_ring_spec.rb`: без offenses; `git diff --check` чистый.
+- C-w/M-w/C-y, выбор KillRing через picker и region state в окне ещё не
+  реализованы; весь edit-model этап остаётся открытым.
+
 ## 2026-10-03 — этап 2, подэтап: source routing и загрузка core
 
 - `bundle exec rspec`: **45 examples, 0 failures**.
