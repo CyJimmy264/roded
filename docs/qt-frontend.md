@@ -13,11 +13,10 @@ gem, с обязательным TODO о будущей доработке Qt.
 - `/home/mveynberg/Code/Ruby/qtimetrap/lib/qtimetrap.rb`, container и примеры
   использования событий/timers в `app/views` / `app/components`.
 
-Локальная версия gem — **0.1.9**. RubyGems API также возвращает **0.1.9**, дата
-публикации 4 июня 2026 года. Проверка:
-[RubyGems metadata](https://rubygems.org/api/v1/gems/qt.json).
-Перед реализацией перепроверить установленную/locked версию; описанное здесь
-наличие методов не заменяет runtime probe именно используемой сборки.
+На момент первоначального probe использовался gem **0.1.9**. Сейчас Roded
+зависит от **qt ~> 0.2.0**; исправления binding и удалённые обходы перечислены
+в `docs/qt-workarounds.md`. Для API поведения ориентироваться на runtime probe
+и integration specs установленной версии.
 
 В локальных sources есть `QApplication`, `QTimer`, `QShortcut`,
 `QPlainTextEdit`, `QTextEdit`, `QTextCursor`, `on(:key_press)` и subscriptions
@@ -123,14 +122,10 @@ Unicode offset conversion, native editing interception и exception shutdown.
 Offscreen modifiers доказывают input translation; физические shortcuts отдельно
 доказывают доставку events в пользовательском окружении.
 
-В установленном `qt` 0.1.9 `QApplication.clipboard` возвращает QObject без
-`QClipboard#text`/`#setText`. Текущий workaround использует только clipboard
-slots transport-only `QTextEdit`; shortcut `C-S-v` передаёт один core `:paste`
-event и не конфликтует с `C-v` page-down. `C-S-c`/`C-S-x` идут в core region
-copy/kill и записывают полученный текст через Qt UI dispatcher. Mouse selection
-и native context menu остаются незакрытыми.
-
-Установленный `qt` gem не даёт veto для настоящего `QWidget.close`: callback
-скрывает окно до решения core. `QtCloseGuard` восстанавливает тот же widget,
-когда core показывает prompt или отменяет закрытие; desktop close smoke ещё
-нужно выполнить.
+Clipboard использует `QApplication.clipboard.text`/`set_text`, caret ставится
+через `QTextCursor` с переводом core codepoint column в UTF-16 offset, split
+ratio применяется через `QSplitter.set_sizes`, а отмена native close
+возвращает `:reject`. Детали и regression specs — в
+`docs/qt-workarounds.md`. Наличие этих API не закрывает оставшиеся acceptance
+checks: mouse caret/selection и физические Super shortcuts требуют отдельной
+проверки в живом UI.

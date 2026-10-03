@@ -7,7 +7,6 @@ require_relative "qt/editor_window"
 require_relative "qt/clipboard_bridge"
 require_relative "qt/buffer_snapshot"
 require_relative "qt/ui_dispatcher"
-require_relative "qt/close_guard"
 
 module Roded
   module Frontends
@@ -29,9 +28,8 @@ module Roded
         @clipboard = QtClipboardBridge.new
         @view = QtEditorWindow.new
         @ui_dispatcher = QtUiDispatcher.new(@view, @qt_application, @clipboard)
-        @close_guard = QtCloseGuard.new(@ui_dispatcher)
         @input_router = QtInputRouter.new(@application, QtKeyTranslator.new, @clipboard, input_source_id)
-        @input_router.connect(@view) { @close_guard.mark_pending }
+        @input_router.connect(@view)
         @ui_dispatcher.start
       end
 
@@ -65,18 +63,12 @@ module Roded
 
       def display_message(message)
         @ui_dispatcher.post(:message, message.to_s.dup)
-        @close_guard.reopen_if_pending
       end
 
       def handle_command(command)
-        if command.type == :quit
-          @close_guard.clear
-          return enqueue_quit
-        end
+        return enqueue_quit if command.type == :quit
 
-        result = dispatch_command(command)
-        @close_guard.reopen_if_pending
-        result
+        dispatch_command(command)
       end
 
       def next_event
@@ -95,7 +87,6 @@ module Roded
       end
 
       def close
-        @close_guard.clear
         @ui_dispatcher.post(:quit)
       end
 

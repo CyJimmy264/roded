@@ -3,6 +3,28 @@
 Этот журнал содержит воспроизводимые результаты текущей ветки. Исторический
 отчёт ревизии остаётся в `architecture-review-2026-10-03.md`.
 
+## 2026-10-03 — переход на qt 0.2.0
+
+- Gemfile/gemspec и lockfile обновлены на `qt ~> 0.2.0`. Использованы новые
+  generated enum constants, QClipboard text API, native close `:reject`,
+  QTextCursor UTF-16 setter и QSplitter sizes; транспортный editor, cursor
+  marker и QtCloseGuard удалены. Workaround status обновлён в
+  `docs/qt-workarounds.md`.
+- Версии: Ruby **3.4.2**, qt **0.2.0**, Qt Widgets **6.11.2**. Runtime API probe
+  подтвердил `QTextEdit::NoWrap`, `QTextCursor#position/#set_position`,
+  `QClipboard#text/#set_text`, `QSplitter#sizes/#set_sizes`.
+- `bundle exec rspec`: **229 examples, 0 failures**. Qt editor/clipboard/close
+  offscreen specs: **21 examples, 0 failures**. Targeted RuboCop: **11 files,
+  0 offenses**; shell syntax and `git diff --check` прошли. `bundle exec rake`
+  также завершает specs успешно, но общий lint gate пока сообщает **55 прежних
+  offenses** в `buffer.rb` и curses frontend.
+- `script/qt_live_smoke.sh` прошёл под изолированным Xvfb: настоящий Qt frontend
+  обработал `C-n`, ввод/сохранение, wheel, `M->`, split, `s-Right`/`s-Left` и
+  завершился штатно через `C-x C-c`. Log: `/tmp/roded-qt-live-smoke.dkXtdu/roded.log`;
+  снимки сохранены рядом. Это подтверждает X11 synthetic delivery, но не
+  физические Super keys. Native close rejection проверен отдельно на реальном
+  offscreen QWidget; desktop save/discard/cancel flow ещё остаётся в acceptance.
+
 ## 2026-10-03 — Unicode offsets Ruby syntax spans
 
 - `Ripper.lex` отдаёт byte columns, тогда как snapshots и curses/Qt rendering

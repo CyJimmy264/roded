@@ -24,10 +24,7 @@ module Roded
         @editor.set_undo_redo_enabled(false)
         @editor.set_context_menu_policy(::Qt::NoContextMenu)
         @editor.set_cursor_width(2)
-        # TODO(qt): HACK — qt 0.1.9 omits QTextEdit::LineWrapMode constants.
-        # Workaround: use the documented NoWrap enum value 0.
-        # Generate LineWrapMode constants in qt, then replace this value with NoWrap.
-        @editor.set_line_wrap_mode(0)
+        @editor.set_line_wrap_mode(::Qt::QTextEdit::NoWrap)
       end
 
       def bind(window_id, callback, wheel_callback = nil)
@@ -51,9 +48,7 @@ module Roded
       private
 
       def render_text(snapshot, text)
-        marker = QtCursorMapper.marker_for(text)
-        snapshot = snapshot.merge(cursor_marker: marker)
-        @editor.set_html(QtEditorHtmlRenderer.new(text, snapshot, marker).render)
+        @editor.set_html(QtEditorHtmlRenderer.new(text, snapshot).render)
         QtCursorMapper.place(@editor, snapshot, text)
       end
 

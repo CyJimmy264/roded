@@ -98,16 +98,18 @@ file roundtrip не теряет текст. Коммит этапа до шир
 
 Не откладывать совместимость с qt до завершения всех features.
 
-- [X] Проверить установленный qt gem 0.1.9 и local API по =docs/qt-frontend.md=.
+- [X] Проверить Qt API в qt 0.1.9 и повторить probes на qt 0.2.0 по =docs/qt-frontend.md=.
 - [ ] Probe реальных events: key/text/modifiers, consume, resize/focus/close.
-- [ ] Проверить доступные text/cursor/selection/highlight APIs используемой сборки.
+- [X] Проверить доступные text/cursor/selection/highlight APIs используемой сборки;
+  после выпуска qt 0.2.0 заменить cursor/clipboard/splitter/close обходы.
 - [X] QApplication и widgets в GUI/main thread; выбрать явную runtime интеграцию.
 - [X] Один buffer: Qt input -> core edit -> UI snapshot -> рабочее отображение.
 - [X] Synthetic Super test binding вызывает core command; Alt/Super различаются.
 - [ ] Close/exception не вызывают widgets из чужого потока и не зависают.
 - [X] Qt dependency/CLI boot воспроизводимы без обязательного local absolute path.
-- [X] Missing bindings обходить локально; каждый hack получает TODO(qt): HACK
-  и запись с API gap/reproducer/test/normal replacement в qt-workarounds.md.
+- [X] Ранее недостающие bindings обходились локально; после qt 0.2.0 ненужные
+  обходы удалены, а статус и оставшаяся native context-menu настройка описаны
+  в qt-workarounds.md.
 
 Критерий: рабочий вертикальный сценарий с реальным Qt, а не только doubles.
 Сохранить probe evidence и отдельный коммит интеграции. Полная parity — этап 9.
@@ -232,10 +234,8 @@ replace обратимы. Provider/history/preview не становятся cur
   saves, verifies the on-disk text, and observes the clean modeline.
 - [ ] Native text/undo/context menu не образуют вторую editor model.
 - [ ] Mouse focus/caret/selection/wheel и clipboard идут через core contracts.
-- [X] Qt visual caret maps core character columns to grapheme boundaries for
-  astral emoji, combining text, and ZWJ emoji sequences.
-- [X] Exact core-character/Qt UTF-16 position conversion, including points
-  inside combining and ZWJ graphemes.
+- [X] Qt caret uses the QTextCursor API and exact core-character to UTF-16
+  offsets, including astral emoji, combining text, ZWJ sequences, tabs and rows.
 - [X] Long lines stay unwrapped; a real Qt widget horizontally scrolls to its
   caret and retains horizontal scrolling after resize.
 - [ ] Tab display width and horizontal scroll synchronization with core views.
@@ -246,7 +246,8 @@ replace обратимы. Provider/history/preview не становятся cur
 - [X] Завершённая chord-команда очищает echo-area prefix hint; live Qt split
   smoke подтверждает пустую echo area и нормальный выход по `C-x C-c`.
 - [ ] Physical s-Left/s-Right desktop smoke and configurable key combinations.
-- [ ] Native close -> save/discard/cancel; отмена сохраняет рабочее desktop window.
+- [X] Offscreen native QWidget.close returns rejected and remains visible while
+  core decides; desktop save/discard/cancel interaction remains open.
 - [ ] UI-thread/snapshot/feedback-loop/REPL/shutdown integration checks.
 - [X] Real-widget offscreen tests cover layout, Unicode caret, syntax, region,
   search, close, picker, resize and clipboard.
@@ -254,7 +255,8 @@ replace обратимы. Provider/history/preview не становятся cur
   both core `top_line` and the real Qt scrollbar; integration specs cover the
   application/input-router/widget path.
 - [ ] Desktop smoke с физическими Super keys.
-- [ ] Список hacks полон; TODO сообщает missing API и требуемую замену в qt.
+- [X] Активные Qt binding workarounds учтены; удалённые решения перечислены в
+  qt-workarounds.md без устаревших TODO в production code.
 
 Критерий: сквозной acceptance scenario из GOAL выполнен в Qt, зафиксированы
 versions/backend/наблюдения/screenshots. OS-reserved shortcuts отмечены отдельно.

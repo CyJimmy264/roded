@@ -10,9 +10,9 @@ module Roded
         @wheel_remainder = 0
       end
 
-      def connect(view, &on_close)
+      def connect(view)
         view.on_key_press { |payload| enqueue_key(payload) }
-        view.on_close { close_requested(on_close) }
+        view.on_close { close_requested }
         view.on_resize { |_payload| @application.push_event(Event.new(:resize, {})) }
         view.on_wheel { |payload| enqueue_wheel(payload) }
       end
@@ -34,14 +34,9 @@ module Roded
 
       private
 
-      def close_requested(on_close)
-        # TODO(qt): HACK — qt 0.1.9 close callbacks cannot veto QWidget::close.
-        # :consume accepts and closes; :ignore falls through to QWidget's default closeEvent.
-        # QtCloseGuard reopens the retained view if core prompts or cancels the close.
-        # Extend qt with a close-event veto result, then remove that reopen workaround.
-        on_close.call
+      def close_requested
         @application.push_event(Event.new(:close_request, {}))
-        :consume
+        :reject
       end
 
       def wheel_amount(payload)

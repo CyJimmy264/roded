@@ -68,34 +68,17 @@ module Roded
         splitter.orientation = tree[:direction] == :vertical ? ::Qt::Horizontal : ::Qt::Vertical
         first = build(tree[:first]) { |id| pane_for.call(id) }
         second = build(tree[:second]) { |id| pane_for.call(id) }
-        prepare_children(tree, first, second)
         splitter.add_widget(first)
         splitter.add_widget(second)
+        apply_split_sizes(splitter, tree.fetch(:ratio, 0.5))
         splitter
       end
 
-      def prepare_children(tree, first, second)
-        # TODO(qt): HACK — qt 0.1.9 omits QSplitter#sizes/#setSizes for QList<int>.
-        # Workaround: seed child widget sizes from the core ratio before mounting.
-        # Expose sizes/setSizes in qt, then apply the ratio directly to QSplitter.
-        ratio = tree.fetch(:ratio, 0.5)
-        first_dimensions, second_dimensions = child_dimensions(tree[:direction], ratio)
-        first.resize(*first_dimensions)
-        second.resize(*second_dimensions)
-      end
-
-      def child_dimensions(direction, ratio)
-        if direction == :vertical
-          return [
-            [(width = (@parent.width * ratio).round), @parent.height],
-            [@parent.width - width, @parent.height]
-          ]
-        end
-
-        [
-          [@parent.width, (height = (@parent.height * ratio).round)],
-          [@parent.width, @parent.height - height]
-        ]
+      def apply_split_sizes(splitter, ratio)
+        first = (ratio.clamp(0.05, 0.95) * 1000).round
+        splitter.set_stretch_factor(0, 1)
+        splitter.set_stretch_factor(1, 1)
+        splitter.set_sizes([first, 1000 - first])
       end
 
       def release(widget)

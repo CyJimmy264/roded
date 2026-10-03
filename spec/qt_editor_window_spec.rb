@@ -200,24 +200,38 @@ RSpec.describe Roded::Frontends::QtEditorWindow, "Unicode caret" do
   include_context "Qt editor window lifecycle"
 
   it "places the core caret at exact character boundaries inside graphemes" do
-    clipboard = Roded::Frontends::QtClipboardBridge.new
     cases = [
-      ["a🙂b", 2, "b"],
-      ["e\u0301x", 1, "\u0301"],
-      ["e\u0301x", 2, "x"],
-      ["👨‍👩‍👧‍👦x", 1, "‍👩‍👧‍👦"],
-      ["👨‍👩‍👧‍👦x", 7, "x"]
+      ["a🙂b", 2, 3],
+      ["e\u0301x", 1, 1],
+      ["e\u0301x", 2, 2],
+      ["👨‍👩‍👧‍👦x", 1, 2],
+      ["👨‍👩‍👧‍👦x", 7, 11]
     ]
 
-    cases.each do |text, character_column, expected_next_character|
+    cases.each do |text, character_column, expected_utf16_position|
       view = described_class.new
       render_qt_snapshot(view, text, character_column)
-      clipboard.write_text("sentinel")
-      view.editor.move_cursor(Roded::Frontends::QtCursorMapper::MOVE_RIGHT, 1)
-      view.editor.copy
 
-      expect(clipboard.read_text).to eq(expected_next_character)
+      expect(view.editor.text_cursor.position).to eq(expected_utf16_position)
     end
+  end
+end
+
+RSpec.describe Roded::Frontends::QtEditorWindow, "multi-line UTF-16 caret" do
+  include_context "Qt editor window lifecycle"
+
+  it "counts preceding lines when setting a UTF-16 document offset" do
+    view = described_class.new
+    @views << view
+    view.render_layout(
+      tree: { window_id: 101 }, active_window_id: 101,
+      windows: [{
+        id: 101, text: "🙂\nsecond", point: { row: 1, col: 2 }, name: "unicode", active: true
+      }]
+    )
+
+    expect(view.editor.to_plain_text).to eq("🙂\nsecond")
+    expect(view.editor.text_cursor.position).to eq(5)
   end
 end
 
@@ -293,12 +307,7 @@ RSpec.describe Roded::Frontends::QtEditorWindow, "tab display" do
     render_qt_snapshot(view, "界\t\tb", 3)
 
     expect(view.editor.to_plain_text).to eq("界    b")
-    clipboard = Roded::Frontends::QtClipboardBridge.new
-    clipboard.write_text("sentinel")
-    view.editor.move_cursor(Roded::Frontends::QtCursorMapper::MOVE_RIGHT, 1)
-    view.editor.copy
-
-    expect(clipboard.read_text).to eq("b")
+    expect(view.editor.text_cursor.position).to eq(5)
   end
 end
 

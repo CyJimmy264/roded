@@ -4,7 +4,7 @@ PATH
     roded (0.1.0)
       curses
       logger
-      qt (~> 0.1.9)
+      qt (~> 0.2.0)
       unicode-display_width (~> 3.2)
 
 GEM
@@ -37,7 +37,7 @@ GEM
     psych (5.2.6)
       date
       stringio
-    qt (0.1.9)
+    qt (0.2.0)
       ffi (~> 1.17)
     racc (1.8.1)
     rainbow (3.1.1)

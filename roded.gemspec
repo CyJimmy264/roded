@@ -39,7 +39,7 @@ Gem::Specification.new do |spec|
   # spec.add_dependency "example-gem", "~> 1.0"
   spec.add_dependency "curses"
   spec.add_dependency "logger"
-  spec.add_dependency "qt", "~> 0.1.9"
+  spec.add_dependency "qt", "~> 0.2.0"
   spec.add_dependency "unicode-display_width", "~> 3.2"
 
   # For more information and examples about making a new gem, check out our

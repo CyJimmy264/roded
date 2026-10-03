@@ -94,7 +94,7 @@ RSpec.describe "Qt shortcut routing" do
     frontend_router = Roded::Frontends::QtInputRouter.new(
       application, translator, Roded::Frontends::QtClipboardBridge.new, :qt
     )
-    frontend_router.connect(view) { nil }
+    frontend_router.connect(view)
     view.show
     view.window.resize(540, 360)
     QApplication.process_events

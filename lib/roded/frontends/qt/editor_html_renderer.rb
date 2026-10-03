@@ -4,10 +4,9 @@ module Roded
   module Frontends
     # Builds Qt rich text from immutable core snapshots and visual overlays.
     class QtEditorHtmlRenderer
-      def initialize(text, snapshot, cursor_marker)
+      def initialize(text, snapshot)
         @lines = text.split("\n", -1)
         @snapshot = snapshot
-        @cursor_marker = cursor_marker
         @range = ordered_range(snapshot[:mark], snapshot[:point])
       end
 
@@ -27,11 +26,9 @@ module Roded
       def render_line(line, row)
         cursor_column = cursor_column_for(row, line.length)
         boundaries = line_boundaries(line, row, cursor_column)
-        html = boundaries.each_cons(2).map do |first, last|
-          marker = cursor_column == first ? @cursor_marker : ""
-          marker + render_segment(line, row, first, last)
+        boundaries.each_cons(2).map do |first, last|
+          render_segment(line, row, first, last)
         end.join
-        cursor_column == line.length ? html + @cursor_marker : html
       end
 
       def cursor_column_for(row, line_length)
