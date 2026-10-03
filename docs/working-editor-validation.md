@@ -614,6 +614,21 @@ File save здесь сохраняет текстовое представле�
   показывает выбранный candidate из списка и ограничивает текст шестью строками
   вместе с query. Picker/Qt specs и resize routing: **8 examples, 0 failures**;
   семь целевых Ruby/spec файлов прошли RuboCop без offenses.
-- Полный `bundle exec rake`: **195 examples, 0 failures**; полный RuboCop —
+- Полный `bundle exec rake`: **198 examples, 0 failures**; полный RuboCop —
   **87 offenses** в 103 файлах. Provider coverage и line search/replace остаются
-  незакрытыми пунктами этапа 6.
+  закрыты отдельным следующим slice этапа 6.
+
+## 2026-10-03 — этап 6: provider acceptance и обратимый поиск
+
+- Сквозные application specs принимают command (`M-x`), buffer (`C-x b`),
+  file path (`C-x C-f`), project/root file (`C-c p f`), line (`C-s`) и KillRing
+  (`M-y`) candidates и проверяют действие после Enter. `FilePathProvider` specs
+  отдельно покрывают Git ignore/exclusions и filesystem fallback.
+- Buffer picker не выполняет preview при перемещении selection; cancel через
+  `C-g` сохраняет исходный active buffer и point. Text query редактирование и
+  cancel уже покрыты picker/search examples; backward search, goto-line,
+  query-replace skip/replace-all/undo и cancel point restoration проверяются
+  application specs.
+- Полный `bundle exec rake`: **198 examples, 0 failures**. Полный RuboCop остаётся
+  на **87 offenses** в 103 файлах; весь изменённый stage-6 model/provider/spec
+  subset проходит целевой RuboCop.

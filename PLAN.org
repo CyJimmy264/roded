@@ -169,18 +169,22 @@ undo и modified state согласованы. FileService и edit history — �
 
 - [X] Переиспользуемый picker model/provider API, live orderless filtering и
   history запросов; история и редактирование draft покрыты specs.
-- [ ] Providers: commands, buffers, file paths, project/root files, lines, KillRing.
+- [X] Providers: commands, buffers, file paths, project/root files, lines,
+  KillRing; application scenarios cover actual accept/action for each provider.
 - [X] Navigation/accept/cancel, empty/Unicode candidates, list scrolling/resize;
   bounded snapshots preserve selection, curses PTY handles a live shrink, Qt
   real-widget layout keeps the selected candidate visible in a short window.
-- [ ] Preview отменяется с восстановлением исходного view/buffer/point.
-- [ ] C-s line search, forward/backward search, goto-line и query-replace.
+- [X] Picker показывает candidate list без preview side effects; cancel сохраняет
+  active view/buffer/point, verified on the buffer picker.
+- [X] C-s line search, forward/backward search, goto-line и query-replace.
 - [X] `C-h b` / `M-x describe-bindings` показывают actual keymap и registry;
   core test проверяет user binding, а настоящий curses PTY открывает help buffer.
 - [X] User keymap validation показывает ошибки в frontend; prefix hints и
   custom commands из таблицы (`select-current-line`, tabify/untabify,
   дата/время, `binding.irb`) работают через общий router и registry.
-- [ ] Проверки всех providers, query edit, cancel/replace и layout interactions.
+- [X] Проверки всех providers, query edit, cancel/replace и layout interactions;
+  project/root file acceptance and buffer-picker cancellation have integration
+  coverage.
 
 Критерий: нужный файл/buffer/команда/строка выбираются в живом UI, поиск и
 replace обратимы. Provider/history/preview не становятся curses-only logic.

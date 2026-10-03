@@ -69,6 +69,22 @@ RSpec.describe Roded::Application do
     expect(application.selected_picker_value).to eq("kill-buffer")
   end
 
+  it "cancels a buffer picker without switching buffers or moving its view" do
+    application.startup
+    original_buffer = application.current_buffer
+    original_buffer.load_text("keep point")
+    application.current_window.point = { row: 0, col: 4 }
+    application.add_buffer(Roded::Buffer.new("alternate"))
+    application.start_minibuffer(:switch_buffer, "Switch to buffer: ")
+    "alternate".each_char { |character| application.minibuffer.insert_char(character) }
+    application.refresh_picker
+
+    application.handle_event(Roded::Event.new(:key, { key: "C-g" }))
+
+    expect(application.current_buffer).to equal(original_buffer)
+    expect(application.current_window.point).to eq({ row: 0, col: 4 })
+  end
+
   it "recalls accepted picker queries with M-p and restores the draft with M-n" do
     application.start_minibuffer(:command, "M-x ")
     "unknown-command".each_char { |character| application.minibuffer.insert_char(character) }
@@ -930,6 +946,18 @@ RSpec.describe Roded::Application do
     expect(application.current_window.point).to eq({ row: 2, col: 0 })
   end
 
+  it "searches backward from M-x" do
+    application.startup
+    application.current_buffer.lines = %w[needle middle needle]
+    application.current_window.point = { row: 2, col: 0 }
+    application.process_command("isearch-backward")
+    "needle".each_char { |character| application.minibuffer.insert_char(character) }
+
+    application.submit_minibuffer
+
+    expect(application.current_window.point).to eq({ row: 0, col: 0 })
+  end
+
   it "supports query replace, skip, replace all, and undo" do
     application.startup
     buffer = application.current_buffer
@@ -985,6 +1013,24 @@ RSpec.describe Roded::Application do
 
         expect(application.current_buffer.filename).to eq(File.join(root, "src", "note.rb"))
         expect(application.current_buffer.to_s).to eq("content")
+      end
+    end
+  end
+
+  it "opens an existing project file through the project-file picker" do
+    Dir.mktmpdir("roded-project-picker") do |root|
+      FileUtils.mkdir_p(File.join(root, "src"))
+      File.write(File.join(root, "src", "note.rb"), "project content")
+      Dir.chdir(root) do
+        application.startup
+        application.instance_variable_set(:@file_path_provider, Roded::FilePathProvider.new(root))
+
+        %w[C-c p f].each { |key| application.handle_event(Roded::Event.new(:key, { key: })) }
+        "note.rb".each_char { |character| application.handle_event(Roded::Event.new(:key, { key: character })) }
+        application.handle_event(Roded::Event.new(:key, { key: "Enter" }))
+
+        expect(application.current_buffer.filename).to eq(File.join(root, "src", "note.rb"))
+        expect(application.current_buffer.to_s).to eq("project content")
       end
     end
   end
