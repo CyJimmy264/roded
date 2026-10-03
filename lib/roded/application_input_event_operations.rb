@@ -29,7 +29,7 @@ module Roded
 
     def handle_mouse_selection(event)
       activate_target_window(event)
-      window = @current_window
+      window = current_window
       return unless window
 
       buffer = window.buffer
@@ -52,7 +52,7 @@ module Roded
       log_input_event(event)
       activate_target_window(event)
       refresh_snapshot = @focus == :buffer
-      window_before = @current_window
+      window_before = current_window
       buffer_before = current_buffer
       prepare_input_context(event, window_before, buffer_before)
       routed_event = dispatch_routed_input(event)
@@ -71,7 +71,7 @@ module Roded
 
     def activate_target_window(event)
       target = windows.find { |window| window.object_id == event.payload[:window_id] }
-      activate_window(target) if target && !target.equal?(@current_window)
+      activate_window(target) if target && !target.equal?(current_window)
     end
 
     def sync_buffer_cursor_to_window(window, buffer)
@@ -96,7 +96,7 @@ module Roded
 
     def sync_window_cursor_to_buffer(window, buffer)
       return unless window && buffer
-      return unless window.equal?(@current_window) && buffer.equal?(current_buffer)
+      return unless window.equal?(current_window) && buffer.equal?(current_buffer)
 
       window.point = buffer.cursor_pos
     end

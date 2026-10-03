@@ -76,9 +76,11 @@ file roundtrip не теряет текст. Коммит этапа до шир
 - [X] Dynamic key sequence resolution поддерживает C-x/C-c/Meta и user prefixes;
   cancel/invalid sequence имеют явное поведение.
 - [X] Ввести единый реестр/контракт команд для keys, M-x и Ruby API.
-- [ ] Выделить editor state/session; handler не зависит от всего Application.
-- [ ] Определить Buffer text/history и EditorWindow point/mark/active buffer;
-  логический window tree принадлежит session, physical geometry — frontend.
+- [X] Выделить EditorSession для document collection, active view и logical
+  window tree; Application не хранит дубли этих полей, physical geometry — frontend.
+- [ ] CommandHandler зависит от узкого command context, а не от всего Application.
+- [X] Window хранит независимые point/mark, а logical window tree принадлежит
+  session; общий текст/history остаётся в Buffer.
 - [ ] Перенести cursor ownership из Buffer с сохранением существующих scenarios.
 - [X] Контролируемый edit API не отдаёт изменяемые live lines/cursor наружу;
   инварианты readonly/positions соблюдаются на каждом входе.

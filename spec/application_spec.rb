@@ -439,7 +439,7 @@ RSpec.describe Roded::Application do
 
       expect(application.buffers.map(&:filename)).to eq([first, second])
       expect(application.current_buffer.filename).to eq(second)
-      expect(application.instance_variable_get(:@windows).length).to eq(1)
+      expect(application.windows.length).to eq(1)
     end
 
     scratch_app = described_class.new

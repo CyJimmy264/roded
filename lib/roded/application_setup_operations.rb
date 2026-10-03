@@ -12,10 +12,7 @@ module Roded
     end
 
     def initialize_document_state
-      @buffers = []
-      @windows = []
-      @window_layout = nil
-      @current_buffer = nil
+      @session = EditorSession.new
       @kill_ring = KillRing.new
       @last_yank = nil
     end

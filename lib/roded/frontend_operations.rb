@@ -36,7 +36,7 @@ module Roded
 
     def prepare_frontend(frontend)
       frontend.keymap = @keymap if frontend.respond_to?(:keymap=)
-      @buffers.each { |buffer| frontend.add_buffer(buffer) if frontend.respond_to?(:add_buffer) }
+      buffers.each { |buffer| frontend.add_buffer(buffer) if frontend.respond_to?(:add_buffer) }
     end
 
     def sync_frontend(frontend)

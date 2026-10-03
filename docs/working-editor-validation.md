@@ -1156,3 +1156,24 @@ File save здесь сохраняет текстовое представле�
   split, Super resize, no-argument scratch startup and keyboard quit; screenshots
   and log are in `/tmp/roded-qt-live-smoke.xCZAwA`. Neither check used the
   user's desktop `DISPLAY`.
+
+## 2026-10-03 — EditorSession owns document collection and view tree
+
+- Added `EditorSession` as the sole owner of the application buffer collection,
+  active view and logical `WindowLayout`. Active buffer is derived from the
+  active window; the old duplicate `@buffers`, `@windows`, `@current_buffer`,
+  `@current_window` and `@window_layout` fields were removed from `Application`.
+  The Qt adapter continues to own physical widget/splitter geometry.
+- Regression coverage verifies session/application buffer and view access,
+  absence of duplicated application state, active-buffer switching, and keeps
+  application scenarios for startup, file open/close, split and multiple views.
+- `bundle exec rake`: **270 examples, 0 failures**, RuboCop **147 files, 0
+  offenses**. Curses private PTY smoke passed (`C-n`, `C-x C-c`), output
+  `/tmp/roded-curses-smoke.20261003-2-savjwe`. Qt private-Xvfb smoke passed
+  under Qt Widgets **6.11.2** / gem `qt` **0.2.0**: 17 key events, wheel, mouse
+  selection, Menu/Alt+Menu, split, Super resize, scratch startup and quit;
+  screenshots/log: `/tmp/roded-qt-live-smoke.kAgSKX`. The user's desktop was
+  not used.
+- `CommandHandler` still receives the application facade, and `Buffer` still
+  retains a compatibility cursor alongside each `Window` point. Those are
+  separate remaining Stage 2 migrations and are not marked complete.

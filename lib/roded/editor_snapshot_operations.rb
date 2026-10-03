@@ -3,8 +3,8 @@ module Roded
   module EditorSnapshotOperations
     def editor_snapshot
       {
-        tree: @window_layout.snapshot_tree,
-        active_window_id: @current_window&.object_id,
+        tree: session.window_layout.snapshot_tree,
+        active_window_id: current_window&.object_id,
         windows: windows.map { |window| window_snapshot(window) }.freeze
       }.freeze
     end
@@ -18,9 +18,8 @@ module Roded
     private
 
     def activate_window(window)
-      @current_window = window
-      @current_buffer = window.buffer
-      @current_buffer.cursor_pos = window.point
+      self.current_window = window
+      current_buffer.cursor_pos = window.point
       render_active_window
     end
 
@@ -48,7 +47,7 @@ module Roded
         name: snapshot_buffer_name(buffer),
         top_line: window.top_line,
         left_column: window.left_column,
-        active: window.equal?(@current_window)
+        active: window.equal?(current_window)
       }.merge(window_position_snapshot(window))
     end
 

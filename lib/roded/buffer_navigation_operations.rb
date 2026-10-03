@@ -1,13 +1,7 @@
 module Roded
   # Selects buffers in a view and provides immutable buffer-list access.
   module BufferNavigationOperations
-    def current_buffer
-      @current_window&.buffer || @current_buffer || @buffers.first
-    end
-
-    def buffers
-      @buffers.dup.freeze
-    end
+    def buffers = session.buffers
 
     def next_buffer
       activate_relative_buffer(1)
@@ -18,7 +12,7 @@ module Roded
     end
 
     def switch_buffer(name)
-      buffer = @buffers.find { |candidate| candidate.name == name || candidate.filename == name }
+      buffer = buffers.find { |candidate| candidate.name == name || candidate.filename == name }
       return display_message("No buffer named '#{name}'.") unless buffer
 
       activate_buffer(buffer, message: "Switched to '#{name}'.")
@@ -38,10 +32,11 @@ module Roded
     private
 
     def activate_relative_buffer(direction)
-      return if @buffers.empty?
+      return if buffers.empty?
 
-      index = @buffers.index(current_buffer) || 0
-      activate_buffer(@buffers[(index + direction) % @buffers.length])
+      available_buffers = buffers
+      index = available_buffers.index(current_buffer) || 0
+      activate_buffer(available_buffers[(index + direction) % available_buffers.length])
     end
 
     def activate_loaded_file(result)
@@ -50,21 +45,19 @@ module Roded
       buffer.filename = result.path
       buffer.file_revision = result.revision
       add_buffer(buffer)
-      @current_buffer = buffer
       update_active_view(buffer)
       display_message("File '#{result.path}' opened.")
     end
 
     def activate_buffer(buffer, message: nil)
-      @current_buffer = buffer
       update_active_view(buffer)
       display_message(message) if message
     end
 
     def update_active_view(buffer)
-      add_window(Window.new(buffer)) unless @current_window
-      @current_window.buffer = buffer if @current_window
-      buffer.cursor_pos = @current_window.point if @current_window
+      add_window(Window.new(buffer)) unless current_window
+      current_window.buffer = buffer if current_window
+      buffer.cursor_pos = current_window.point if current_window
       publish_ui_update(UIUpdate.new(:render, {}))
     end
   end

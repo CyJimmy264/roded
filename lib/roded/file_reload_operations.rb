@@ -40,7 +40,7 @@ module Roded
     def apply_reloaded_file(buffer, result)
       buffer.load_text(result.content)
       buffer.file_revision = result.revision
-      @windows.each { |window| reset_reloaded_view(window, buffer) }
+      windows.each { |window| reset_reloaded_view(window, buffer) }
     end
 
     def reset_reloaded_view(window, buffer)

@@ -4,11 +4,11 @@ module Roded
     BINDINGS_BUFFER_NAME = "*Bindings*"
 
     def describe_bindings
-      buffer = @buffers.find { |candidate| candidate.name == BINDINGS_BUFFER_NAME }
+      buffer = buffers.find { |candidate| candidate.name == BINDINGS_BUFFER_NAME }
       buffer ||= Buffer.new(BINDINGS_BUFFER_NAME)
       buffer.load_text(binding_help_text)
       buffer.readonly = true
-      add_buffer(buffer) unless @buffers.include?(buffer)
+      add_buffer(buffer) unless buffers.include?(buffer)
       switch_buffer(BINDINGS_BUFFER_NAME)
     end
 

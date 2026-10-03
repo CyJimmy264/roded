@@ -30,7 +30,7 @@ module Roded
     include ApplicationRuntimeOperations
     include ApplicationSetupOperations
 
-    attr_reader :focus, :minibuffer, :kill_ring, :current_window
+    attr_reader :focus, :minibuffer, :kill_ring, :session
     attr_writer :status_bar
 
     SYSTEM_EVENTS = %i[quit signal frontend_eof frontend_failure].freeze
@@ -40,6 +40,18 @@ module Roded
       register_builtin_commands
       initialize_lifecycle
       logger.info("Application initialized")
+    end
+
+    def current_buffer
+      session.current_window&.buffer || session.buffers.first
+    end
+
+    def current_window
+      session.current_window
+    end
+
+    def current_window=(window)
+      session.current_window = window
     end
 
     def welcome
@@ -61,9 +73,8 @@ module Roded
     end
 
     def add_buffer(buffer)
-      @buffers << buffer
+      session.add_buffer(buffer)
       buffer.add_edit_observer(self)
-      @current_buffer ||= buffer
       @frontends.each { |frontend| frontend.add_buffer(buffer) if frontend.respond_to?(:add_buffer) }
     end
 
@@ -83,7 +94,7 @@ module Roded
 
     def ensure_startup_buffer_and_window
       add_buffer(Buffer.new("*scratch*")) unless current_buffer
-      add_window(Window.new(current_buffer)) if current_buffer && @windows.empty?
+      add_window(Window.new(current_buffer)) if current_buffer && windows.empty?
     end
   end
 end

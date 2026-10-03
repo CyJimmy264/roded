@@ -8,11 +8,11 @@ module Roded
     end
 
     def preserve_writable_buffer
-      add_buffer(Buffer.new("*scratch*")) if @buffers.empty?
+      add_buffer(Buffer.new("*scratch*")) if buffers.empty?
     end
 
     def replace_closed_buffer_views(buffer)
-      @windows.each { |window| window.buffer = @current_buffer if window.buffer == buffer }
+      windows.each { |window| window.buffer = buffers.first if window.buffer == buffer }
     end
 
     def render_buffer_removal
@@ -119,11 +119,10 @@ module Roded
     end
 
     def remove_buffer(buffer)
-      @buffers.delete(buffer)
+      session.remove_buffer(buffer)
       buffer.remove_edit_observer(self)
       unregister_frontends(buffer)
       preserve_writable_buffer
-      @current_buffer = @buffers.first
       replace_closed_buffer_views(buffer)
       render_buffer_removal
       display_message("Buffer killed.")
