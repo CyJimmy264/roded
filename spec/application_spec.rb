@@ -21,6 +21,31 @@ RSpec.describe Roded::Application do
     expect(frontend.commands.last.payload[:editor_snapshot][:windows]).not_to be_empty
   end
 
+  it "applies Qt mouse point and region updates to the active core window" do
+    application.startup
+    application.current_buffer.load_text("alpha\nbeta")
+    window_id = application.current_window.object_id
+
+    application.handle_event(
+      Roded::Event.new(
+        :mouse_selection,
+        { point: { row: 1, col: 4 }, mark: { row: 1, col: 1 }, window_id: }
+      )
+    )
+
+    expect(application.current_window.point).to eq(row: 1, col: 4)
+    expect(application.current_window.mark).to eq(row: 1, col: 1)
+    expect(application.current_buffer.cursor_pos).to eq(row: 1, col: 4)
+    expect(frontend.commands.last.payload[:editor_snapshot][:windows].first).to include(
+      point: { row: 1, col: 4 }, mark: { row: 1, col: 1 }
+    )
+
+    application.handle_event(Roded::Event.new(:key, { key: "M-w", source_id: :qt }))
+
+    clipboard_command = frontend.commands.reverse.find { |command| command.type == :clipboard_write }
+    expect(clipboard_command.payload[:text]).to eq("eta")
+  end
+
   it "clears the pending prefix hint after a key sequence runs" do
     application.startup
     application.handle_event(Roded::Event.new(:key, { key: "C-x" }))

@@ -1,5 +1,6 @@
 require_relative "cursor_mapper"
 require_relative "editor_html_renderer"
+require_relative "mouse_input_adapter"
 
 module Roded
   module Frontends
@@ -12,6 +13,7 @@ module Roded
         @layout = QVBoxLayout.new(@container)
         @container.set_layout(@layout)
         @editor = QTextEdit.new(@container)
+        @mouse_input = QtMouseInputAdapter.new(@editor)
         configure_editor
         @modeline = QLabel.new(@container)
         @layout.add_widget(@editor)
@@ -24,20 +26,24 @@ module Roded
         @editor.set_undo_redo_enabled(false)
         @editor.set_context_menu_policy(::Qt::NoContextMenu)
         @editor.set_cursor_width(2)
+        @editor.set_mouse_tracking(true)
         @editor.set_line_wrap_mode(::Qt::QTextEdit::NoWrap)
       end
 
-      def bind(window_id, callback, wheel_callback = nil)
+      def bind(window_id, callback, wheel_callback = nil, mouse_callback = nil)
         @window_id = window_id
         @key_callback = callback
         @wheel_callback = wheel_callback
+        @mouse_callback = mouse_callback
         subscribe_keys
         subscribe_wheel
+        @mouse_input.bind(@window_id, @mouse_callback)
       end
 
       def render(snapshot)
         @snapshot = snapshot
         text = snapshot.fetch(:text).gsub("\r\n", "\n")
+        @mouse_input.text = text
         render_text(snapshot, text)
         restore_scroll(snapshot)
         schedule_scroll_restore

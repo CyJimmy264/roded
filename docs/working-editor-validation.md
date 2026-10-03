@@ -915,3 +915,25 @@ File save здесь сохраняет текстовое представле�
 - Диалог `roded-validationrc` был вызван отдельным runtime probe, который не
   загружал `spec_helper`; этот probe запускался с домашним config path. Отныне
   private `XDG_CONFIG_HOME` обязателен также для всех standalone Qt probes.
+
+## 2026-10-03 — Qt mouse selection и Emacs-like caret
+
+- `QtMouseInputAdapter` использует `QTextEdit#cursor_for_position` и Qt
+  `QPoint#set_x/set_y`, преобразует UTF-16 hit-test offset в core row/column и
+  отправляет mouse press/drag/release через `Event(:mouse_selection)`. Core
+  синхронизирует point/mark и снова публикует editor snapshot; region copy
+  остаётся общей командой `M-w` и записывает данные через Qt clipboard API.
+- Caret показан контрастным синим block над символом; текущая строка получает
+  приглушённый фон, syntax/region overlays сохраняют собственные цвета.
+- Offscreen specs проверяют UTF-16 mapping для astral/combining/tab/multiline,
+  реальный QTextEdit hit-test, press/drag/release routing и core mouse region
+  copy. Полный suite: **233 examples, 0 failures**; targeted RuboCop: **16 files,
+  0 offenses**.
+- `script/qt_live_smoke.sh` под Xvfb `/tmp/roded-qt-live-smoke.ORaMLS` доставил
+  mouse press/drag/release в редактор; log содержит 10 `mouse_selection` events,
+  включая mark `{row: 4, col: 1}` -> point `{row: 4, col: 8}`, затем `M-w` и
+  `clipboard_write`. Тот же smoke прошёл edit/save, wheel, `M->`, split,
+  `s-Right`/`s-Left` и quit. Screenshot
+  `/tmp/roded-qt-live-smoke.ORaMLS/after-edit-save.png` показывает block caret и
+  подсветку активной строки. Проверка изолирована Xvfb и не использовала
+  пользовательский DISPLAY.

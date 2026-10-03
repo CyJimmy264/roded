@@ -10,6 +10,7 @@ module Roded
     def handle_event(event)
       return handle_repl_api_event(event) if event.type == :repl_api_call
       return append_ruby_repl_result(event.payload) if event.type == :repl_result
+      return handle_mouse_selection(event) if event.type == :mouse_selection
       return broadcast_command(Command.new(:render, {})) if event.type == :resize
       return handle_system_event(event) if system_event?(event)
 
@@ -19,6 +20,19 @@ module Roded
     end
 
     private
+
+    def handle_mouse_selection(event)
+      activate_target_window(event)
+      window = @current_window
+      return unless window
+
+      buffer = window.buffer
+      @focus = :buffer
+      window.point = event.payload.fetch(:point)
+      window.mark = event.payload[:mark]
+      buffer.cursor_pos = window.point
+      broadcast_command(Command.new(:render, {}))
+    end
 
     def system_event?(event)
       Application::SYSTEM_EVENTS.include?(event.type) || event.type == :close_request

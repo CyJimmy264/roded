@@ -9,6 +9,36 @@ module Roded
         editor.ensure_cursor_visible
       end
 
+      def self.position_at(editor, horizontal, vertical, text)
+        point = ::Qt::QPoint.new
+        point.set_x(horizontal.to_i)
+        point.set_y(vertical.to_i)
+        cursor = editor.cursor_for_position(point)
+        core_position(text, cursor.position)
+      end
+
+      def self.core_position(text, offset)
+        lines = text.split("\n", -1)
+        row, line_offset = position_in_lines(lines, offset)
+        { row:, col: core_column(lines.fetch(row), line_offset) }
+      end
+
+      def self.position_in_lines(lines, offset)
+        remaining = offset.to_i.clamp(0, document_length(lines))
+        lines.each_with_index do |line, row|
+          expanded = expanded_line(line)
+          line_length = utf16_length(expanded)
+          return [row, remaining] if remaining <= line_length
+
+          remaining -= line_length + 1
+        end
+        [lines.length - 1, lines.last.length]
+      end
+
+      def self.document_length(lines)
+        lines.sum { |line| utf16_length(expanded_line(line)) + 1 } - 1
+      end
+
       def self.utf16_offset(text, point)
         lines = text.split("\n", -1)
         row = point.fetch(:row).clamp(0, lines.length - 1)
@@ -21,6 +51,12 @@ module Roded
 
       def self.line_offset(line, column)
         utf16_length(QtTabExpander.expand(line, 0, column.clamp(0, line.length)))
+      end
+
+      def self.core_column(line, line_offset)
+        (0..line.length).min_by do |column|
+          (line_offset(line, column) - line_offset).abs
+        end
       end
 
       def self.expanded_line(line)

@@ -127,5 +127,9 @@ Clipboard использует `QApplication.clipboard.text`/`set_text`, caret �
 ratio применяется через `QSplitter.set_sizes`, а отмена native close
 возвращает `:reject`. Детали и regression specs — в
 `docs/qt-workarounds.md`. Наличие этих API не закрывает оставшиеся acceptance
-checks: mouse caret/selection и физические Super shortcuts требуют отдельной
-проверки в живом UI.
+checks. Qt caret отображается контрастным block поверх символа; строка с point
+получает приглушённую фоновую подсветку. Mouse press/drag/release hit-test-ятся
+по реальному QTextEdit, переводятся обратно в core point/mark и повторно
+рендерятся из общего snapshot. Изолированный Xvfb smoke проверяет mouse
+selection/copy, wheel, edit/save, split и synthetic Super events; физические
+Super shortcuts отдельно проверяются на desktop.

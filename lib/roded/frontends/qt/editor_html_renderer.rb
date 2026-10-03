@@ -38,8 +38,17 @@ module Roded
 
       def line_boundaries(line, row, cursor_column)
         columns = [0, line.length, *token_boundaries(row), *overlay_boundaries(line, row)]
-        columns << cursor_column if cursor_column
+        if cursor_column
+          caret = caret_column(cursor_column, line.length)
+          columns.push(caret, caret + 1)
+        end
         columns.map { |column| column.clamp(0, line.length) }.uniq.sort
+      end
+
+      def caret_column(cursor_column, line_length)
+        return 0 if line_length.zero?
+
+        cursor_column.clamp(0, line_length - 1)
       end
 
       def token_boundaries(row) = @snapshot[:tokens]&.[](row).to_a.flat_map { |token| [token[:start], token[:finish]] }
@@ -55,7 +64,13 @@ module Roded
       end
 
       def segment_style(line, row, first, last)
-        token_style(row, first, last) + overlay_style(line, row, first, last) + caret_style(line, row, first, last)
+        token_style(row, first, last) + current_line_style(row) +
+          overlay_style(line, row, first, last) + caret_style(line, row, first, last)
+      end
+
+      def current_line_style(row)
+        point = @snapshot[:point]
+        point && point[:row] == row ? "background-color: #30343d;" : ""
       end
 
       def token_style(row, first, last)
@@ -79,7 +94,9 @@ module Roded
 
         column = point[:col].clamp(0, line.length)
         column = [column - 1, 0].max if column == line.length
-        column.between?(first, last - 1) ? "text-decoration: underline; text-decoration-color: #61afef;" : ""
+        return "" unless column.between?(first, last - 1)
+
+        "color: #282c34; background-color: #61afef;"
       end
 
       def selected_columns(line, row)

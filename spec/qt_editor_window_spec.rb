@@ -73,7 +73,7 @@ RSpec.describe Roded::Frontends::QtEditorWindow, "region rendering" do
     expect(editor.property("contextMenuPolicy")).to eq("NoContextMenu")
     expect(editor.to_plain_text).to eq("a<b\nc")
     expect(editor.to_html).to include("#3e4451")
-    expect(editor.to_html).to include("&lt;b")
+    expect(editor.to_html).to include("&lt;</span>")
   end
 end
 
@@ -314,14 +314,15 @@ end
 RSpec.describe Roded::Frontends::QtEditorWindow, "visible caret" do
   include_context "Qt editor window lifecycle"
 
-  it "marks the core point with a high-contrast underline" do
+  it "shows an Emacs-like block cursor and active-line background" do
     view = described_class.new
     render_qt_snapshot(view, "abc", 1)
     view.show
     QApplication.process_events
 
     expect(view.editor.to_html).to include("#61afef")
-    expect(view.editor.to_html).to include("text-decoration: underline")
+    expect(view.editor.to_html).to include("background-color:#30343d")
+    expect(view.editor.to_html).to include("background-color:#61afef")
     expect(view.editor.q_inspect[:properties][:cursorWidth]).to eq(2)
     expect(view.editor.height).to be > 0
     modeline = view.instance_variable_get(:@panes).fetch(101).instance_variable_get(:@modeline)

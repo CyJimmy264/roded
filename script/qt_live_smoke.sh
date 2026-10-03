@@ -47,6 +47,7 @@ sleep 1
 xdotool windowfocus --sync "$window_id"
 xdotool mousemove --window "$window_id" 120 100 click 1
 sleep 0.3
+xdotool key --clearmodifiers alt+shift+comma
 xdotool key --clearmodifiers ctrl+n
 sleep 1
 import -window "$window_id" "$smoke_dir/after-ctrl-n.png"
@@ -68,6 +69,12 @@ fi
 sleep 0.5
 import -window "$window_id" "$smoke_dir/after-edit-save.png"
 xdotool windowfocus --sync "$window_id"
+xdotool mousemove --window "$window_id" 30 100 mousedown 1
+xdotool mousemove --sync --window "$window_id" 90 100
+xdotool mouseup 1
+xdotool key --clearmodifiers ctrl+shift+c
+sleep 0.5
+import -window "$window_id" "$smoke_dir/after-mouse-selection-copy.png"
 xdotool mousemove --window "$window_id" 300 160 click 5
 sleep 1
 import -window "$window_id" "$smoke_dir/after-wheel.png"
@@ -96,8 +103,12 @@ xdotool mousemove --window "$window_id" 300 100 click 1
 xdotool key --clearmodifiers ctrl+x
 sleep 0.4
 xdotool key --clearmodifiers ctrl+c
-sleep 1
 app_state=$(ps -o stat= -p "$app_pid" || true)
+for attempt in $(seq 1 50); do
+  app_state=$(ps -o stat= -p "$app_pid" || true)
+  [[ -z "$app_state" || "$app_state" == Z* ]] && break
+  sleep 0.1
+done
 if [[ -n "$app_state" && "$app_state" != Z* ]]; then
   printf 'Qt app did not exit after C-x C-c (state %s)\n' "$app_state" >&2
   exit 1
@@ -110,3 +121,10 @@ printf 'Key events: '
 rg -c 'event received: key' "$RODED_LOG_PATH"
 printf 'Wheel events: '
 rg -c 'event received: scroll_by' "$RODED_LOG_PATH"
+printf 'Mouse selection events: '
+mouse_selection_events=$(rg -c 'event received: mouse_selection' "$RODED_LOG_PATH" || true)
+if [[ "$mouse_selection_events" -lt 5 ]] || ! rg -q 'event received: mouse_selection .*mark: \{row:' "$RODED_LOG_PATH"; then
+  printf 'Expected mouse caret and drag-selection events, got %s\n' "$mouse_selection_events" >&2
+  exit 1
+fi
+printf '%s\n' "$mouse_selection_events"

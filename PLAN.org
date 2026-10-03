@@ -232,8 +232,10 @@ replace обратимы. Provider/history/preview не становятся cur
 - [ ] Общие commands, file flows, region/undo/search/modes работают как в curses.
 - [X] Qt save refreshes the visible modified marker; isolated live smoke edits,
   saves, verifies the on-disk text, and observes the clean modeline.
-- [ ] Native text/undo/context menu не образуют вторую editor model.
-- [ ] Mouse focus/caret/selection/wheel и clipboard идут через core contracts.
+- [X] Readonly QTextEdit отключает native undo/context menu; text, point, region
+  и clipboard остаются под управлением core.
+- [X] Qt mouse click/drag/release обновляют core point/mark; wheel меняет core
+  viewport; copy selection и paste используют общий core/clipboard path.
 - [X] Qt caret uses the QTextCursor API and exact core-character to UTF-16
   offsets, including astral emoji, combining text, ZWJ sequences, tabs and rows.
 - [X] Long lines stay unwrapped; a real Qt widget horizontally scrolls to its
@@ -249,8 +251,8 @@ replace обратимы. Provider/history/preview не становятся cur
 - [X] Offscreen native QWidget.close returns rejected and remains visible while
   core decides; desktop save/discard/cancel interaction remains open.
 - [ ] UI-thread/snapshot/feedback-loop/REPL/shutdown integration checks.
-- [X] Real-widget offscreen tests cover layout, Unicode caret, syntax, region,
-  search, close, picker, resize and clipboard.
+- [X] Real-widget offscreen tests cover layout, Unicode caret and mouse hit-test,
+  syntax, region, search, close, picker, resize and clipboard.
 - [X] Qt `C-n`/`C-p` input moves the active core point, and wheel input updates
   both core `top_line` and the real Qt scrollbar; integration specs cover the
   application/input-router/widget path.
