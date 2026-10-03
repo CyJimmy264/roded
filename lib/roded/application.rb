@@ -51,8 +51,8 @@ module Roded
       else
         paths.each { |path| open_file(path) }
       end
-      add_buffer(Buffer.new("*scratch*")) unless current_buffer
-      add_window(Window.new(current_buffer)) if current_buffer && @windows.empty?
+      ensure_startup_buffer_and_window
+      display_configuration_warning
     end
 
     def add_buffer(buffer)
@@ -68,6 +68,17 @@ module Roded
 
       current_buffer.major_mode = normalized
       broadcast_command(Command.new(:render, {}))
+    end
+
+    private
+
+    def display_configuration_warning
+      display_message(@configuration_warning) if @configuration_warning
+    end
+
+    def ensure_startup_buffer_and_window
+      add_buffer(Buffer.new("*scratch*")) unless current_buffer
+      add_window(Window.new(current_buffer)) if current_buffer && @windows.empty?
     end
   end
 end

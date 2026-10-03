@@ -170,7 +170,8 @@ undo и modified state согласованы. FileService и edit history — �
 - [ ] C-s line search, forward/backward search, goto-line и query-replace.
 - [X] `C-h b` / `M-x describe-bindings` показывают actual keymap и registry;
   core test проверяет user binding, а настоящий curses PTY открывает help buffer.
-- [ ] User keymap validation, prefix hints и минимальные custom commands из таблицы.
+- [X] User keymap validation показывает ошибки в frontend; prefix hints и
+  минимальные custom commands работают через общий router и registry.
 - [ ] Проверки всех providers, query edit, cancel/replace и layout interactions.
 
 Критерий: нужный файл/buffer/команда/строка выбираются в живом UI, поиск и

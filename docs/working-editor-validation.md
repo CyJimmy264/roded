@@ -69,6 +69,20 @@
   повторный `bundle exec rake` подтвердил **164 examples, 0 failures** и
   **88 RuboCop offenses** (все gate-нарушения находятся в существующем lint debt).
 
+## 2026-10-03 — валидация пользовательского keymap
+
+- YAML keymap теперь проверяется целиком: корневой mapping, непустые
+  последовательности с одиночными пробелами между chords, mapping для каждой
+  записи, известный event type и mapping для payload. Некорректный файл
+  безопасно заменяется defaults, а frontend при старте показывает путь и причину.
+- Проверены валидная пользовательская привязка, некорректный YAML, неизвестный
+  type и доставка предупреждения в frontend. Prefix hints и custom command
+  остаются на общем router/registry пути и имеют integration coverage.
+- Targeted RSpec: **74 examples, 0 failures**; RuboCop на четырёх изменённых
+  implementation/spec files: **0 offenses**.
+- После изменения полный `bundle exec rake`: **168 examples, 0 failures**;
+  общий RuboCop gate всё ещё падает на **88 offenses в 96 files**.
+
 ## 2026-10-03 — Qt clipboard paste через общий core event
 
 - Runtime probe qt 0.1.9 / Qt Widgets 6.11.2: `QApplication.clipboard`

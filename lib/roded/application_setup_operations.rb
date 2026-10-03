@@ -34,6 +34,7 @@ module Roded
       @picker = nil
       @focus = :buffer
       @keymap = Keymap.load
+      @configuration_warning = @keymap.load_warning
       @command_registry = CommandRegistry.new
       @file_path_provider = FilePathProvider.new
       @syntax_highlighter = SyntaxHighlighter.new
