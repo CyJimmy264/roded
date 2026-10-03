@@ -6,12 +6,13 @@ module Roded
   # text, such as inserting and deleting characters, and allows other
   # objects to observe its state.
   class Buffer
-    attr_accessor :filename, :readonly
+    attr_accessor :filename, :readonly, :file_revision
     attr_reader :lines, :cursor_pos, :line_ending, :final_newline, :name
 
     def initialize(name = nil)
       @name = name
       @filename = nil
+      @file_revision = nil
       @lines = [String.new("")]
       @cursor_pos = { row: 0, col: 0 }
       @line_ending = "\n"

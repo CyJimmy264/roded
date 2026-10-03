@@ -57,6 +57,19 @@ File save здесь сохраняет текстовое представле�
 безопасную атомарную замену, revision tracking или conflict prompts. Эти сценарии
 остаются открытыми до этапа 4.
 
+## 2026-10-03 — этап 4, подэтап: безопасный FileService
+
+- Добавлен FileService с UTF-8/binary/line-ending validation, нормализацией
+  существующих путей и immutable file revision.
+- Save пишет временный файл в том же каталоге, сохраняет mode, fsync-ит данные
+  и атомарно переименовывает. Переход по symlink обновляет target, сохраняя
+  ссылку. Отсутствующие parent directories автоматически не создаются.
+- Save обнаруживает revision conflict и оставляет внешнее содержимое на диске
+  вместе с текущим текстом buffer. UI пока сообщает об отказе; выбора
+  reload/overwrite/cancel и modified-state модели ещё нет.
+- Автоматические проверки: **54 examples, 0 failures**; RuboCop на новых
+  FileService и spec: **0 offenses**.
+
 ## 2026-10-03 — этап 2, подэтап: source routing и загрузка core
 
 - `bundle exec rspec`: **45 examples, 0 failures**.

@@ -114,9 +114,11 @@ file roundtrip не теряет текст. Коммит этапа до шир
 
 * Этап 4 — P1: надёжный файл и полноценный edit model
 
-- [ ] Выделить FileService с results/errors; core принимает решения и prompts.
+- [X] Начальный FileService с read/write results/errors; core сообщает ошибки.
+  Путь resolution, prompts и save/discard/cancel остаются открытыми.
 - [ ] CLI file arguments, find-file/new file/save/save-as/cancel/dedup paths.
-- [ ] Safe save, permissions/symlinks, overwrite и внешние conflicts.
+- [X] Атомарная запись, permissions/symlinks и обнаружение внешнего изменения.
+- [ ] Подтверждение overwrite/conflict с выбором reload/overwrite/cancel.
 - [ ] Modified revision, saved state, save/discard/cancel при kill-buffer/quit.
 - [ ] Undo/redo для всех обязательных edits; grouping и paste transactions.
 - [ ] Mark/region, kill/copy/yank/KillRing и readonly на всех edit entrypoints.

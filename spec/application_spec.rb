@@ -87,6 +87,22 @@ RSpec.describe Roded::Application do
     end
   end
 
+  it "keeps edits when the open file changes on disk before saving" do
+    Tempfile.create("roded-conflict") do |file|
+      file.write("original")
+      file.flush
+      application.open_file(file.path)
+      application.current_buffer.insert_char("x")
+      File.write(file.path, "external")
+
+      application.save_file(file.path)
+
+      expect(File.binread(file.path)).to eq("external")
+      expect(application.current_buffer.to_s).to eq("xoriginal")
+      expect(frontend.messages.last).to match(/Error saving file: file changed on disk/)
+    end
+  end
+
   it "exits its event loop on routed C-x C-c and closes the frontend" do
     events = %w[C-x C-c].map { |key| Roded::Event.new(:key, { key: key }) }
     scripted_frontend = ScriptedFrontend.new(events)

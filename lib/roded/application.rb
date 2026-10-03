@@ -123,16 +123,8 @@ module Roded
     end
 
     def open_file(filename)
-      content = File.binread(filename).force_encoding(Encoding::UTF_8)
-      buffer = Buffer.new(filename)
-      buffer.load_text(content)
-      buffer.filename = filename
-      buffer.cursor_pos = { row: 0, col: 0 }
-      buffer.readonly = false
-      add_buffer(buffer)
-      @current_buffer = buffer
-      @frontends.each { |frontend| frontend.render(@current_buffer) }
-      display_message("File '#{filename}' opened.")
+      result = file_service.read(filename)
+      activate_loaded_file(result)
     rescue Errno::ENOENT
       display_message("File not found: #{filename}")
     rescue StandardError => e
@@ -143,9 +135,10 @@ module Roded
       buffer = current_buffer
       return unless buffer
 
-      File.binwrite(filename, buffer.to_s)
-      buffer.filename = filename
-      display_message("File '#{filename}' saved.")
+      result = write_buffer(buffer, filename)
+      buffer.filename = result.path
+      buffer.file_revision = result.revision
+      display_message("File '#{result.path}' saved.")
     rescue StandardError => e
       display_message("Error saving file: #{e.message}")
     end
@@ -214,6 +207,31 @@ module Roded
     end
 
     private
+
+    def activate_loaded_file(result)
+      buffer = Buffer.new(result.path)
+      buffer.load_text(result.content)
+      buffer.filename = result.path
+      buffer.file_revision = result.revision
+      add_buffer(buffer)
+      @current_buffer = buffer
+      @frontends.each { |frontend| frontend.render(buffer) }
+      display_message("File '#{result.path}' opened.")
+    end
+
+    def file_service
+      @file_service ||= FileService.new
+    end
+
+    def file_revision_for(buffer, filename)
+      return unless buffer.filename && file_service.path_identity(filename) == buffer.filename
+
+      buffer.file_revision
+    end
+
+    def write_buffer(buffer, filename)
+      file_service.write(filename, buffer.to_s, expected_revision: file_revision_for(buffer, filename))
+    end
 
     def main_loop
       until @stop_requested
