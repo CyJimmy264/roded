@@ -129,3 +129,8 @@ slots transport-only `QTextEdit`; shortcut `C-S-v` передаёт один cor
 event и не конфликтует с `C-v` page-down. `C-S-c`/`C-S-x` идут в core region
 copy/kill и записывают полученный текст через Qt UI dispatcher. Mouse selection
 и native context menu остаются незакрытыми.
+
+Установленный `qt` gem не даёт veto для настоящего `QWidget.close`: callback
+скрывает окно до решения core. `QtCloseGuard` восстанавливает тот же widget,
+когда core показывает prompt или отменяет закрытие; desktop close smoke ещё
+нужно выполнить.

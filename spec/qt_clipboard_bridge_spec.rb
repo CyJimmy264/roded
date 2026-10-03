@@ -7,20 +7,21 @@ RSpec.configure do |config|
 end
 
 module QtClipboardSpecHelpers
-  def frontend_with_events(clipboard)
+  def input_router_with_events(clipboard)
     events = []
     application = Object.new
     application.define_singleton_method(:push_event) { |event| events << event }
-    frontend = Roded::Frontends::Qt.allocate
-    frontend.instance_variable_set(:@application, application)
-    frontend.instance_variable_set(:@key_translator, Roded::Frontends::QtKeyTranslator.new)
-    frontend.instance_variable_set(:@clipboard, clipboard)
-    [frontend, events]
+    router = Roded::Frontends::QtInputRouter.new(
+      application,
+      Roded::Frontends::QtKeyTranslator.new,
+      clipboard,
+      :qt
+    )
+    [router, events]
   end
 
-  def press_clipboard_shortcut(frontend, key)
-    frontend.send(
-      :enqueue_key,
+  def press_clipboard_shortcut(router, key)
+    router.enqueue_key(
       {
         key: key[-1].upcase.ord,
         modifiers: Qt::ControlModifier | Qt::ShiftModifier,
@@ -57,8 +58,8 @@ RSpec.describe "Qt clipboard key routing" do
   it "routes the paste shortcut through a core paste event" do
     clipboard = Roded::Frontends::QtClipboardBridge.new
     clipboard.write_text("from clipboard")
-    frontend, events = frontend_with_events(clipboard)
-    press_clipboard_shortcut(frontend, "C-S-v")
+    router, events = input_router_with_events(clipboard)
+    press_clipboard_shortcut(router, "C-S-v")
 
     expect(events.map(&:type)).to eq([:paste])
     expect(events.first.payload).to include(text: "from clipboard", source_id: :qt, window_id: 42)
@@ -66,9 +67,9 @@ RSpec.describe "Qt clipboard key routing" do
 
   it "routes desktop copy and cut shortcuts to the core region commands" do
     bridge = Roded::Frontends::QtClipboardBridge.new
-    frontend, events = frontend_with_events(bridge)
+    router, events = input_router_with_events(bridge)
 
-    %w[C-S-c C-S-x].each { |key| press_clipboard_shortcut(frontend, key) }
+    %w[C-S-c C-S-x].each { |key| press_clipboard_shortcut(router, key) }
 
     expect(events.map { |event| event.payload[:key] }).to eq(%w[M-w C-w])
     expect(events.map { |event| event.payload[:source_id] }).to eq(%i[qt qt])

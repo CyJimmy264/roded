@@ -34,6 +34,20 @@
   transport остаётся проверенным; desktop copy/cut с физическим выделением
   мышью не проверялись и остаются открытыми.
 
+## 2026-10-03 — Qt native close cancellation
+
+- На реальном Qt Widgets 6.11.2 offscreen `QWidget.close()` доставил
+  `Event(:close_request)` и скрыл окно даже при callback `:consume`. Отдельный
+  probe с `:ignore` показал то же закрытие через стандартный `closeEvent`.
+- Добавлен `QtCloseGuard`: prompt/message/cancel update восстанавливает тот же
+  widget, а accepted `:quit` не открывает его снова.
+- `spec/qt_frontend_close_spec.rb` использует настоящий `QWidget.close`, Qt
+  event subscription, `QApplication.process_events` и проверяет состояние
+  видимости после prompt и cancel.
+- Целевой RuboCop: **6 файлов, 0 offenses**. Полное RSpec после изменений:
+  **157 примеров, 0 failures**.
+- Live desktop close/save/discard/cancel smoke остаётся открытым.
+
 ## 2026-10-03 — bracketed paste в настоящем curses TUI
 
 - Curses включает terminal bracketed-paste mode, собирает `ESC[200~` …

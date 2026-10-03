@@ -46,3 +46,24 @@
   copy leaves the document intact and cut keeps undoable edits/KillRing state.
 - **Removal:** expose `QClipboard#text` and `QClipboard#setText` in qt and replace
   the transport widget with those direct clipboard calls.
+
+## Vetoing a native close event
+
+- **Location:** `lib/roded/frontends/qt/input_router.rb` and
+  `lib/roded/frontends/qt/close_guard.rb`.
+- **Observed binding:** qt 0.1.9 on Ruby 3.4.2, Qt Widgets 6.11.2.
+- **Gap:** event callbacks expose a consume/ignore result, but no result that
+  vetoes `QWidget::close` while preventing the default `QWidget::closeEvent`.
+- **Reproducer:** with a real `QWidget`, `on(:close) { :consume }` accepts the
+  event and hides the widget. Returning `:ignore` falls through to the default
+  close event, which also hides it.
+- **Workaround:** route close to core and retain the view. If core returns a
+  prompt, status message, or cancel update, the GUI dispatcher shows the same
+  widget again. Accepted quit clears the pending close and leaves it hidden.
+- **Limits:** cancellation is verified offscreen; desktop manager behavior and
+  save/discard prompts still need a live UI smoke.
+- **Verification:** `spec/qt_frontend_close_spec.rb` calls native `QWidget.close`,
+  observes `Event(:close_request)`, then checks that the prompt and cancel path
+  restore a visible Qt window.
+- **Removal:** expose a Qt event-filter result that ignores and consumes the
+  close event before the default handler, then replace `QtCloseGuard` with it.

@@ -9,6 +9,7 @@ module Roded
         minibuffer: %i[view render_minibuffer],
         picker: %i[view render_picker],
         clipboard_write: %i[clipboard write_text],
+        reopen: %i[view show],
         minibuffer_clear: %i[self clear_minibuffer],
         quit: %i[self quit]
       }.freeze

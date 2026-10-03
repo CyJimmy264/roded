@@ -1,11 +1,13 @@
 require "qt"
 require_relative "qt/key_translator"
+require_relative "qt/input_router"
 require_relative "qt/editor_pane"
 require_relative "qt/splitter_tree"
 require_relative "qt/editor_window"
 require_relative "qt/clipboard_bridge"
 require_relative "qt/buffer_snapshot"
 require_relative "qt/ui_dispatcher"
+require_relative "qt/close_guard"
 
 module Roded
   module Frontends
@@ -23,13 +25,14 @@ module Roded
       def initialize(application)
         @application = application
         @input_queue = Queue.new
-        @key_translator = QtKeyTranslator.new
         @qt_application = QApplication.new(0, ["roded"])
         @clipboard = QtClipboardBridge.new
         @view = QtEditorWindow.new
         @ui_dispatcher = QtUiDispatcher.new(@view, @qt_application, @clipboard)
-        configure_events
-        start_ui_dispatcher
+        @close_guard = QtCloseGuard.new(@ui_dispatcher)
+        @input_router = QtInputRouter.new(@application, QtKeyTranslator.new, @clipboard, input_source_id)
+        @input_router.connect(@view) { @close_guard.mark_pending }
+        @ui_dispatcher.start
       end
 
       def input_source_id
@@ -62,14 +65,18 @@ module Roded
 
       def display_message(message)
         @ui_dispatcher.post(:message, message.to_s.dup)
+        @close_guard.reopen_if_pending
       end
 
       def handle_command(command)
-        return handle_render_command(command) if %i[render move_cursor].include?(command.type)
-        return enqueue_quit if command.type == :quit
+        if command.type == :quit
+          @close_guard.clear
+          return enqueue_quit
+        end
 
-        action = UI_COMMAND_ACTIONS[command.type]
-        @ui_dispatcher.post(action, command_payload(command)) if action
+        result = dispatch_command(command)
+        @close_guard.reopen_if_pending
+        result
       end
 
       def next_event
@@ -87,6 +94,7 @@ module Roded
       end
 
       def close
+        @close_guard.clear
         @ui_dispatcher.post(:quit)
       end
 
@@ -96,23 +104,16 @@ module Roded
 
       private
 
-      def configure_events
-        @view.on_key_press { |payload| enqueue_key(payload) }
-        @view.on_close do |_payload|
-          @application.push_event(Event.new(:close_request, {}))
-          :consume
-        end
-        @view.on_resize { |_payload| @application.push_event(Event.new(:resize, {})) }
-      end
-
-      def enqueue_key(payload)
-        key = @key_translator.translate(payload)
-        @clipboard.dispatch_key(key, payload, application: @application, source_id: input_source_id)
-      end
-
       def handle_render_command(command)
         snapshot = command.payload[:editor_snapshot]
         snapshot ? @ui_dispatcher.post(:layout, snapshot) : render
+      end
+
+      def dispatch_command(command)
+        return handle_render_command(command) if %i[render move_cursor].include?(command.type)
+
+        action = UI_COMMAND_ACTIONS[command.type]
+        @ui_dispatcher.post(action, command_payload(command)) if action
       end
 
       def command_payload(command)
@@ -120,10 +121,6 @@ module Roded
         return command.payload.fetch(:text) if command.type == :clipboard_write
 
         command.payload
-      end
-
-      def start_ui_dispatcher
-        @ui_dispatcher.start
       end
 
       def start_core

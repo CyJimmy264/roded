@@ -32,7 +32,7 @@ module Roded
         @window.on(:resize, &)
       end
 
-      def show
+      def show(_payload = nil)
         @window.resize(960, 640)
         @window.show
         @editor&.set_focus
