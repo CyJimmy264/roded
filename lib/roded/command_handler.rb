@@ -9,11 +9,13 @@ module Roded
       @editor = editor
     end
 
-    def handle(event)
-      @editor.kill_ring.break_sequence unless %i[kill_line kill_region].include?(event.type)
-      return handle_minibuffer_event(event) if @editor.focus == :minibuffer
+    def handle(command)
+      raise ArgumentError, "expected EditorCommand, got #{command.class}" unless command.is_a?(EditorCommand)
 
-      handle_buffer_event(event)
+      @editor.kill_ring.break_sequence unless %i[kill_line kill_region].include?(command.type)
+      return handle_minibuffer_event(command) if @editor.focus == :minibuffer
+
+      handle_buffer_event(command)
     end
 
     private

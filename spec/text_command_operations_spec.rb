@@ -87,7 +87,7 @@ RSpec.describe Roded::Application, "text commands" do
 
     names.each do |key, command|
       routed = key.split.map { |chord| application.instance_variable_get(:@command_router).route(chord) }.last
-      expect(routed).to eq(Roded::Event.new(:custom_command, { name: command }))
+      expect(routed).to eq(Roded::EditorCommand.new(:custom_command, { name: command }, nil, nil))
       expect(application.command_names).to include(command)
     end
   end

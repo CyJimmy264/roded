@@ -6,17 +6,22 @@ module Roded
       @pending_prefixes = {}
     end
 
-    def route(key, source_id: :default)
+    def route(key, source_id: nil, view_id: nil)
       return if key.nil?
 
-      pending = @pending_prefixes[source_id]
-      return route_pending(pending, key, source_id) if pending
-      return start_prefix(key, source_id) if prefix_key?(key)
-
-      resolve(key) || insert_character(key) || Event.new(:noop, {})
+      command = route_from_state(key, source_id || :default)
+      command&.with(source_id:, view_id:)
     end
 
     private
+
+    def route_from_state(key, stream_id)
+      pending = @pending_prefixes[stream_id]
+      return route_pending(pending, key, stream_id) if pending
+      return start_prefix(key, stream_id) if prefix_key?(key)
+
+      resolve(key) || insert_character(key) || editor_command(:noop, {})
+    end
 
     def route_pending(pending, key, source_id)
       @pending_prefixes.delete(source_id)
@@ -26,17 +31,17 @@ module Roded
 
       if @keymap&.prefix?(combined)
         @pending_prefixes[source_id] = pending.first == "Esc" ? [combined] : pending + [key]
-        return Event.new(:prefix_pending, { prefix: combined })
+        return editor_command(:prefix_pending, { prefix: combined })
       end
 
-      Event.new(:noop, { invalid_sequence: combined })
+      editor_command(:noop, { invalid_sequence: combined })
     end
 
     def resolve(key)
       mapping = @keymap&.resolve(key)
       return unless mapping
 
-      Event.new(mapping[:type], mapping[:payload])
+      editor_command(mapping[:type], mapping[:payload] || {})
     end
 
     def insertable?(key)
@@ -49,11 +54,15 @@ module Roded
 
     def start_prefix(key, source_id)
       @pending_prefixes[source_id] = [key]
-      Event.new(:prefix_pending, { prefix: key })
+      editor_command(:prefix_pending, { prefix: key })
     end
 
     def insert_character(key)
-      Event.new(:insert_char, { char: key }) if insertable?(key)
+      editor_command(:insert_char, { char: key }) if insertable?(key)
+    end
+
+    def editor_command(type, payload)
+      EditorCommand.new(type, payload, nil, nil)
     end
   end
 end

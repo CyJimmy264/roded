@@ -1094,3 +1094,22 @@ File save здесь сохраняет текстовое представле�
   it shows both editor panes filling the window above the one-line echo area.
   This run used Qt Widgets **6.11.2** and gem `qt` **0.2.0**; no desktop
   `DISPLAY` was used.
+
+## 2026-10-03 — editor message contracts and command registry
+
+- Frontends and runtime publish `InputEvent`; keymap resolution returns a
+  separate `EditorCommand`; UI publications have the `UIUpdate` type. The old
+  `Event` and `Command` constants remain aliases for existing adapters. The
+  application checks the input boundary, and the command handler rejects raw
+  input events. Routed commands retain their originating `source_id` and
+  `view_id` through the application path.
+- The shared command registry is exercised through key bindings, `M-x`, and
+  the in-process Ruby editor API. Specs cover runtime registration/execution,
+  command catalog output, typed routing, and source/view preservation.
+- Full `bundle exec rake`: **266 examples, 0 failures**; RuboCop: **145 files,
+  0 offenses**. `script/curses_live_smoke.rb` passed in a private PTY with
+  `C-n` and `C-x C-c`. `script/qt_live_smoke.sh` passed in private Xvfb with
+  Qt Widgets **6.11.2** / gem `qt` **0.2.0**: 17 key events, wheel, mouse
+  selection, Menu/Alt+Menu, split, Super resize, and scratch startup passed.
+  Screenshots/log: `/tmp/roded-qt-live-smoke.HzEMxJ`; no desktop `DISPLAY` was
+  used.

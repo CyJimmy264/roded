@@ -3,6 +3,7 @@ require "roded"
 require_relative "../lib/roded/frontends/qt/key_translator"
 require_relative "../lib/roded/frontends/qt/input_router"
 require_relative "../lib/roded/frontends/qt/clipboard_bridge"
+require_relative "../lib/roded/frontends/qt/editor_window"
 
 # rubocop:disable Metrics/BlockLength
 RSpec.describe "Qt shortcut routing" do
@@ -28,7 +29,7 @@ RSpec.describe "Qt shortcut routing" do
     aliases.each do |payload, expected_type|
       key = translator.translate(payload)
 
-      expect(router.route(key)).to eq(Roded::Event.new(expected_type, {}))
+      expect(router.route(key)).to eq(editor_command(expected_type))
     end
   end
 
@@ -42,15 +43,15 @@ RSpec.describe "Qt shortcut routing" do
     )
 
     expect([alt, super_key, combined]).to eq(["M-j", "s-j", "C-<"])
-    expect(router.route(combined)).to eq(Roded::Event.new(:previous_buffer, {}))
+    expect(router.route(combined)).to eq(editor_command(:previous_buffer))
   end
 
   it "routes Qt Menu and Alt+Menu to the project and buffer pickers" do
     menu = translator.translate(key: Qt::Key_Menu, modifiers: 0, text: "")
     alt_menu = translator.translate(key: Qt::Key_Menu, modifiers: Qt::AltModifier, text: "")
 
-    expect(router.route(menu)).to eq(Roded::Event.new(:project_files, {}))
-    expect(router.route(alt_menu)).to eq(Roded::Event.new(:switch_buffer, {}))
+    expect(router.route(menu)).to eq(editor_command(:project_files))
+    expect(router.route(alt_menu)).to eq(editor_command(:switch_buffer))
   end
 
   it "routes Qt Ctrl+@ to the same mark command as Ctrl+Space" do
@@ -61,7 +62,7 @@ RSpec.describe "Qt shortcut routing" do
     )
 
     expect(ctrl_at).to eq("C-@")
-    expect(router.route(ctrl_at)).to eq(Roded::Event.new(:set_mark, {}))
+    expect(router.route(ctrl_at)).to eq(editor_command(:set_mark))
   end
 
   it "applies an Alt+Super key payload through Qt input routing into the core" do
@@ -84,6 +85,10 @@ RSpec.describe "Qt shortcut routing" do
     application.handle_event(application.instance_variable_get(:@event_queue).pop)
 
     expect(application.current_buffer.to_s).to eq("\nbinding.irb")
+  end
+
+  def editor_command(type, payload = {})
+    Roded::EditorCommand.new(type, payload, nil, nil)
   end
 
   it "routes real Qt resize events back to the core" do

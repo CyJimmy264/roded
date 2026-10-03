@@ -657,6 +657,22 @@ RSpec.describe Roded::Application do
     expect(application.instance_variable_get(:@stop_requested)).to be(true)
   end
 
+  it "preserves source and view ids when routing key input to the command handler" do
+    application = described_class.new
+    application.startup
+    commands = []
+    handler = Object.new
+    handler.define_singleton_method(:handle) { |command| commands << command }
+    application.instance_variable_set(:@command_handler, handler)
+
+    payload = { key: "C-n", source_id: :qt, window_id: application.current_window.object_id }
+    application.handle_event(Roded::InputEvent.new(:key, payload))
+
+    expect(commands.last).to be_a(Roded::EditorCommand)
+    expect(commands.last.source_id).to eq(:qt)
+    expect(commands.last.view_id).to eq(application.current_window.object_id)
+  end
+
   it "opens and edits an empty file" do
     Tempfile.create("roded-empty") do |file|
       application.open_file(file.path)

@@ -8,6 +8,7 @@ module Roded
     ].freeze
 
     def handle_event(event)
+      validate_input_event(event)
       return handle_repl_api_event(event) if event.type == :repl_api_call
       return append_ruby_repl_result(event.payload) if event.type == :repl_result
       return handle_mouse_selection(event) if event.type == :mouse_selection
@@ -21,6 +22,10 @@ module Roded
     end
 
     private
+
+    def validate_input_event(event)
+      raise ArgumentError, "expected InputEvent, got #{event.class}" unless event.is_a?(InputEvent)
+    end
 
     def handle_mouse_selection(event)
       activate_target_window(event)
