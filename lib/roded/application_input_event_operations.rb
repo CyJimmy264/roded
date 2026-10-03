@@ -1,6 +1,12 @@
 module Roded
   # Dispatches frontend input while keeping view and buffer cursor state aligned.
   module ApplicationInputEventOperations
+    SNAPSHOT_REFRESH_EVENTS = %i[
+      move_down move_up move_left move_right move_word_forward move_word_backward
+      document_start document_end page_down page_up line_start line_end
+      insert_char backspace delete enter paste kill_line kill_region yank yank_pop undo redo
+    ].freeze
+
     def handle_event(event)
       return handle_repl_api_event(event) if event.type == :repl_api_call
       return append_ruby_repl_result(event.payload) if event.type == :repl_result
@@ -23,16 +29,25 @@ module Roded
     end
 
     def process_frontend_input(event)
-      logger.debug("handle_event: #{event.type}")
-      logger.debug("handle_event: focus: #{@focus}")
+      log_input_event(event)
       activate_target_window(event)
+      refresh_snapshot = @focus == :buffer
       window_before = @current_window
       buffer_before = current_buffer
       sync_buffer_cursor_to_window(window_before, buffer_before)
       @active_source_id = event.payload.fetch(:source_id, :default)
-      dispatch_routed_input(event)
+      routed_event = dispatch_routed_input(event)
       sync_window_cursor_to_buffer(window_before, buffer_before)
-      broadcast_command(Command.new(:render, {})) if windows.length > 1
+      broadcast_command(Command.new(:render, {})) if snapshot_refresh_required?(routed_event, refresh_snapshot)
+    end
+
+    def log_input_event(event)
+      logger.debug("handle_event: #{event.type}")
+      logger.debug("handle_event: focus: #{@focus}")
+    end
+
+    def snapshot_refresh_required?(event, refresh_snapshot)
+      windows.length > 1 || (refresh_snapshot && SNAPSHOT_REFRESH_EVENTS.include?(event&.type) && !@stop_requested)
     end
 
     def activate_target_window(event)
@@ -48,7 +63,10 @@ module Roded
       routed_event = route_input_event(event)
       preserve_yank = %i[yank yank_pop].include?(routed_event&.type) || @focus == :minibuffer
       @last_yank = nil if routed_event && !preserve_yank
-      @command_handler.handle(routed_event) if routed_event
+      return unless routed_event
+
+      @command_handler.handle(routed_event)
+      routed_event
     end
 
     def sync_window_cursor_to_buffer(window, buffer)

@@ -31,6 +31,16 @@ RSpec.describe Roded::SyntaxHighlighter do
   end
 end
 
+RSpec.describe Roded::SyntaxHighlighter, "tokenizer failures" do
+  it "falls back to empty token rows when a tokenizer raises" do
+    highlighter = described_class.new
+    tokenizer = highlighter.instance_variable_get(:@ruby_tokenizer)
+    allow(tokenizer).to receive(:spans).and_raise(ArgumentError, "malformed source")
+
+    expect(highlighter.spans(:ruby, ["def unfinished"])).to eq([[]])
+  end
+end
+
 RSpec.describe Roded::SyntaxHighlighter, "Ruby Unicode and incomplete source" do
   subject(:highlighter) { described_class.new }
 

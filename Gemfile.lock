@@ -5,6 +5,7 @@ PATH
       curses
       logger
       qt (~> 0.1.9)
+      unicode-display_width (~> 3.2)
 
 GEM
   remote: https://rubygems.org/

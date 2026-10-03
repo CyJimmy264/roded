@@ -21,6 +21,18 @@ RSpec.describe Roded::Application do
     expect(frontend.commands.last.payload[:editor_snapshot][:windows]).not_to be_empty
   end
 
+  it "publishes the initial editor layout and current point after buffer input" do
+    application.startup
+    application.current_buffer.load_text("x")
+    initial_render = frontend.commands.reverse.find { |command| command.type == :render }
+    expect(initial_render.payload[:editor_snapshot][:windows]).not_to be_empty
+
+    application.handle_event(Roded::Event.new(:key, { key: "C-f" }))
+
+    latest_render = frontend.commands.reverse.find { |command| command.type == :render }
+    expect(latest_render.payload[:editor_snapshot][:windows].first[:point]).to eq(row: 0, col: 1)
+  end
+
   it "opens the command minibuffer from M-x and broadcasts its state" do
     application.handle_event(Roded::Event.new(:key, { key: "Esc" }))
     application.handle_event(Roded::Event.new(:key, { key: "x" }))

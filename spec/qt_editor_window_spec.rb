@@ -76,6 +76,26 @@ RSpec.describe Roded::Frontends::QtEditorWindow, "region rendering" do
   end
 end
 
+RSpec.describe Roded::Frontends::QtEditorWindow, "Unicode syntax rendering" do
+  include_context "Qt editor window lifecycle"
+
+  it "renders a highlighted number after a wide Unicode grapheme" do
+    view = described_class.new
+    @views << view
+    view.render_layout(
+      tree: { window_id: 101 }, active_window_id: 101,
+      windows: [{
+        id: 101, text: "x = \"🙂\"; 42", point: { row: 0, col: 11 },
+        name: "unicode.rb", mode: :ruby, active: true,
+        tokens: [[{ start: 9, finish: 11, category: :number }]]
+      }]
+    )
+
+    expect(view.editor.to_plain_text).to eq("x = \"🙂\"; 42")
+    expect(view.editor.to_html).to include("#d19a66")
+  end
+end
+
 RSpec.describe Roded::Frontends::QtEditorWindow, "split cleanup" do
   include_context "Qt editor window lifecycle"
 

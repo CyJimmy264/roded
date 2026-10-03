@@ -55,6 +55,7 @@ module Roded
         paths.each { |path| open_file(path) }
       end
       ensure_startup_buffer_and_window
+      broadcast_command(Command.new(:render, {}))
       display_configuration_warning
     end
 

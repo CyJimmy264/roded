@@ -40,6 +40,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "curses"
   spec.add_dependency "logger"
   spec.add_dependency "qt", "~> 0.1.9"
+  spec.add_dependency "unicode-display_width", "~> 3.2"
 
   # For more information and examples about making a new gem, check out our
   # guide at: https://bundler.io/guides/creating_gem.html

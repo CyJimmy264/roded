@@ -1,6 +1,7 @@
 require "curses"
 require_relative "curses/minibuffer"
 require_relative "curses/input_decoder"
+require_relative "curses/text_geometry"
 
 module Roded
   module Frontends
@@ -65,7 +66,7 @@ module Roded
         @screen.clear
         lines.first(@screen.maxy).each_with_index do |line, idx|
           @screen.setpos(idx, 0)
-          @screen.addstr(line[0, @screen.maxx])
+          @screen.addstr(CursesTextGeometry.clip(line, @screen.maxx))
         end
         @screen.setpos(0, 0)
         @screen.refresh
@@ -74,8 +75,7 @@ module Roded
       # Observer update method
       def update(buffer)
         return unless buffer == @current_buffer
-
-        return if @layout_snapshot && @layout_snapshot[:windows].length > 1
+        return if @layout_snapshot
 
         @data_lines = buffer.lines if buffer.respond_to?(:lines)
         ensure_cursor_visible
@@ -164,7 +164,7 @@ module Roded
         status_row = @screen.maxy - 1
         @screen.setpos(status_row, 0)
         @screen.clrtoeol
-        @screen.addstr(message.to_s[0, @screen.maxx])
+        @screen.addstr(CursesTextGeometry.clip(message, @screen.maxx))
         @screen.refresh
       end
 
@@ -232,7 +232,7 @@ module Roded
         visible_lines = (@data_lines || [])[@top, @screen.maxy] || []
         visible_lines.each_with_index do |line, idx|
           @screen.setpos(idx, 0)
-          @screen.addstr(line.ljust(@screen.maxx)[0, @screen.maxx])
+          @screen.addstr(CursesTextGeometry.clip(line, @screen.maxx))
         end
         place_cursor
         render_minibuffer_overlay
@@ -275,7 +275,9 @@ module Roded
 
         text_height = [height - 1, 0].max
         first_line = visible_origin(item[:point][:row], item[:top_line], text_height)
-        left_column = horizontal_origin(item[:point][:col], item[:left_column], width)
+        left_column = CursesTextGeometry.horizontal_origin(
+          item[:lines][item[:point][:row]].to_s, item[:point][:col], item[:left_column], width
+        )
         item[:lines].slice(first_line, text_height).to_a.each_with_index do |line, index|
           draw_buffer_line(item, line, first_line + index, y + index, x, width, left_column)
         end
@@ -294,7 +296,8 @@ module Roded
         return unless item[:active] && height.positive? && width.positive?
 
         cursor_y = y + point[:row] - first_line
-        cursor_x = x + point[:col] - left_column
+        cursor_x = x + CursesTextGeometry.column(item[:lines][point[:row]].to_s, point[:col]) -
+                   CursesTextGeometry.column(item[:lines][point[:row]].to_s, left_column)
         cursor_y = cursor_y.clamp(y, [y + text_height - 1, y].max)
         cursor_x = cursor_x.clamp(x, x + width - 1)
         @screen.setpos(cursor_y, cursor_x)
@@ -322,7 +325,8 @@ module Roded
           span[:start] <= first + left_column && span[:finish] >= last + left_column
         end
         selected = selection && first + left_column >= selection.first && last + left_column <= selection.last
-        writer = proc { write_at(row, x + first, text[first...last], width - first) }
+        cell_offset = CursesTextGeometry.width(text[0...first])
+        writer = proc { write_at(row, x + cell_offset, text[first...last], width - cell_offset) }
         if selected
           @screen.attron(::Curses::A_REVERSE, &writer)
         elsif token && (pair = @color_pairs[token[:category]])
@@ -353,19 +357,12 @@ module Roded
         origin
       end
 
-      def horizontal_origin(point, origin, span)
-        return point if point < origin
-        return point - span + 1 if span.positive? && point >= origin + span
-
-        origin
-      end
-
       def write_at(row, column, text, width)
         return unless row.between?(0, @screen.maxy - 1) && column.between?(0, @screen.maxx - 1)
         return unless width.positive?
 
         @screen.setpos(row, column)
-        @screen.addstr(text.to_s[0, width])
+        @screen.addstr(CursesTextGeometry.clip(text, width))
       end
 
       def initialize_colors
@@ -400,7 +397,8 @@ module Roded
         return unless @current_buffer
 
         cursor_row = @current_buffer.cursor_row - @top
-        cursor_col = @current_buffer.cursor_col
+        cursor_line = @current_buffer.lines[@current_buffer.cursor_row].to_s
+        cursor_col = CursesTextGeometry.column(cursor_line, @current_buffer.cursor_col)
         cursor_row = cursor_row.clamp(0, @screen.maxy - 1)
         cursor_col = cursor_col.clamp(0, @screen.maxx - 1)
         @screen.setpos(cursor_row, cursor_col)

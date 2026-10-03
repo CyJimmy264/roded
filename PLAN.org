@@ -198,8 +198,9 @@ replace обратимы. Provider/history/preview не становятся cur
 - [X] Подсчёт highlight spans не изменяет text/history/point/modified state.
 - [X] Ripper byte columns преобразуются в core character columns; offsets после
   emoji и кириллицы проверены.
-- [ ] Tokenizer errors не рушат loop; frontend Unicode geometry/highlights
-  согласованы.
+- [X] Tokenizer errors не рушат loop; curses maps codepoint spans/carets to
+  terminal cells (wide/combining/ZWJ graphemes), Qt keeps UTF-16 offsets aligned;
+  both frontend paths have Unicode highlighting/caret coverage.
 - [X] Настоящий xterm-256color PTY показывает Ruby keyword/number/comment
   spans цветом.
 - [ ] Проверить region/search colors и monochrome fallback.

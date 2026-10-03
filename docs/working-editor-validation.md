@@ -21,8 +21,9 @@
 
 - Запуск: `bundle exec bin/roded /tmp/roded-curses-colors.rb` в PTY 24×80,
   `TERM=xterm-256color`, Ruby 3.4.2; файл содержит Ruby keyword, число и comment.
-  Ввод `C-x 3` вызывает split и полный snapshot render, затем `C-x C-c` завершает
-  приложение с exit code 0.
+  Ввод `C-x 3` вызывал split и полный snapshot render, затем `C-x C-c` завершал
+  приложение с exit code 0. Тогда single-window startup ещё не публиковал layout;
+  это исправлено и повторно проверено в последнем этапе 7 ниже.
 - Захваченный xterm output содержит SGR `35m` (keyword), `33m` (number) и `37m`
   (comment), а также reverse-video modeline; curses восстановил terminal при
   выходе. Smoke обнаружил, что binding передаёт аргумент в block у `attron`,
@@ -632,3 +633,29 @@ File save здесь сохраняет текстовое представле�
 - Полный `bundle exec rake`: **198 examples, 0 failures**. Полный RuboCop остаётся
   на **87 offenses** в 103 файлах; весь изменённый stage-6 model/provider/spec
   subset проходит целевой RuboCop.
+
+## 2026-10-03 — этап 7: curses/Qt Unicode geometry и одиночный layout render
+
+- `CursesTextGeometry` переводит core character columns в terminal cells,
+  обрезает вывод только между grapheme clusters, считает combining marks,
+  East Asian wide chars, skin-tone и ZWJ emoji. Runtime dependency
+  `unicode-display_width` зафиксирована на 3.2.0. Minibuffer, modeline, picker,
+  syntax boundaries и caret используют одну геометрию.
+- Snapshot теперь отправляется сразу после startup, движения point и edits.
+  Curses больше не переключается с snapshot renderer на прямой buffer redraw,
+  поэтому syntax colors работают и в одном активном window. Qt сохраняет
+  grapheme/UTF-16 caret mapping и HTML token spans.
+- Настоящий PTY, Ruby **3.4.2**, curses gem **1.5.3**, `TERM=xterm-256color`,
+  6×80: для `x = "🙂"; answer = 42 # note` захвачены SGR 32m/33m/37m для
+  string/number/comment, caret после шести символов оказался в cell 8 (`CSI 8G`),
+  процесс вышел с code 0 без traceback. Запуск не требовал split или xdotool.
+- Тот же файл и keyboard flow с `TERM=vt100` завершились с code 0 без цветных
+  token SGR — fallback отработал. В Qt Widgets **6.11.2** / gem `qt` **0.1.9** /
+  offscreen настоящий `QTextEdit` сохранил number highlight после emoji.
+- Tokenizer exception spec подтверждает fallback к пустым token rows. Unicode
+  geometry, tokenizer, Qt highlighting/caret и snapshot specs: **19 examples,
+  0 failures**.
+- Полный `bundle exec rake`: **205 examples, 0 failures**. RuboCop — **87 offenses**
+  в 105 файлах; новое geometry adapter и его specs проходят RuboCop.
+- Region/search highlight colors и проверка reverse-video selection остаются
+  открытыми критериями этапа 7.
