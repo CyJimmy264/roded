@@ -13,6 +13,7 @@ module Roded
     include RubyReplEventOperations
     include RubyReplOutputOperations
     include BufferEditingOperations
+    include HelpOperations
     include ApplicationCommandOperations
     include ApplicationMinibufferOperations
     include ApplicationInputRouting

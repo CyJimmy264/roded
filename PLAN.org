@@ -168,7 +168,8 @@ undo и modified state согласованы. FileService и edit history — �
 - [ ] Navigation/accept/cancel, empty/Unicode candidates, list scrolling/resize.
 - [ ] Preview отменяется с восстановлением исходного view/buffer/point.
 - [ ] C-s line search, forward/backward search, goto-line и query-replace.
-- [ ] Help/describe-bindings отображают actual user keymap и зарегистрированные commands.
+- [X] `C-h b` / `M-x describe-bindings` показывают actual keymap и registry;
+  core test проверяет user binding, а настоящий curses PTY открывает help buffer.
 - [ ] User keymap validation, prefix hints и минимальные custom commands из таблицы.
 - [ ] Проверки всех providers, query edit, cancel/replace и layout interactions.
 

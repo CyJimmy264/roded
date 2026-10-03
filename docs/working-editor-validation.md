@@ -50,6 +50,25 @@
 - Полный запуск через `bundle exec rake` после этой проверки: **163 examples,
   0 failures**; общий RuboCop gate пока сообщает **91 offense**.
 
+## 2026-10-03 — describe-bindings в curses и через M-x
+
+- `C-h b` открывает read-only `*Bindings*` с текущими keymap entries и
+  зарегистрированными M-x commands. `M-x describe-bindings` обновляет тот же
+  buffer. Integration spec добавляет пользовательскую `M-q` binding и command,
+  проверяет их отображение и фактический запуск.
+- Curses decoder различает byte `C-h` (`0x08`) и Backspace (`DEL`, `0x7f`),
+  поэтому стандартная terminal sequence не теряется как Backspace.
+- Настоящий curses PTY smoke: Ruby 3.4.2, `TERM=xterm-256color`, размер 24×80;
+  введены `C-h b`, `M->`, `C-x C-c`. В captured screen присутствуют help title,
+  `C-h b`, `describe-bindings`; exit code **0**, terminal восстановлен.
+- `spec/help_operations_spec.rb` и `spec/curses_input_decoder_spec.rb`:
+  **5 examples, 0 failures**. Реальные curses/Qt help scroll+resize и остальные
+  picker providers остаются открытыми.
+- После включения help и исправления ожидания M-x visible page полный suite:
+  **164 examples, 0 failures**; после извлечения таблицы default key bindings
+  повторный `bundle exec rake` подтвердил **164 examples, 0 failures** и
+  **88 RuboCop offenses** (все gate-нарушения находятся в существующем lint debt).
+
 ## 2026-10-03 — Qt clipboard paste через общий core event
 
 - Runtime probe qt 0.1.9 / Qt Widgets 6.11.2: `QApplication.clipboard`

@@ -21,7 +21,8 @@ RSpec.describe Roded::Application do
       Roded::Command.new(:minibuffer_render, { prompt: "M-x ", text: "", cursor: 0 })
     )
     expect(frontend.commands.last.type).to eq(:picker_render)
-    expect(frontend.commands.last.payload[:candidates]).to include("quit", "open")
+    expect(frontend.commands.last.payload[:candidates]).to include("describe-bindings", "open")
+    expect(application.command_names).to include("quit")
   end
 
   it "submits M-x quit through routed key events" do

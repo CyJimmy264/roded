@@ -33,6 +33,7 @@ module Roded
 
     def register_simple_commands
       @command_registry.register("quit", description: "Quit Roded", &:request_quit)
+      @command_registry.register("describe-bindings", description: "Show active key bindings", &:describe_bindings)
       @command_registry.register("undo", description: "Undo the last edit", &:undo)
       @command_registry.register("redo", description: "Redo the last edit", &:redo)
       @command_registry.register("next-buffer", &:next_buffer)

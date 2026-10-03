@@ -1,4 +1,5 @@
 module Roded
+  # Routes normalized editor events to their core operations.
   class CommandHandler
     def initialize(editor)
       @editor = editor
@@ -132,6 +133,8 @@ module Roded
         @editor.execute_command(event.payload.fetch(:name))
       when :start_command
         @editor.start_minibuffer(:command, "M-x ")
+      when :describe_bindings
+        @editor.describe_bindings
       when :cancel
         @editor.broadcast_command(Command.new(:render, {}))
       when :backspace
