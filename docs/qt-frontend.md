@@ -128,7 +128,10 @@ ratio применяется через `QSplitter.set_sizes`, а отмена n
 возвращает `:reject`. Детали и regression specs — в
 `docs/qt-workarounds.md`. Наличие этих API не закрывает оставшиеся acceptance
 checks. Qt caret отображается контрастным block поверх символа; строка с point
-получает приглушённый фон на всю ширину видимой области. Mouse press/drag/release hit-test-ятся
+получает приглушённый фон на всю ширину видимой области, а пустая строка —
+видимый block caret. Пустые visual paragraphs сохраняют геометрию Qt через
+служебный неразрывный пробел; mapper исключает его из core positions. Mouse
+press/drag/release hit-test-ятся
 по реальному QTextEdit, переводятся обратно в core point/mark и повторно
 рендерятся из общего snapshot. Изолированный Xvfb smoke проверяет mouse
 selection/copy, wheel, edit/save, split и synthetic Super events; физические

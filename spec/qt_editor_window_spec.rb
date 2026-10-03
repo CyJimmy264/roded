@@ -330,6 +330,62 @@ RSpec.describe Roded::Frontends::QtEditorWindow, "visible caret" do
   end
 end
 
+RSpec.describe Roded::Frontends::QtEditorWindow, "startup focus" do
+  include_context "Qt editor window lifecycle"
+
+  it "gives keyboard focus to the active editor after the window is shown" do
+    view = described_class.new
+    render_qt_snapshot(view, "opened file", 0)
+    view.show
+    QApplication.process_events
+
+    expect(view.window.focus_widget).to equal(view.editor)
+  end
+end
+
+RSpec.describe Roded::Frontends::QtEditorWindow, "empty scratch" do
+  include_context "Qt editor window lifecycle"
+
+  it "renders an empty scratch buffer without an invalid cursor range" do
+    view = described_class.new
+    render_qt_snapshot(view, "", 0)
+
+    expect(view.editor.to_plain_text).to eq("")
+    expect(view.editor.text_cursor.position).to eq(0)
+  end
+end
+
+RSpec.describe Roded::Frontends::QtEditorWindow, "blank lines" do
+  include_context "Qt editor window lifecycle"
+
+  it "preserves blank lines and the final newline in the rendered document" do
+    texts = {
+      "internal blank line" => "a\n\nb",
+      "trailing blank line" => "a\n\n",
+      "only blank line" => "\n",
+      "multiple blank lines and final newline" => "a\n\n\nb\n"
+    }
+    texts.each_value do |text|
+      view = described_class.new
+      render_qt_snapshot(view, text, 0)
+
+      expected = text.split("\n", -1).map { |line| line.empty? ? " " : line }.join("\n")
+      expect(view.editor.to_plain_text).to eq(expected), "expected Qt to preserve blank rows in #{text.inspect}"
+    end
+  end
+
+  it "shows a block caret on the active blank line" do
+    view = described_class.new
+    view.render_layout(
+      tree: { window_id: 101 }, active_window_id: 101,
+      windows: [{ id: 101, text: "first\n\nthird", point: { row: 1, col: 0 }, name: "doc", active: true }]
+    )
+
+    expect(view.editor.to_html).to include("color:#282c34; background-color:#61afef;\"> </span>")
+    expect(view.editor.text_cursor.position).to eq(6)
+  end
+end
+
 RSpec.describe Roded::Frontends::QtEditorWindow, "visible editor layout" do
   include_context "Qt editor window lifecycle"
 

@@ -18,7 +18,7 @@ module Roded
       end
 
       def self.core_position(text, offset)
-        lines = text.split("\n", -1)
+        lines = lines_for(text)
         row, line_offset = position_in_lines(lines, offset)
         { row:, col: core_column(lines.fetch(row), line_offset) }
       end
@@ -27,7 +27,7 @@ module Roded
         remaining = offset.to_i.clamp(0, document_length(lines))
         lines.each_with_index do |line, row|
           expanded = expanded_line(line)
-          line_length = utf16_length(expanded)
+          line_length = rendered_line_length(line, expanded)
           return [row, remaining] if remaining <= line_length
 
           remaining -= line_length + 1
@@ -36,17 +36,26 @@ module Roded
       end
 
       def self.document_length(lines)
-        lines.sum { |line| utf16_length(expanded_line(line)) + 1 } - 1
+        lines.sum { |line| rendered_line_length(line, expanded_line(line)) + 1 } - 1
       end
 
       def self.utf16_offset(text, point)
-        lines = text.split("\n", -1)
+        lines = lines_for(text)
         row = point.fetch(:row).clamp(0, lines.length - 1)
         preceding_lines_offset(lines, row) + line_offset(lines.fetch(row), point.fetch(:col))
       end
 
+      def self.lines_for(text)
+        lines = text.split("\n", -1)
+        lines.empty? ? [""] : lines
+      end
+
       def self.preceding_lines_offset(lines, row)
-        lines.first(row).sum { |line| utf16_length(expanded_line(line)) + 1 }
+        lines.first(row).sum { |line| rendered_line_length(line, expanded_line(line)) + 1 }
+      end
+
+      def self.rendered_line_length(line, expanded)
+        utf16_length(expanded) + (line.empty? ? 1 : 0)
       end
 
       def self.line_offset(line, column)

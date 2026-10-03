@@ -33,7 +33,15 @@ module Roded
 
       def render_block(line, row)
         background = @snapshot[:point]&.fetch(:row) == row ? "background-color: #343a46;" : ""
-        "<p style=\"margin: 0; padding: 0; white-space: pre; #{background}\">#{render_line(line, row)}</p>"
+        content = line.empty? ? render_empty_line(row) : render_line(line, row)
+        "<p style=\"margin: 0; padding: 0; white-space: pre; #{background}\">#{content}</p>"
+      end
+
+      def render_empty_line(row)
+        point = @snapshot[:point]
+        return "&nbsp;" unless point && point[:row] == row
+
+        "<span style=\"color: #282c34; background-color: #61afef;\">&nbsp;</span>"
       end
 
       def cursor_column_for(row, line_length)

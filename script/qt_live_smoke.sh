@@ -18,7 +18,7 @@ export XDG_CONFIG_HOME="$smoke_dir/config"
 export RODED_LOG_PATH="$smoke_dir/roded.log"
 export RODED_LOG_LEVEL=DEBUG
 mkdir -p "$XDG_CONFIG_HOME"
-seq -f 'line %03g' 1 100 > "$smoke_dir/lines.txt"
+seq -f 'line %03g' 1 100 | awk 'NR == 3 { print "" } { print }' > "$smoke_dir/lines.txt"
 
 app_pid=
 cleanup() {
@@ -68,6 +68,10 @@ if [[ "$saved_line" != "Xline 002" ]]; then
 fi
 sleep 0.5
 import -window "$window_id" "$smoke_dir/after-edit-save.png"
+xdotool windowfocus --sync "$window_id"
+xdotool mousemove --window "$window_id" 30 64 click 1
+sleep 0.5
+import -window "$window_id" "$smoke_dir/after-blank-line-caret.png"
 xdotool windowfocus --sync "$window_id"
 xdotool mousemove --window "$window_id" 30 100 mousedown 1
 xdotool mousemove --sync --window "$window_id" 90 100
@@ -125,7 +129,46 @@ fi
 wait "$app_pid"
 app_pid=
 
+# Exercise the real no-argument startup path, which creates an empty *scratch*.
+export RODED_LOG_PATH="$smoke_dir/scratch.log"
+bundle exec bin/roded --frontend qt >"$smoke_dir/scratch.out" 2>&1 &
+app_pid=$!
+scratch_window_id=
+for attempt in $(seq 1 100); do
+  scratch_window_id=$(xdotool search --onlyvisible --name '^Roded$' 2>/dev/null | head -n 1 || true)
+  if [[ -n "$scratch_window_id" ]]; then break; fi
+  sleep 0.1
+done
+if [[ -z "$scratch_window_id" ]]; then
+  cat "$smoke_dir/scratch.out"
+  exit 1
+fi
+sleep 1
+import -window "$scratch_window_id" "$smoke_dir/empty-scratch.png"
+xdotool windowfocus --sync "$scratch_window_id"
+xdotool mousemove --window "$scratch_window_id" 30 30 click 1
+xdotool key --clearmodifiers ctrl+x
+sleep 0.3
+xdotool key --clearmodifiers ctrl+c
+for attempt in $(seq 1 50); do
+  app_state=$(ps -o stat= -p "$app_pid" || true)
+  [[ -z "$app_state" || "$app_state" == Z* ]] && break
+  sleep 0.1
+done
+if [[ -n "$app_state" && "$app_state" != Z* ]]; then
+  printf 'Qt scratch startup did not exit after C-x C-c (state %s)\n' "$app_state" >&2
+  exit 1
+fi
+wait "$app_pid"
+app_pid=
+if ! rg -q 'Application initialized' "$smoke_dir/scratch.log" ||
+  ! rg -q 'event received: key \{key: "C-c"' "$smoke_dir/scratch.log"; then
+  printf 'Qt no-argument startup did not route keyboard input\n' >&2
+  exit 1
+fi
+
 printf 'Qt live smoke screenshots and log: %s\n' "$smoke_dir"
+printf 'Empty scratch startup and keyboard quit: passed\n'
 printf 'Key events: '
 rg -c 'event received: key' "$RODED_LOG_PATH"
 printf 'Wheel events: '
@@ -137,6 +180,10 @@ if [[ "$mouse_selection_events" -lt 5 ]] || ! rg -q 'event received: mouse_selec
   exit 1
 fi
 printf '%s\n' "$mouse_selection_events"
+if ! rg -q 'event received: mouse_selection \{point: \{row: 2, col: 0\}' "$RODED_LOG_PATH"; then
+  printf 'Qt click did not place the caret on the empty third line\n' >&2
+  exit 1
+fi
 if ! rg -q 'event received: key \{key: "Menu"' "$RODED_LOG_PATH" ||
   ! rg -q 'event received: key \{key: "M-Menu"' "$RODED_LOG_PATH" ||
   [[ $(rg -c 'broadcast_command: picker_render' "$RODED_LOG_PATH") -lt 2 ]]; then

@@ -20,6 +20,21 @@
   до 8×50, отправил `SIGWINCH`, выполнил два `C-n` и `C-x C-c`: resize event
   принят, exit code **0**. Проверки не использовали desktop display.
 
+## 2026-10-03 — Qt пустые строки и block caret
+
+- HTML renderer создаёт видимые paragraph cells для пустых строк, а
+  `QtCursorMapper` учитывает эти render-only cells при переводе между core и
+  UTF-16 offsets. Regression specs проверяют пустой scratch, пустую строку,
+  trailing newline, caret mapping и сохранение пустой строки в Qt document.
+- `script/qt_live_smoke.sh` на изолированном Xvfb кликает по пустой третьей
+  строке файла; log подтверждает core point `(row 2, col 0)`. Screenshot
+  `/tmp/roded-qt-live-smoke.c9zjkq/after-blank-line-caret.png` показывает
+  сохранённую пустую строку, подсвеченный фон и видимый синий block caret;
+  modeline показывает `3:1`. Тот же smoke повторно запускает настоящий
+  `bin/roded --frontend qt` без аргументов: создан `*scratch*`, окно снято в
+  `/tmp/roded-qt-live-smoke.kaEpsG/empty-scratch.png`, `C-x C-c` завершил
+  процесс с кодом **0**. Qt editor/mouse targeted specs и общий suite проходят.
+
 ## 2026-10-03 — переход на qt 0.2.0
 
 - Gemfile/gemspec и lockfile обновлены на `qt ~> 0.2.0`. Использованы новые

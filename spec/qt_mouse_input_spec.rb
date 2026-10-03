@@ -9,12 +9,23 @@ RSpec.describe Roded::Frontends::QtCursorMapper do
       ["e\u0301x", 1, { row: 0, col: 1 }],
       ["e\u0301x", 2, { row: 0, col: 2 }],
       ["a\nb", 2, { row: 1, col: 0 }],
+      ["a\n\nb", 2, { row: 1, col: 0 }],
+      ["a\n\nb", 4, { row: 2, col: 0 }],
       ["a\tb", 2, { row: 0, col: 2 }]
     ]
 
     cases.each do |text, offset, expected|
       expect(described_class.core_position(text, offset)).to eq(expected)
     end
+  end
+
+  it "maps an empty scratch buffer to its only valid core position" do
+    expect(described_class.utf16_offset("", row: 0, col: 0)).to eq(0)
+    expect(described_class.core_position("", 0)).to eq(row: 0, col: 0)
+  end
+
+  it "adds the rendered blank-line cell when mapping into Qt UTF-16 offsets" do
+    expect(described_class.utf16_offset("a\n\nb", row: 2, col: 0)).to eq(4)
   end
 end
 

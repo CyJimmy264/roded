@@ -3,12 +3,14 @@ require_relative "echo_area"
 require_relative "splitter_tree"
 require_relative "pane_layout_operations"
 require_relative "window_theme"
+require_relative "window_focus_operations"
 
 module Roded
   module Frontends
     # Presents editor snapshots in a tree of read-only Qt panes.
     class QtEditorWindow
       include QtPaneLayoutOperations
+      include QtWindowFocusOperations
 
       attr_reader :window, :editor, :editor_area
 
@@ -39,7 +41,8 @@ module Roded
         @window.show
         @editor_area&.show
         @panes.each_value { |pane| pane.container.show }
-        @editor&.set_focus
+        @window.activate_window
+        focus_editor_after_show
       end
 
       def render(snapshot)
