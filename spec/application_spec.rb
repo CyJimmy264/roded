@@ -21,6 +21,18 @@ RSpec.describe Roded::Application do
     expect(frontend.commands.last.payload[:editor_snapshot][:windows]).not_to be_empty
   end
 
+  it "clears the pending prefix hint after a key sequence runs" do
+    application.startup
+    application.handle_event(Roded::Event.new(:key, { key: "C-x" }))
+
+    expect(frontend.messages.last).to eq("C-x …")
+
+    application.handle_event(Roded::Event.new(:key, { key: "3" }))
+
+    expect(application.windows.length).to eq(2)
+    expect(frontend.messages.last).to eq("")
+  end
+
   it "publishes the initial editor layout and current point after buffer input" do
     application.startup
     application.current_buffer.load_text("x")

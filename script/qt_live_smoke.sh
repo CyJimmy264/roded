@@ -50,6 +50,7 @@ sleep 0.3
 xdotool key --clearmodifiers ctrl+n
 sleep 1
 import -window "$window_id" "$smoke_dir/after-ctrl-n.png"
+xdotool windowfocus --sync "$window_id"
 xdotool type --clearmodifiers X
 xdotool key --clearmodifiers ctrl+x
 sleep 0.4
@@ -66,14 +67,43 @@ if [[ "$saved_line" != "Xline 002" ]]; then
 fi
 sleep 0.5
 import -window "$window_id" "$smoke_dir/after-edit-save.png"
+xdotool windowfocus --sync "$window_id"
 xdotool mousemove --window "$window_id" 300 160 click 5
 sleep 1
 import -window "$window_id" "$smoke_dir/after-wheel.png"
+xdotool windowfocus --sync "$window_id"
 xdotool key --clearmodifiers alt+shift+period
 sleep 2
 import -window "$window_id" "$smoke_dir/after-meta-end.png"
-xdotool key --clearmodifiers ctrl+x ctrl+c
-sleep 0.5
+xdotool windowfocus --sync "$window_id"
+xdotool key --clearmodifiers ctrl+x
+sleep 0.4
+xdotool key --clearmodifiers 3
+sleep 1
+import -window "$window_id" "$smoke_dir/after-split.png"
+xdotool windowfocus --sync "$window_id"
+xdotool mousemove --window "$window_id" 300 100 click 1
+xdotool key --clearmodifiers Super_L+Right
+sleep 1
+import -window "$window_id" "$smoke_dir/after-super-right.png"
+xdotool windowfocus --sync "$window_id"
+xdotool mousemove --window "$window_id" 300 100 click 1
+xdotool key --clearmodifiers Super_L+Left
+sleep 1
+import -window "$window_id" "$smoke_dir/after-super-resize.png"
+xdotool windowfocus --sync "$window_id"
+xdotool mousemove --window "$window_id" 300 100 click 1
+xdotool key --clearmodifiers ctrl+x
+sleep 0.4
+xdotool key --clearmodifiers ctrl+c
+sleep 1
+app_state=$(ps -o stat= -p "$app_pid" || true)
+if [[ -n "$app_state" && "$app_state" != Z* ]]; then
+  printf 'Qt app did not exit after C-x C-c (state %s)\n' "$app_state" >&2
+  exit 1
+fi
+wait "$app_pid"
+app_pid=
 
 printf 'Qt live smoke screenshots and log: %s\n' "$smoke_dir"
 printf 'Key events: '

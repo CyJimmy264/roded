@@ -241,6 +241,10 @@ replace обратимы. Provider/history/preview не становятся cur
 - [ ] Tab display width and horizontal scroll synchronization with core views.
 - [ ] Все обязательные Super/Menu aliases из таблицы, включая Alt+Super/punctuation.
 - [X] Qt widget applies the core split ratio; core routing tests cover Super arrow resize.
+- [X] Изолированный live Qt smoke передаёт native X11 `Super_L+Left/Right`;
+  Qt переводит события в `s-Left`/`s-Right` и core применяет resize split.
+- [X] Завершённая chord-команда очищает echo-area prefix hint; live Qt split
+  smoke подтверждает пустую echo area и нормальный выход по `C-x C-c`.
 - [ ] Physical s-Left/s-Right desktop smoke and configurable key combinations.
 - [ ] Native close -> save/discard/cancel; отмена сохраняет рабочее desktop window.
 - [ ] UI-thread/snapshot/feedback-loop/REPL/shutdown integration checks.
