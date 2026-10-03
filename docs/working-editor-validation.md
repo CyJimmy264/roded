@@ -682,3 +682,13 @@ File save здесь сохраняет текстовое представле�
   desktop smoke остаются открытыми.
 - Полный RSpec: **208 examples, 0 failures**. RuboCop снизился с исходных
   **87 до 77 offenses**; целевые Qt caret/renderer/pane/spec файлы чисты.
+
+## 2026-10-03 — табличная маршрутизация core input events
+
+- `CommandHandler` заменил большой ветвящийся `case` на декларативные event maps
+  и небольшие операции. Буферные действия, navigation/render feedback, команды,
+  prompts и minibuffer edits используют тот же набор явно перечисленных event
+  типов; unknown events остаются no-op.
+- Полный RSpec: **208 examples, 0 failures**. `command_handler.rb` и
+  `command_handler_event_maps.rb` проходят RuboCop без замечаний. Полный
+  RuboCop снизился с **77 до 63 offenses**; выпускной gate пока не зелёный.
