@@ -299,7 +299,10 @@ fi
 sleep 1
 import -window "$scratch_window_id" "$smoke_dir/empty-scratch.png"
 xdotool windowfocus --sync "$scratch_window_id"
-xdotool mousemove --window "$scratch_window_id" 30 30 click 1
+xdotool type --clearmodifiers x
+sleep 0.3
+xdotool key --clearmodifiers ctrl+slash
+sleep 0.3
 xdotool key --clearmodifiers ctrl+x
 sleep 0.3
 xdotool key --clearmodifiers ctrl+c
@@ -315,8 +318,10 @@ fi
 wait "$app_pid"
 app_pid=
 if ! rg -q 'Application initialized' "$smoke_dir/scratch.log" ||
+  ! rg -q 'event received: key \{key: "x"' "$smoke_dir/scratch.log" ||
+  ! rg -q 'event received: key \{key: "C-_"' "$smoke_dir/scratch.log" ||
   ! rg -q 'event received: key \{key: "C-c"' "$smoke_dir/scratch.log"; then
-  printf 'Qt no-argument startup did not route keyboard input\n' >&2
+  printf 'Qt no-argument startup did not route keyboard input before any editor click\n' >&2
   exit 1
 fi
 
@@ -326,7 +331,7 @@ run_close_prompt_smoke c "original"
 
 RODED_LOG_PATH="$smoke_dir/roded.log"
 printf 'Qt live smoke screenshots and log: %s\n' "$smoke_dir"
-printf 'Empty scratch startup and keyboard quit: passed\n'
+printf 'Empty scratch startup, typing, undo and quit before any editor click: passed\n'
 printf 'Modified-buffer close: save, discard and cancel passed\n'
 printf 'Key events: '
 rg -c 'event received: key' "$RODED_LOG_PATH"

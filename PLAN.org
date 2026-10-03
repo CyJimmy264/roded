@@ -109,7 +109,9 @@ file roundtrip не теряет текст. Коммит этапа до шир
 Не откладывать совместимость с qt до завершения всех features.
 
 - [X] Проверить Qt API в qt 0.1.9 и повторить probes на qt 0.2.0 по =docs/qt-frontend.md=.
-- [ ] Probe реальных events: key/text/modifiers, consume, resize/focus/close.
+- [X] Probe реальных events: key/text/modifiers, consume, resize/focus/close;
+  реальные X11 key events проходят в Qt editor до клика, resize/focus/close
+  доставляются настоящим QWidget.
 - [X] Проверить доступные text/cursor/selection/highlight APIs используемой сборки;
   после выпуска qt 0.2.0 заменить cursor/clipboard/splitter/close обходы.
 - [X] QApplication и widgets в GUI/main thread; выбрать явную runtime интеграцию.

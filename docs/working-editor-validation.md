@@ -1380,3 +1380,22 @@ File save здесь сохраняет текстовое представле�
   Xvfb: editing, `C-/` undo, `C-?` redo, `C-c r d`, Menu, Super shortcuts,
   mouse selection/scrolling and close decisions all passed. Log/screenshots:
   `/tmp/roded-qt-live-smoke.NlgCuM`. No check used the user's desktop display.
+
+## 2026-10-04 — probe native Qt input, focus, resize and close events
+
+- Tightened `script/qt_live_smoke.sh` so the no-argument `*scratch*` startup
+  receives an actual X11 text key, Ctrl+Slash undo, and `C-x C-c` before any
+  editor click. It verifies the core receives `x`, `C-_`, `C-x`, and `C-c`;
+  the edit is undone before exit. This exercises first-window editor focus and
+  Qt event consumption through the native widget path.
+- The same suite verifies a live QWidget resize event in
+  `spec/qt_shortcut_routing_spec.rb`, native close rejection in
+  `spec/qt_frontend_close_spec.rb`, and key/text/modifier delivery in the live
+  Qt run and `spec/qt_input_integration_spec.rb`. `qt` 0.2.0 maps a `:consume`
+  handler result to `QEvent::accept()` and stops further event delivery; the
+  editor callback uses that result after routing input to core.
+- `script/qt_live_smoke.sh` passed with real Qt Widgets **6.11.2**, gem `qt`
+  **0.2.0**, `QT_QPA_PLATFORM=xcb`, Xvfb **1280×800×24**, and a private
+  `XDG_CONFIG_HOME`: `/tmp/roded-qt-live-smoke.hrLx4b`. It also passed edit/save,
+  undo/redo, Super/Menu, mouse/wheel, and native close save/discard/cancel
+  scenarios. The check ran on its own Xvfb display, not the desktop display.
