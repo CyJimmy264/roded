@@ -46,6 +46,17 @@ RSpec.describe Roded::Application do
     expect(frontend.commands.last).to eq(Roded::Command.new(:render, {}))
   end
 
+  it "inserts a paste as one multiline edit" do
+    application.startup
+    buffer = application.current_buffer
+
+    application.handle_event(Roded::Event.new(:paste, { text: "first\nsecond" }))
+
+    expect(buffer.lines).to eq(%w[first second])
+    expect(buffer.undo).to be(true)
+    expect(buffer.to_s).to eq("")
+  end
+
   it "opens a file and renders the loaded buffer" do
     Tempfile.create("roded-open") do |file|
       file.write("alpha\nbeta\n")
@@ -139,7 +150,7 @@ RSpec.describe Roded::Application do
     application.add_buffer(buffer)
     path = File.join(Dir.tmpdir, "roded-save-key-#{Process.pid}-#{object_id}.txt")
 
-    ["C-x", "C-s"].each { |key| application.handle_event(Roded::Event.new(:key, { key: })) }
+    %w[C-x C-s].each { |key| application.handle_event(Roded::Event.new(:key, { key: })) }
     expect(application.focus).to eq(:minibuffer)
     answer_minibuffer(application, path)
 

@@ -132,6 +132,18 @@ File save здесь сохраняет текстовое представле�
   metric/style offenses; они остаются в текущем общем lint debt и будут устранены
   при завершении соответствующих core модулей.
 
+## 2026-10-03 — multiline paste в core
+
+- Добавлены `Buffer#insert_text` для нормализованного UTF-8 текста с переводами
+  строк и routed `Event(:paste)`. Вставка в середине строки сохраняет обе части
+  исходной строки и создаёт одну undo-операцию.
+- Проверки: **82 examples, 0 failures**; полный RSpec и `git diff --check` прошли.
+  Прямой RuboCop Buffer/spec обнаруживает 16 legacy metric/style offenses в
+  Buffer; новые paste helpers не добавили отдельных offenses. Полный lint остаётся
+  незелёным.
+- Событие пока не порождается curses bracketed paste или Qt clipboard; это
+  потребуется проверить в настоящих frontend до завершения этапов 5 и 9.
+
 ## 2026-10-03 — этап 2, подэтап: source routing и загрузка core
 
 - `bundle exec rspec`: **45 examples, 0 failures**.

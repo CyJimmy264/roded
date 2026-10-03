@@ -244,6 +244,39 @@ RSpec.describe Roded::Buffer do
       expect(buffer.to_s).to eq("al\r\npha\r\nbeta")
     end
 
+    it "undoes backspace, delete, and kill-line edits" do
+      [
+        ["abc", { row: 0, col: 1 }, :backspace, "bc"],
+        ["abc", { row: 0, col: 1 }, :delete_char, "ac"],
+        ["abc", { row: 0, col: 1 }, :kill_line, "a"]
+      ].each do |text, cursor, operation, edited_text|
+        buffer.load_text(text)
+        buffer.cursor_pos = cursor
+        buffer.public_send(operation, Roded::KillRing.new) if operation == :kill_line
+        buffer.public_send(operation) unless operation == :kill_line
+
+        expect(buffer.to_s).to eq(edited_text)
+        expect(buffer.undo).to be(true)
+        expect(buffer.to_s).to eq(text)
+        expect(buffer.redo).to be(true)
+        expect(buffer.to_s).to eq(edited_text)
+      end
+    end
+
+    it "records a multi-character paste as one undo step" do
+      buffer.load_text("ab")
+      buffer.cursor_pos = { row: 0, col: 1 }
+      buffer.insert_text("Привет\nмир")
+
+      expect(buffer.lines).to eq(%w[aПривет мирb])
+      expect(buffer.to_s).to eq("aПривет\nмирb")
+      expect(buffer.cursor_pos).to eq({ row: 1, col: 3 })
+      expect(buffer.undo).to be(true)
+      expect(buffer.to_s).to eq("ab")
+      expect(buffer.redo).to be(true)
+      expect(buffer.to_s).to eq("aПривет\nмирb")
+    end
+
     it "groups multiple edits into one undo step and clears redo after a new edit" do
       buffer.with_undo_group do
         buffer.insert_char("a")

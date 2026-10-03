@@ -86,6 +86,19 @@ module Roded
       end
     end
 
+    def insert_text(text)
+      return if readonly
+      return if text.nil? || text.empty?
+      raise ArgumentError, "text must be valid UTF-8" unless text.encoding == Encoding::UTF_8 && text.valid_encoding?
+
+      row, inserted_lines, cursor_col = paste_snapshot(text)
+
+      record_edit(row, 1, inserted_lines.length) do
+        @lines[row, 1] = inserted_lines
+        @cursor_pos = { row: row + inserted_lines.length - 1, col: cursor_col }
+      end
+    end
+
     def backspace
       return if readonly
 
@@ -297,6 +310,23 @@ module Roded
         lines: @lines.slice(row, line_count).map(&:dup), cursor: @cursor_pos.dup,
         line_ending: @line_ending.dup, final_newline: @final_newline
       }
+    end
+
+    def paste_snapshot(text)
+      row = @cursor_pos[:row]
+      segments = text.gsub("\r\n", "\n").split("\n", -1)
+      before = line_at_cursor[0...@cursor_pos[:col]]
+      after = line_at_cursor[@cursor_pos[:col]..] || ""
+      lines = segments.each_with_index.map do |segment, index|
+        paste_line(segment, index, segments.length, before, after)
+      end
+      [row, lines, segments.last.length]
+    end
+
+    def paste_line(segment, index, count, before, after)
+      prefix = index.zero? ? before : ""
+      suffix = index == count - 1 ? after : ""
+      prefix + segment + suffix
     end
 
     def apply_edit(edit, direction)
