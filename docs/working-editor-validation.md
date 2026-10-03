@@ -93,6 +93,19 @@
   сохранён как `Bsecond = true\n`; терминальная сессия выдала 12 132 bytes.
 - Проверка прошла в изолированном PTY; desktop display и xdotool не использовались.
 
+## 2026-10-03 — Tab и indent-region
+
+- Curses нормализует terminal Tab в общий binding `Tab`; он и `M-x indent-region`
+  вставляют два пробела. При выделении indent добавляется к каждой строке
+  region одним undo group; после edits сохраняются преобразованные point/mark.
+- Specs проверяют текущую строку, многострочный region, undo и readonly buffer.
+  Targeted RSpec: **19 examples, 0 failures**.
+- Настоящий curses PTY (`TERM=xterm-256color`, 24×80): нажат Tab добавило
+  два пробела в `tab.rb`, `C-x C-s` сохранил результат, `C-x C-c` завершил
+  процесс с кодом **0**. Ruby 3.4.2, Qt/ffi gems из `/tmp/roded-qt-gems`.
+- Полный прогон после изменения: **171 examples, 0 failures**; RuboCop всё ещё
+  сообщает **88 offenses в 97 files**, тот же общий debt count.
+
 ## 2026-10-03 — Qt clipboard paste через общий core event
 
 - Runtime probe qt 0.1.9 / Qt Widgets 6.11.2: `QApplication.clipboard`

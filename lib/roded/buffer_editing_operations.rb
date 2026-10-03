@@ -1,6 +1,13 @@
 module Roded
   # Implements undo, region, kill-ring, and clipboard-like editor commands.
   module BufferEditingOperations
+    def indent
+      return unless editable_buffer_and_window?
+
+      indent_rows(indented_rows)
+      broadcast_command(Command.new(:render, {}))
+    end
+
     def undo
       changed = current_buffer&.undo
       broadcast_command(Command.new(:render, {})) if changed
@@ -71,6 +78,28 @@ module Roded
       return unless current_window&.mark
 
       [current_window.mark, current_window.point]
+    end
+
+    def indented_rows
+      mark = current_window.mark
+      return [current_window.point.fetch(:row)] unless mark
+
+      [mark.fetch(:row), current_window.point.fetch(:row)].min..
+        [mark.fetch(:row), current_window.point.fetch(:row)].max
+    end
+
+    def editable_buffer_and_window?
+      current_buffer && current_window && !current_buffer.readonly
+    end
+
+    def indent_rows(rows)
+      current_buffer.with_undo_group do
+        rows.reverse_each do |row|
+          current_buffer.cursor_pos = { row:, col: 0 }
+          current_buffer.insert_text("  ")
+        end
+      end
+      current_buffer.cursor_pos = current_window.point
     end
 
     def publish_clipboard_text(text)

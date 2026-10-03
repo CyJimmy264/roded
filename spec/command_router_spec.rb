@@ -8,6 +8,7 @@ RSpec.describe Roded::CommandRouter do
     event = router.route("C-n")
 
     expect(event).to eq(Roded::Event.new(:move_down, {}))
+    expect(router.route("Tab")).to eq(Roded::Event.new(:indent, {}))
   end
 
   it "resolves C-x prefixed bindings across multiple keys" do

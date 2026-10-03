@@ -38,6 +38,7 @@ module Roded
       "M-x" => { type: :start_command },
       "C-h b" => { type: :describe_bindings },
       "Enter" => { type: :enter },
+      "Tab" => { type: :indent },
       "Backspace" => { type: :backspace },
       "Delete" => { type: :delete },
       "C-x C-c" => { type: :request_quit },

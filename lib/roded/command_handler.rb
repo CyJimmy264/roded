@@ -143,6 +143,8 @@ module Roded
         @editor.current_buffer&.delete_char
       when :enter
         @editor.current_buffer&.newline
+      when :indent
+        @editor.indent
       when :insert_char
         @editor.current_buffer&.insert_char(event.payload[:char])
       when :paste

@@ -36,6 +36,7 @@ module Roded
       @command_registry.register("describe-bindings", description: "Show active key bindings", &:describe_bindings)
       @command_registry.register("undo", description: "Undo the last edit", &:undo)
       @command_registry.register("redo", description: "Redo the last edit", &:redo)
+      @command_registry.register("indent-region", description: "Indent selected lines by two spaces", &:indent)
       @command_registry.register("next-buffer", &:next_buffer)
       @command_registry.register("previous-buffer", &:previous_buffer)
       @command_registry.register("kill-buffer", &:kill_current_buffer)

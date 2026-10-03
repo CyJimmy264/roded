@@ -44,6 +44,7 @@ module Roded
 
       def normalize_input(text)
         return "Enter" if ["\n", "\r"].include?(text)
+        return "Tab" if text == "\t"
         return "Backspace" if text == "\u007F"
 
         codepoint = text.ord
