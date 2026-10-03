@@ -162,6 +162,23 @@ RSpec.describe Roded::Buffer do
       buffer.move_cursor_page_up(5)
       expect(buffer.cursor_pos).to eq({ row: 0, col: 1 })
     end
+
+    it "moves by Unicode words and reaches document boundaries" do
+      buffer.load_text("one two\nПривет-world")
+
+      buffer.move_cursor_word_forward
+      expect(buffer.cursor_pos).to eq({ row: 0, col: 3 })
+      buffer.move_cursor_word_forward
+      expect(buffer.cursor_pos).to eq({ row: 0, col: 7 })
+      buffer.move_cursor_word_forward
+      expect(buffer.cursor_pos).to eq({ row: 1, col: 6 })
+      buffer.move_cursor_word_backward
+      expect(buffer.cursor_pos).to eq({ row: 1, col: 0 })
+      buffer.move_cursor_document_end
+      expect(buffer.cursor_pos).to eq({ row: 1, col: 12 })
+      buffer.move_cursor_document_start
+      expect(buffer.cursor_pos).to eq({ row: 0, col: 0 })
+    end
   end
 
   describe "#kill_line" do

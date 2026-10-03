@@ -22,6 +22,8 @@ module Roded
       @minibuffer_kind = nil
       @focus = :buffer
       @keymap = Keymap.load
+      @command_registry = CommandRegistry.new
+      register_builtin_commands
       @kill_ring = KillRing.new
       @current_buffer = nil
       @last_yank = nil
@@ -201,22 +203,30 @@ module Roded
     end
 
     def process_command(command)
-      case command
-      when "open"
-        start_minibuffer(:open, "Open file: ")
-      when "save"
-        start_minibuffer(:save, "Save file as: ")
-      when "quit"
-        request_quit
-      when "undo"
-        undo
-      when "redo"
-        self.redo
-      when "", nil
+      if command.to_s.empty?
         broadcast_command(Command.new(:render, {}))
-      else
+      elsif !@command_registry.registered?(command)
         display_message("Unknown command: #{command}")
+      else
+        execute_command(command)
       end
+    end
+
+    def register_command(name, binding: nil, description: nil, &action)
+      @command_registry.register(name, description:, &action)
+      @keymap.bind(binding, type: :custom_command, payload: { name: name.to_s }) if binding
+    end
+
+    def command_names
+      @command_registry.names
+    end
+
+    def command_catalog
+      @command_registry.catalog
+    end
+
+    def execute_command(name)
+      @command_registry.call(name, self)
     end
 
     def current_buffer
@@ -294,6 +304,23 @@ module Roded
       broadcast_command(Command.new(:render, {}))
     end
 
+    def scroll_viewport(amount)
+      return unless current_window
+
+      last_origin = [current_buffer.lines.length - page_size, 0].max
+      origin = (current_window.top_line + amount.to_i).clamp(0, last_origin)
+      return if origin == current_window.top_line
+
+      current_window.top_line = origin
+      broadcast_command(Command.new(:render, {}))
+    end
+
+    def resize_window(amount)
+      return unless current_window && @window_layout.resize_columns(current_window, amount)
+
+      broadcast_command(Command.new(:render, {}))
+    end
+
     def next_buffer
       activate_relative_buffer(1)
     end
@@ -314,7 +341,7 @@ module Roded
       frontend ||= @frontends.first
       return 1 unless frontend && frontend.respond_to?(:page_size)
 
-      [frontend.page_size.to_i, 1].max
+      [frontend.page_size(current_window&.object_id).to_i, 1].max
     end
 
     def start_minibuffer(kind, prompt)
@@ -357,6 +384,24 @@ module Roded
     end
 
     private
+
+    def register_builtin_commands
+      @command_registry.register("quit", description: "Quit Roded") { |editor| editor.request_quit }
+      @command_registry.register("undo", description: "Undo the last edit") { |editor| editor.undo }
+      @command_registry.register("redo", description: "Redo the last edit") { |editor| editor.redo }
+      @command_registry.register("open", description: "Open a file") { |editor| editor.start_minibuffer(:open, "Open file: ") }
+      @command_registry.register("save", description: "Save the current buffer") do |editor|
+        filename = editor.current_buffer&.filename
+        filename ? editor.save_file(filename) : editor.start_minibuffer(:save, "Save file as: ")
+      end
+      @command_registry.register("save-as", description: "Save as another file") do |editor|
+        editor.start_minibuffer(:save_as, "Save as: ")
+      end
+      @command_registry.register("switch-buffer") { |editor| editor.start_minibuffer(:switch_buffer, "Buffer name or path: ") }
+      @command_registry.register("next-buffer") { |editor| editor.next_buffer }
+      @command_registry.register("previous-buffer") { |editor| editor.previous_buffer }
+      @command_registry.register("kill-buffer") { |editor| editor.kill_current_buffer }
+    end
 
     def active_region
       return unless current_window&.mark

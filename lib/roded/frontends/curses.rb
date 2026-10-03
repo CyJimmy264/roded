@@ -109,8 +109,13 @@ module Roded
         redraw
       end
 
-      def page_size
-        [@screen.maxy - 1, 1].max
+      def page_size(window_id = nil)
+        height = [@screen.maxy - 1, 1].max
+        return [height - 1, 1].max unless @layout_snapshot && window_id
+
+        rectangle = layout_rectangles(@layout_snapshot[:tree], 0, 0, @screen.maxx, height)
+                    .find { |id, _x, _y, _width, _height| id == window_id }
+        [rectangle ? rectangle.fetch(4) - 1 : height - 1, 1].max
       end
 
       # Add this method to handle Command objects
@@ -306,12 +311,12 @@ module Roded
         return [[tree[:window_id], x, y, width, height]] if tree[:window_id]
 
         if tree[:direction] == :vertical
-          first_width = width / 2
+          first_width = (width * tree.fetch(:ratio, 0.5)).round.clamp(1, [width - 1, 1].max)
           layout_rectangles(tree[:first], x, y, first_width, height) +
             layout_rectangles(tree[:second], x + first_width, y,
                               width - first_width, height)
         else
-          first_height = height / 2
+          first_height = (height * tree.fetch(:ratio, 0.5)).round.clamp(1, [height - 1, 1].max)
           layout_rectangles(tree[:first], x, y, width, first_height) +
             layout_rectangles(tree[:second], x, y + first_height,
                               width, height - first_height)

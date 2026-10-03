@@ -238,6 +238,30 @@ module Roded
       notify_observers
     end
 
+    def move_cursor_document_start
+      move_cursor_to_offset(0)
+    end
+
+    def move_cursor_document_end
+      move_cursor_to_offset(@lines.join("\n").length)
+    end
+
+    def move_cursor_word_forward
+      chars = @lines.join("\n").each_char.to_a
+      offset = cursor_offset
+      offset += 1 while offset < chars.length && !word_character?(chars[offset])
+      offset += 1 while offset < chars.length && word_character?(chars[offset])
+      move_cursor_to_offset(offset)
+    end
+
+    def move_cursor_word_backward
+      chars = @lines.join("\n").each_char.to_a
+      offset = cursor_offset
+      offset -= 1 while offset.positive? && !word_character?(chars[offset - 1])
+      offset -= 1 while offset.positive? && word_character?(chars[offset - 1])
+      move_cursor_to_offset(offset)
+    end
+
     def move_cursor_up
       @cursor_pos[:row] = [@cursor_pos[:row] - 1, 0].max
       clamp_cursor_col
@@ -453,6 +477,21 @@ module Roded
       parts = preceding.split("\n", -1)
       parts = [""] if parts.empty?
       { row: base_row + parts.length - 1, col: parts.last.length }.freeze
+    end
+
+    def cursor_offset
+      @lines.take(@cursor_pos[:row]).sum(&:length) + @cursor_pos[:row] + @cursor_pos[:col]
+    end
+
+    def move_cursor_to_offset(offset)
+      chars = @lines.join("\n").each_char.to_a
+      @cursor_pos = position_at_offset(0, chars, offset.clamp(0, chars.length)).dup
+      clamp_cursor
+      notify_observers
+    end
+
+    def word_character?(character)
+      character&.match?(/\A[\p{Alnum}_]\z/)
     end
 
     def inverse_change(change)

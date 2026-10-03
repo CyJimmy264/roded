@@ -27,12 +27,32 @@ module Roded
       when :move_right
         @editor.current_buffer&.move_cursor_right
         @editor.broadcast_command(Command.new(:move_cursor, { direction: :right }))
+      when :move_word_forward
+        @editor.current_buffer&.move_cursor_word_forward
+        @editor.broadcast_command(Command.new(:render, {}))
+      when :move_word_backward
+        @editor.current_buffer&.move_cursor_word_backward
+        @editor.broadcast_command(Command.new(:render, {}))
+      when :document_start
+        @editor.current_buffer&.move_cursor_document_start
+        @editor.broadcast_command(Command.new(:render, {}))
+      when :document_end
+        @editor.current_buffer&.move_cursor_document_end
+        @editor.broadcast_command(Command.new(:render, {}))
       when :page_down
         @editor.current_buffer&.move_cursor_page_down(@editor.page_size)
         @editor.broadcast_command(Command.new(:render, {}))
       when :page_up
         @editor.current_buffer&.move_cursor_page_up(@editor.page_size)
         @editor.broadcast_command(Command.new(:render, {}))
+      when :scroll_line_up
+        @editor.scroll_viewport(-1)
+      when :scroll_line_down
+        @editor.scroll_viewport(1)
+      when :scroll_page_up
+        @editor.scroll_viewport(-@editor.page_size)
+      when :scroll_page_down
+        @editor.scroll_viewport(@editor.page_size)
       when :line_start
         @editor.current_buffer&.move_cursor_line_start
         @editor.broadcast_command(Command.new(:render, {}))
@@ -52,21 +72,24 @@ module Roded
         @editor.yank
       when :yank_pop
         @editor.yank_pop
+      when :shrink_window_horizontally
+        @editor.resize_window(-0.05)
+      when :enlarge_window_horizontally
+        @editor.resize_window(0.05)
       when :save_buffer
-        filename = @editor.current_buffer&.filename
-        filename ? @editor.save_file(filename) : @editor.start_minibuffer(:save, "Save file as: ")
+        @editor.execute_command("save")
       when :save_as_buffer
-        @editor.start_minibuffer(:save_as, "Save as: ")
+        @editor.execute_command("save-as")
       when :open_file
-        @editor.start_minibuffer(:open, "Open file: ")
+        @editor.execute_command("open")
       when :switch_buffer
-        @editor.start_minibuffer(:switch_buffer, "Buffer name or path: ")
+        @editor.execute_command("switch-buffer")
       when :previous_buffer
-        @editor.previous_buffer
+        @editor.execute_command("previous-buffer")
       when :next_buffer
-        @editor.next_buffer
+        @editor.execute_command("next-buffer")
       when :kill_buffer
-        @editor.kill_current_buffer
+        @editor.execute_command("kill-buffer")
       when :split_horizontal
         @editor.split_window(:horizontal)
       when :split_vertical
@@ -78,15 +101,17 @@ module Roded
       when :delete_other_windows
         @editor.delete_other_windows
       when :undo
-        @editor.undo
+        @editor.execute_command("undo")
       when :redo
-        @editor.redo
+        @editor.execute_command("redo")
       when :render
         @editor.broadcast_command(Command.new(:render, {}))
       when :quit
-        @editor.request_quit
+        @editor.execute_command("quit")
       when :request_quit
-        @editor.request_quit
+        @editor.execute_command("quit")
+      when :custom_command
+        @editor.execute_command(event.payload.fetch(:name))
       when :start_command
         @editor.start_minibuffer(:command, "M-x ")
       when :cancel

@@ -11,6 +11,10 @@ class FakeFrontend
     self.page_size = page_size
   end
 
+  def page_size(_window_id = nil)
+    @page_size
+  end
+
   def add_buffer(buffer)
     buffers << buffer
   end

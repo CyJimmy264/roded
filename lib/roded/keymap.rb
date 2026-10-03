@@ -18,6 +18,14 @@ module Roded
       "M-w" => { type: :copy_region },
       "C-y" => { type: :yank },
       "M-y" => { type: :yank_pop },
+      "M-f" => { type: :move_word_forward },
+      "M-b" => { type: :move_word_backward },
+      "M-<" => { type: :document_start },
+      "M->" => { type: :document_end },
+      "M-p" => { type: :scroll_line_up },
+      "M-n" => { type: :scroll_line_down },
+      "M-P" => { type: :scroll_page_up },
+      "M-N" => { type: :scroll_page_down },
       "C-g" => { type: :cancel },
       "M-x" => { type: :start_command },
       "Enter" => { type: :enter },
@@ -34,6 +42,8 @@ module Roded
       "C->" => { type: :next_buffer },
       "s-," => { type: :previous_buffer },
       "s-." => { type: :next_buffer },
+      "s-Left" => { type: :shrink_window_horizontally },
+      "s-Right" => { type: :enlarge_window_horizontally },
       "C-x C-Left" => { type: :previous_buffer },
       "C-x C-Right" => { type: :next_buffer },
       "C-x k" => { type: :kill_buffer },
@@ -91,6 +101,13 @@ module Roded
       return unless entry
 
       { type: entry[:type], payload: entry[:payload] || {} }
+    end
+
+    def bind(key, type:, payload: {})
+      name = key.to_s.strip
+      raise ArgumentError, "binding key is required" if name.empty?
+
+      @map[name] = { type: type.to_sym, payload: payload.dup.freeze }.freeze
     end
 
     def prefix?(key)

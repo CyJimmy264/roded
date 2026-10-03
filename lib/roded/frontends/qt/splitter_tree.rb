@@ -42,8 +42,9 @@ module Roded
         splitter.orientation = tree[:direction] == :vertical ? Qt::Horizontal : Qt::Vertical
         splitter.add_widget(build(tree[:first]) { |id| pane_for.call(id) })
         splitter.add_widget(build(tree[:second]) { |id| pane_for.call(id) })
-        splitter.set_stretch_factor(0, 1)
-        splitter.set_stretch_factor(1, 1)
+        first_weight = (tree.fetch(:ratio, 0.5) * 100).round
+        splitter.set_stretch_factor(0, first_weight)
+        splitter.set_stretch_factor(1, 100 - first_weight)
         splitter
       end
 

@@ -35,6 +35,8 @@ RSpec.describe Roded::CommandRouter do
     expect(router.route("s-.")).to eq(Roded::Event.new(:next_buffer, {}))
     expect(router.route("C-<")).to eq(Roded::Event.new(:previous_buffer, {}))
     expect(router.route("C->")).to eq(Roded::Event.new(:next_buffer, {}))
+    expect(router.route("s-Left")).to eq(Roded::Event.new(:shrink_window_horizontally, {}))
+    expect(router.route("s-Right")).to eq(Roded::Event.new(:enlarge_window_horizontally, {}))
   end
 
   it "resolves meta bindings through escape prefix" do

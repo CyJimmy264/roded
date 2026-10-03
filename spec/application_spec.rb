@@ -33,6 +33,28 @@ RSpec.describe Roded::Application do
     expect(application.instance_variable_get(:@stop_requested)).to be(true)
   end
 
+  it "executes one registered command through M-x and its key binding" do
+    application.startup
+    calls = 0
+    application.register_command("count-call", binding: "C-c r g", description: "Count a call") do |editor|
+      calls += 1
+      editor.current_buffer.insert_char("x")
+    end
+
+    %w[C-c r g].each do |key|
+      application.handle_event(Roded::Event.new(:key, { key: }))
+    end
+    application.process_command("count-call")
+
+    expect(calls).to eq(2)
+    expect(application.current_buffer.to_s).to eq("xx")
+    expect(application.command_names).to include("count-call", "undo", "redo")
+    expect(application.command_names).to be_frozen
+    custom_command = application.command_catalog.find { |command| command[:name] == "count-call" }
+    expect(custom_command).to eq(name: "count-call", description: "Count a call")
+    expect(custom_command).to be_frozen
+  end
+
   it "runs undo and redo commands against the active buffer" do
     application.startup
     buffer = application.current_buffer
@@ -713,6 +735,25 @@ RSpec.describe Roded::Application do
   def answer_minibuffer(editor, response)
     response.each_char { |character| editor.minibuffer.insert_char(character) }
     editor.submit_minibuffer
+  end
+
+  it "scrolls the active view without moving point and clamps to document bounds" do
+    application.startup
+    buffer = application.current_buffer
+    buffer.lines = (0..9).map(&:to_s)
+    point = { row: 2, col: 0 }
+    application.current_window.point = point
+
+    application.handle_event(Roded::Event.new(:key, { key: "M-n" }))
+    expect(application.current_window.top_line).to eq(1)
+    expect(application.current_window.point).to eq(point)
+
+    application.handle_event(Roded::Event.new(:key, { key: "M-N" }))
+    expect(application.current_window.top_line).to eq(4)
+    application.handle_event(Roded::Event.new(:key, { key: "M-N" }))
+    expect(application.current_window.top_line).to eq(7)
+    application.handle_event(Roded::Event.new(:key, { key: "M-N" }))
+    expect(application.current_window.top_line).to eq(7)
   end
 end
 # rubocop:enable Metrics/BlockLength

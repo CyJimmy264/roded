@@ -234,6 +234,20 @@ File save здесь сохраняет текстовое представле�
   `M-y`, bracketed paste в настоящем curses и общий frontend acceptance остаются
   открытыми.
 
+## 2026-10-03 — навигация, viewport и command registry slice
+
+- Реализованы `M-f/M-b`, `M-</M->`, `M-p/M-n`, `M-P/M-N`. Word movement
+  проходит Unicode-слова; scroll обновляет top line, сохраняя point, а размер
+  страницы запрашивается у frontend с ID активного view.
+- `s-Left/s-Right` теперь меняют ratio side-by-side split; bounds 10–90%
+  проверяются на `WindowLayout`, а curses и Qt строят layout по ratio snapshot.
+- Введён `CommandRegistry`: M-x и custom key binding могут вызвать одну команду,
+  доступна регистрация через Ruby API, command catalog immutable. Существующие
+  quit/undo/redo/save/open/buffer клавиши уже делегируют этому реестру; остальным
+  командам ещё предстоит перейти на общий контракт.
+- Автоматические проверки: **112 examples, 0 failures**. Full lint и живой Qt
+  smoke для Super resizing пока не зелёные/не подтверждены.
+
 ## 2026-10-03 — этап 2, подэтап: source routing и загрузка core
 
 - `bundle exec rspec`: **45 examples, 0 failures**.

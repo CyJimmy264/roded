@@ -88,7 +88,7 @@ module Roded
         @ui_dispatcher.post(:quit)
       end
 
-      def page_size
+      def page_size(_window_id = nil)
         [@view.editor.height / 20, 1].max
       end
 
