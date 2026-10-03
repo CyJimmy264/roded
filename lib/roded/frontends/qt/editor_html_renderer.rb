@@ -100,7 +100,7 @@ module Roded
         return "" unless point && point[:row] == row && !line.empty?
 
         column = point[:col].clamp(0, line.length)
-        column = [column - 1, 0].max if column == line.length
+        return "" if column == line.length
         return "" unless column.between?(first, last - 1)
 
         "color: #282c34; background-color: #61afef;"

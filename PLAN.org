@@ -61,6 +61,8 @@ Baseline не означает готовность редактора: lifecycl
   ошибка команды не оставляет terminal в raw mode или живые input workers.
 - [X] Пустой файл редактируется; Buffer сохраняет допустимые строки/позиции.
 - [X] Open/save сохраняет final newline и поддерживаемые LF/CRLF/UTF-8 данные.
+- [X] Завершающий `\n` даёт редактируемую пустую строку в core; curses и Qt
+  ставят туда курсор, `M->` доходит до неё, а ввод/undo сохраняют текст файла.
 - [X] Specs проверяют ошибку IO, runtime exception и очистку ресурсов.
 - [X] Создан validation log; lint debt зафиксирован/сокращён без blanket disable.
 
@@ -262,6 +264,8 @@ replace обратимы. Provider/history/preview не становятся cur
 - [X] Qt `C-n`/`C-p` input moves the active core point, and wheel input updates
   both core `top_line` and the real Qt scrollbar; integration specs cover the
   application/input-router/widget path.
+- [X] Qt plain Space inserts a literal space; at EOL the Qt caret remains after
+  the text instead of highlighting the last character. Xvfb edit/save smoke.
 - [ ] Desktop smoke с физическими Super keys.
 - [X] Активные Qt binding workarounds учтены; удалённые решения перечислены в
   qt-workarounds.md без устаревших TODO в production code.

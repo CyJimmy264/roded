@@ -14,7 +14,6 @@ module Roded
         ::Qt::Key_Up => "Up",
         ::Qt::Key_Down => "Down",
         ::Qt::Key_Tab => "Tab",
-        ::Qt::Key_Space => "SPC",
         ::Qt::Key_F7 => "F7",
         ::Qt::Key_Menu => "Menu"
       }.freeze
@@ -35,6 +34,7 @@ module Roded
       end
 
       def key_name(key, text, modifiers)
+        return "SPC" if key == ::Qt::Key_Space && modifiers.anybits?(::Qt::ControlModifier)
         return SPECIAL_KEYS[key] if SPECIAL_KEYS.key?(key)
         return control_key_name(key) if control_key?(key, modifiers)
 

@@ -99,6 +99,39 @@ RSpec.describe "Qt Meta punctuation through editor session" do
   end
 end
 
+RSpec.describe "Qt space and final newline through editor session" do
+  include_context "Qt input integration lifecycle"
+  include QtInputIntegrationSpecHelpers
+
+  it "inserts a real Space key event into the core buffer" do
+    application, frontend = build_qt_editor([])
+    @frontends << frontend
+
+    deliver_qt_payload(application, frontend, key: Qt::Key_Space, modifiers: 0, text: " ")
+
+    expect(application.current_buffer.to_s).to eq(" ")
+  end
+
+  it "moves Qt Meta+Shift+period to the editable row after a final newline" do
+    application = Roded::Application.new
+    application.startup
+    application.current_buffer.load_text("alpha\n")
+    frontend = attach_qt_frontend(application)
+    @frontends << frontend
+    frontend.instance_variable_get(:@ui_dispatcher).send(:drain)
+    frontend.view.show
+    QApplication.process_events
+
+    deliver_qt_payload(
+      application, frontend,
+      key: Qt::Key_Period, modifiers: Qt::AltModifier | Qt::ShiftModifier, text: ">"
+    )
+
+    expect(application.current_window.point).to eq(row: 1, col: 0)
+    expect(frontend.view.editor.text_cursor.position).to eq(6)
+  end
+end
+
 RSpec.describe "Qt wheel input through editor session" do
   include_context "Qt input integration lifecycle"
   include QtInputIntegrationSpecHelpers

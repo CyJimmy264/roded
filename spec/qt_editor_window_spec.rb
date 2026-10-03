@@ -73,7 +73,7 @@ RSpec.describe Roded::Frontends::QtEditorWindow, "region rendering" do
     expect(editor.property("contextMenuPolicy")).to eq("NoContextMenu")
     expect(editor.to_plain_text).to eq("a<b\nc")
     expect(editor.to_html).to include("#3e4451")
-    expect(editor.to_html).to include("&lt;</span>")
+    expect(editor.to_html).to include("&lt;b</span>")
   end
 end
 
@@ -383,6 +383,32 @@ RSpec.describe Roded::Frontends::QtEditorWindow, "blank lines" do
 
     expect(view.editor.to_html).to include("color:#282c34; background-color:#61afef;\"> </span>")
     expect(view.editor.text_cursor.position).to eq(6)
+  end
+end
+
+RSpec.describe Roded::Frontends::QtEditorWindow, "final newline row" do
+  include_context "Qt editor window lifecycle"
+
+  it "places the caret on the empty row after a final newline" do
+    view = described_class.new
+    view.render_layout(
+      tree: { window_id: 101 }, active_window_id: 101,
+      windows: [{ id: 101, text: "a\n", point: { row: 1, col: 0 }, name: "doc", active: true }]
+    )
+
+    expect(view.editor.to_plain_text).to eq("a\n ")
+    expect(view.editor.text_cursor.position).to eq(2)
+  end
+
+  it "keeps the end-of-line caret after text instead of highlighting the last character" do
+    view = described_class.new
+    view.render_layout(
+      tree: { window_id: 101 }, active_window_id: 101,
+      windows: [{ id: 101, text: "abc", point: { row: 0, col: 3 }, name: "doc", active: true }]
+    )
+
+    expect(view.editor.to_html).not_to include("background-color: #61afef")
+    expect(view.editor.text_cursor.position).to eq(3)
   end
 end
 

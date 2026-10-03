@@ -42,7 +42,6 @@ module Roded
       new_lines = [""] if new_lines.empty?
       record_edit(0, @lines.length, new_lines.length) do
         @lines = new_lines
-        clamp_cursor
       end
     end
 
@@ -50,7 +49,7 @@ module Roded
       validate_text!(text)
       @line_ending = text.scan(/\r\n|\n/).uniq.first || "\n"
       @final_newline = text.end_with?("\n")
-      @lines = text.gsub("\r\n", "\n").split("\n", -1).tap { |lines| lines.pop if @final_newline }
+      @lines = text.gsub("\r\n", "\n").split("\n", -1)
       @lines = [""] if @lines.empty?
       @cursor_pos = { row: 0, col: 0 }
       @undo_stack.clear
@@ -280,8 +279,7 @@ module Roded
     end
 
     def to_s
-      text = @lines.join(@line_ending)
-      @final_newline ? text + @line_ending : text
+      @lines.join(@line_ending)
     end
 
     def modified?
@@ -336,7 +334,12 @@ module Roded
     def final_newline=(value)
       return if readonly
 
-      record_edit(0, @lines.length, @lines.length) { @final_newline = !!value }
+      desired = value ? true : false
+      return if desired == @final_newline
+
+      record_edit(0, @lines.length, @lines.length + (desired ? 1 : -1)) do
+        desired ? @lines << "" : @lines.pop
+      end
     end
 
     def line_ending=(value)
@@ -378,6 +381,8 @@ module Roded
     def record_edit(row, before_count, after_count)
       before = edit_snapshot(row, before_count)
       yield
+      sync_final_newline
+      clamp_cursor
       after = edit_snapshot(row, after_count)
       return if before == after
 
@@ -521,6 +526,10 @@ module Roded
     def clamp_cursor
       @cursor_pos[:row] = @cursor_pos[:row].to_i.clamp(0, @lines.length - 1)
       clamp_cursor_col
+    end
+
+    def sync_final_newline
+      @final_newline = @lines.length > 1 && @lines.last.empty?
     end
 
     def validate_text!(text)

@@ -52,6 +52,7 @@ RSpec.describe Roded::CommandRouter do
     event = router.route("a")
 
     expect(event).to eq(Roded::Event.new(:insert_char, { char: "a" }))
+    expect(router.route(" ")).to eq(Roded::Event.new(:insert_char, { char: " " }))
   end
 
   it "returns noop for unknown non-insertable keys" do

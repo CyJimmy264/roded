@@ -167,6 +167,7 @@ if ! rg -q 'Application initialized' "$smoke_dir/scratch.log" ||
   exit 1
 fi
 
+RODED_LOG_PATH="$smoke_dir/roded.log"
 printf 'Qt live smoke screenshots and log: %s\n' "$smoke_dir"
 printf 'Empty scratch startup and keyboard quit: passed\n'
 printf 'Key events: '

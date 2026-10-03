@@ -27,6 +27,10 @@ RSpec.describe Roded::Frontends::QtCursorMapper do
   it "adds the rendered blank-line cell when mapping into Qt UTF-16 offsets" do
     expect(described_class.utf16_offset("a\n\nb", row: 2, col: 0)).to eq(4)
   end
+
+  it "maps the empty row after a final newline" do
+    expect(described_class.utf16_offset("a\n", row: 1, col: 0)).to eq(2)
+  end
 end
 
 RSpec.describe "Qt QTextEdit mouse hit testing" do

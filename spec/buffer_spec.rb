@@ -34,6 +34,43 @@ RSpec.describe Roded::Buffer do
       expect(described_class.new.load_text("Привет, мир!\n").to_s).to eq("Привет, мир!\n")
     end
 
+    it "exposes a final newline as an editable empty row" do
+      buffer.load_text("alpha\n")
+
+      expect(buffer.lines).to eq(["alpha", ""])
+      buffer.move_cursor_document_end
+      expect(buffer.cursor_pos).to eq({ row: 1, col: 0 })
+
+      buffer.insert_char("x")
+      expect(buffer.to_s).to eq("alpha\nx")
+      expect(buffer.lines).to eq(%w[alpha x])
+      expect(buffer.undo).to be(true)
+      expect(buffer.to_s).to eq("alpha\n")
+      expect(buffer.cursor_pos).to eq({ row: 1, col: 0 })
+    end
+
+    it "adds another blank row when newline is inserted at the final row" do
+      buffer.load_text("alpha\n")
+      buffer.move_cursor_document_end
+
+      buffer.newline
+
+      expect(buffer.lines).to eq(["alpha", "", ""])
+      expect(buffer.to_s).to eq("alpha\n\n")
+      expect(buffer.cursor_pos).to eq({ row: 2, col: 0 })
+    end
+
+    it "removes the final newline when backspace is pressed on its empty row" do
+      buffer.load_text("alpha\n")
+      buffer.move_cursor_document_end
+
+      buffer.backspace
+
+      expect(buffer.lines).to eq(["alpha"])
+      expect(buffer.to_s).to eq("alpha")
+      expect(buffer.cursor_pos).to eq({ row: 0, col: 5 })
+    end
+
     it "rejects mixed line endings and invalid UTF-8" do
       expect { described_class.new.load_text("a\nb\r\n") }
         .to raise_error(ArgumentError, /mixed line endings/)

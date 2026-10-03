@@ -985,3 +985,26 @@ File save здесь сохраняет текстовое представле�
   Скриншот `/tmp/roded-qt-live-smoke.1Bgiul/after-edit-save.png`; связанные
   Qt editor/mouse specs: **19 examples, 0 failures**; RuboCop для двух
   изменённых Ruby-файлов: **0 offenses**. Xvfb smoke также прошёл.
+
+## 2026-10-03 — редактируемая строка завершающего newline и Qt Space
+
+- Core теперь включает последнюю пустую строку в `Buffer#lines`, когда текст
+  заканчивается на `\n`. Курсор может находиться там; ввод превращает её в
+  обычную строку, `Backspace` на её начале снимает завершающий newline, а
+  `newline` добавляет ещё одну пустую строку. Undo возвращает исходные байты.
+- Qt key translator теперь передаёт обычный Space как вставляемый пробел; Ctrl+Space
+  по-прежнему переводится в `C-SPC`. На EOL caret остаётся после текста и не
+  подсвечивает последний введённый символ.
+- Добавлены core/window, curses draw, Qt caret/mapping, key-router и Qt input
+  integration specs. Полный `bundle exec rspec`: **251 examples, 0 failures**;
+  targeted RuboCop по изменённым key/UI/spec файлам: **0 offenses**.
+- Изолированный Qt Xvfb smoke `script/qt_final_newline_smoke.sh` открыл файл
+  `alpha\n`, перешёл `M->` в пустую строку, ввёл `x` и Space, сохранил
+  `alpha\nx ` и закрыл редактор. Smoke использовал private `XDG_CONFIG_HOME`,
+  не подключался к пользовательскому DISPLAY. Screenshot
+  `/tmp/roded-qt-final-newline.rd4Ad5/final-newline-caret.png` показывает block
+  caret на второй строке, modeline `2:1`.
+- Полный `script/qt_live_smoke.sh` также прошёл под отдельным Xvfb:
+  `/tmp/roded-qt-live-smoke.gkSVjw`, 17 key, 1 wheel и 12 mouse-selection
+  events, включая Menu/Alt+Menu pickers, resize и выход. Smoke harness теперь
+  проверяет первый UI по его логу и no-argument scratch по отдельному логу.

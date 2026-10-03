@@ -50,6 +50,7 @@ RSpec.describe Roded::Frontends::QtKeyTranslator do
 
   it "uses key event aliases from generated Qt payloads" do
     expect(translator.translate({ a: Qt::Key_F7, b: 0, c: "" })).to eq("F7")
+    expect(translator.translate({ key: Qt::Key_Space, modifiers: 0, text: " " })).to eq(" ")
     expect(translator.translate({ key: Qt::Key_Space, modifiers: Qt::ControlModifier, text: "" })).to eq("C-SPC")
     expect(translator.translate({ key: Qt::Key_Tab, modifiers: Qt::ShiftModifier, text: "\t" })).to eq("S-Tab")
   end

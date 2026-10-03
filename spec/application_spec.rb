@@ -389,7 +389,7 @@ RSpec.describe Roded::Application do
       application.open_file(file.path)
 
       expect(application.current_buffer.filename).to eq(file.path)
-      expect(application.current_buffer.lines).to eq(%w[alpha beta])
+      expect(application.current_buffer.lines).to eq(["alpha", "beta", ""])
       expect(application.current_buffer.cursor_pos).to eq({ row: 0, col: 0 })
       expect(frontend.buffers.last).to eq(application.current_buffer)
       expect(frontend.renders.last).to eq(application.current_buffer)
