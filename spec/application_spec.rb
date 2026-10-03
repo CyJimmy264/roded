@@ -57,6 +57,34 @@ RSpec.describe Roded::Application do
     expect(buffer.to_s).to eq("")
   end
 
+  it "keeps buffer positions in the active window while switching buffers" do
+    application.startup
+    window = application.current_window
+    application.current_buffer.lines = ["scratch"]
+    window.point = { row: 0, col: 2 }
+    second = Roded::Buffer.new("second")
+    second.lines = ["other"]
+    application.add_buffer(second)
+
+    application.switch_buffer("second")
+    expect(window.buffer).to equal(second)
+    window.point = { row: 0, col: 4 }
+    application.switch_buffer("*scratch*")
+    expect(window.point).to eq({ row: 0, col: 2 })
+    application.switch_buffer("second")
+    expect(window.point).to eq({ row: 0, col: 4 })
+    expect(application.current_buffer.cursor_pos).to eq({ row: 0, col: 4 })
+  end
+
+  it "keeps the active window point synchronized with routed edits" do
+    application.startup
+
+    application.handle_event(Roded::Event.new(:key, { key: "x" }))
+
+    expect(application.current_window.point).to eq({ row: 0, col: 1 })
+    expect(application.current_buffer.cursor_pos).to eq({ row: 0, col: 1 })
+  end
+
   it "opens a file and renders the loaded buffer" do
     Tempfile.create("roded-open") do |file|
       file.write("alpha\nbeta\n")

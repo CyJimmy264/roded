@@ -6,7 +6,7 @@ module Roded
     include FileOperations
     include CloseOperations
 
-    attr_reader :focus, :minibuffer, :kill_ring
+    attr_reader :focus, :minibuffer, :kill_ring, :current_window
     SYSTEM_EVENTS = %i[quit signal frontend_eof frontend_failure].freeze
 
     def initialize
@@ -63,6 +63,11 @@ module Roded
 
     def add_window(window)
       @windows << window
+      @current_window ||= window
+    end
+
+    def windows
+      @windows.dup.freeze
     end
 
     def set_status_bar(status_bar)
@@ -115,9 +120,15 @@ module Roded
       return request_quit(force: true) if SYSTEM_EVENTS.include?(event.type)
       return request_quit if event.type == :close_request
 
+      window_before = @current_window
+      buffer_before = current_buffer
+      buffer_before.cursor_pos = window_before.point if window_before && buffer_before
       @active_source_id = event.payload.fetch(:source_id, :default)
       routed_event = route_input_event(event)
       @command_handler.handle(routed_event) if routed_event
+      if window_before && @current_window.equal?(window_before) && current_buffer.equal?(buffer_before)
+        window_before.point = buffer_before.cursor_pos
+      end
     ensure
       @active_source_id = nil
     end
@@ -142,7 +153,7 @@ module Roded
     end
 
     def current_buffer
-      @current_buffer || @buffers.first
+      @current_window&.buffer || @current_buffer || @buffers.first
     end
 
     def buffers
@@ -236,12 +247,16 @@ module Roded
       buffer.file_revision = result.revision
       add_buffer(buffer)
       @current_buffer = buffer
+      @current_window.buffer = buffer if @current_window
+      buffer.cursor_pos = @current_window.point if @current_window
       @frontends.each { |frontend| frontend.render(buffer) }
       display_message("File '#{result.path}' opened.")
     end
 
     def activate_buffer(buffer, message: nil)
       @current_buffer = buffer
+      @current_window.buffer = buffer if @current_window
+      buffer.cursor_pos = @current_window.point if @current_window
       @frontends.each { |frontend| frontend.render(buffer) }
       display_message(message) if message
     end
@@ -250,8 +265,7 @@ module Roded
       return if @buffers.empty?
 
       index = @buffers.index(current_buffer) || 0
-      @current_buffer = @buffers[(index + direction) % @buffers.length]
-      @frontends.each { |frontend| frontend.render(@current_buffer) }
+      activate_buffer(@buffers[(index + direction) % @buffers.length])
     end
 
     def main_loop

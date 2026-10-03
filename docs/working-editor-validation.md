@@ -156,6 +156,18 @@ File save здесь сохраняет текстовое представле�
 - C-w/M-w/C-y, выбор KillRing через picker и region state в окне ещё не
   реализованы; весь edit-model этап остаётся открытым.
 
+## 2026-10-03 — модель позиции окна
+
+- `Window` теперь хранит собственные point, mark, top line и left column, а
+  также запоминает позиции при переключении buffers. Application использует
+  point активного окна для routed edits; `Buffer#cursor_pos` пока остаётся
+  временным совместимым зеркалом для текущего однопанельного UI.
+- Проверки: **91 examples, 0 failures**. Specs покрывают две модели view на
+  общем buffer, независимые point/mark, clamp и восстановление позиции после
+  buffer switching. RuboCop по `window.rb` и `window_spec.rb` чистый.
+- Несколько окон ещё не переключаются/не отображаются; edit deltas пока не
+  преобразуют point/mark других views. Этапы 2 и 5 остаются открытыми.
+
 ## 2026-10-03 — этап 2, подэтап: source routing и загрузка core
 
 - `bundle exec rspec`: **45 examples, 0 failures**.
