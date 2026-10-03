@@ -49,6 +49,20 @@ RSpec.describe Roded::Application do
     end
   end
 
+  it "synchronizes a late frontend to the active buffer" do
+    Tempfile.create("roded-late-frontend") do |file|
+      file.write("current")
+      file.flush
+      application.open_file(file.path)
+      late_frontend = FakeFrontend.new
+
+      application.add_frontend(late_frontend)
+
+      expect(late_frontend.buffers).to include(application.current_buffer)
+      expect(late_frontend.renders.last).to eq(application.current_buffer)
+    end
+  end
+
   it "opens and edits an empty file" do
     Tempfile.create("roded-empty") do |file|
       application.open_file(file.path)
@@ -185,6 +199,20 @@ RSpec.describe Roded::Application do
 
     expect(application.current_buffer.cursor_pos).to eq({ row: 4, col: 0 })
     expect(frontend.commands.last).to eq(Roded::Command.new(:render, {}))
+  end
+
+  it "uses the page size of the input source that issued the command" do
+    first = FakeFrontend.new(page_size: 2)
+    second = FakeFrontend.new(page_size: 5)
+    application.instance_variable_set(:@frontends, [first, second])
+    application.instance_variable_set(:@frontend_sources, { first => :first, second => :second })
+    buffer = Roded::Buffer.new("buffer")
+    buffer.lines = (0..8).map(&:to_s)
+    application.add_buffer(buffer)
+
+    application.handle_event(Roded::Event.new(:page_down, { source_id: :second }))
+
+    expect(buffer.cursor_row).to eq(5)
   end
 
   it "treats page up and page down in minibuffer as cursor-to-start/end" do

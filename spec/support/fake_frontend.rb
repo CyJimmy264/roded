@@ -1,13 +1,14 @@
 class FakeFrontend
-  attr_accessor :focus
+  attr_accessor :focus, :page_size
   attr_reader :commands, :messages, :renders, :buffers
 
-  def initialize
+  def initialize(page_size: 3)
     @commands = []
     @messages = []
     @renders = []
     @buffers = []
     @focus = nil
+    self.page_size = page_size
   end
 
   def add_buffer(buffer)
@@ -26,9 +27,6 @@ class FakeFrontend
     renders << buffer
   end
 
-  def page_size
-    3
-  end
 end
 
 class ScriptedFrontend

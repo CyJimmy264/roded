@@ -11,8 +11,6 @@ require_relative "roded/application"
 require_relative "roded/window"
 require_relative "roded/status_bar"
 
-require_relative "roded/frontends/curses"
-
 require_relative "roded/version"
 
 module Roded

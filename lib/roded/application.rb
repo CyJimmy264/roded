@@ -3,13 +3,16 @@ module Roded
   # or the minibuffer depending on current focus.
   class Application
     include Logging
+
     attr_reader :focus, :minibuffer, :kill_ring
+    SYSTEM_EVENTS = %i[quit signal frontend_eof frontend_failure].freeze
 
     def initialize
       @buffers = []
       @windows = []
       @frontends = []
       @frontend_threads = []
+      @frontend_sources = {}
       @event_queue = Queue.new
       @status_bar = nil
       @minibuffer = Minibuffer.new
@@ -54,25 +57,9 @@ module Roded
 
     def add_frontend(frontend)
       @frontends << frontend
-      frontend.keymap = @keymap if frontend.respond_to?(:keymap=)
-      frontend.focus = @focus if frontend.respond_to?(:focus=)
-      @buffers.each { |buffer| frontend.add_buffer(buffer) }
-      thread = Thread.new do
-        loop do
-          event = frontend.get_event
-          unless event
-            push_event(Event.new(:frontend_eof, { frontend: frontend.class.name }))
-            break
-          end
-
-          push_event(event)
-          break if %i[quit frontend_eof frontend_failure].include?(event.type)
-        rescue StandardError => e
-          push_event(Event.new(:frontend_failure, { error: e }))
-          break
-        end
-      end
-      @frontend_threads << thread
+      register_frontend_source(frontend)
+      prepare_frontend(frontend)
+      sync_frontend(frontend)
     end
 
     def broadcast_command(command)
@@ -96,6 +83,7 @@ module Roded
 
     def run
       trap_signals
+      start_frontend_threads
       main_loop
     ensure
       restore_signals
@@ -106,15 +94,13 @@ module Roded
     def handle_event(event)
       logger.debug("handle_event: #{event.type}")
       logger.debug("handle_event: focus: #{@focus}")
-      return request_quit if %i[quit signal frontend_eof frontend_failure].include?(event.type)
+      return request_quit if SYSTEM_EVENTS.include?(event.type)
 
-      if event.type == :key
-        routed = @command_router.route(event.payload[:key])
-        return unless routed
-
-        return handle_event(routed)
-      end
-      @command_handler.handle(event)
+      @active_source_id = event.payload.fetch(:source_id, :default)
+      routed_event = route_input_event(event)
+      @command_handler.handle(routed_event) if routed_event
+    ensure
+      @active_source_id = nil
     end
 
     def process_command(command)
@@ -172,7 +158,8 @@ module Roded
     end
 
     def page_size
-      frontend = @frontends.first
+      frontend = @frontends.find { |candidate| @frontend_sources[candidate] == @active_source_id }
+      frontend ||= @frontends.first
       return 1 unless frontend && frontend.respond_to?(:page_size)
 
       [frontend.page_size.to_i, 1].max
@@ -236,6 +223,66 @@ module Roded
     rescue StandardError => e
       logger.error("Editor runtime failed: #{e.class}: #{e.message}")
       raise
+    end
+
+    def start_frontend_threads
+      @frontends.each do |frontend|
+        source_id = @frontend_sources.fetch(frontend)
+        @frontend_threads << Thread.new { read_frontend_events(frontend, source_id) }
+      end
+    end
+
+    def read_frontend_events(frontend, source_id)
+      loop { break unless read_and_push_frontend_event(frontend, source_id) }
+    rescue StandardError => e
+      push_event(Event.new(:frontend_failure, { error: e, source_id: }))
+    end
+
+    def read_and_push_frontend_event(frontend, source_id)
+      event = frontend.get_event
+      return push_event(Event.new(:frontend_eof, { frontend: frontend.class.name })) && false unless event
+
+      push_event(Event.new(event.type, event.payload.merge(source_id:)))
+      !SYSTEM_EVENTS.include?(event.type)
+    end
+
+    def register_frontend_source(frontend)
+      source_id = frontend.respond_to?(:input_source_id) ? frontend.input_source_id : frontend.object_id
+      @frontend_sources[frontend] = source_id
+    end
+
+    def prepare_frontend(frontend)
+      frontend.keymap = @keymap if frontend.respond_to?(:keymap=)
+      frontend.focus = @focus if frontend.respond_to?(:focus=)
+      @buffers.each { |buffer| frontend.add_buffer(buffer) }
+    end
+
+    def sync_frontend(frontend)
+      frontend.render(current_buffer) if current_buffer && frontend.respond_to?(:render)
+      return unless @focus == :minibuffer && frontend.respond_to?(:handle_command)
+
+      frontend.handle_command(Command.new(:minibuffer_render, minibuffer_snapshot))
+    end
+
+    def minibuffer_snapshot
+      { prompt: @minibuffer.prompt, text: @minibuffer.text, cursor: @minibuffer.cursor }
+    end
+
+    def route_input_event(event)
+      return event unless event.type == :key
+
+      routed = @command_router.route(event.payload[:key], source_id: @active_source_id)
+      return unless routed
+      if routed.type == :prefix_pending
+        display_message("#{routed.payload[:prefix]} …")
+        return
+      end
+      if routed.payload[:invalid_sequence]
+        display_message("Unknown key sequence: #{routed.payload[:invalid_sequence]}")
+        return
+      end
+
+      routed
     end
 
     def display_message(message)

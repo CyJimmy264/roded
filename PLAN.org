@@ -70,8 +70,8 @@ file roundtrip не теряет текст. Коммит этапа до шир
 * Этап 2 — P1: общий core contract, session/views и публикация UI
 
 - [ ] Разделить InputEvent, EditorCommand и UI update; сохранить source/view id.
-- [ ] Pending key sequence хранится по независимому input stream.
-- [ ] Dynamic key sequence resolution поддерживает C-x/C-c/Meta и user prefixes;
+- [X] Pending key sequence хранится по независимому input stream.
+- [X] Dynamic key sequence resolution поддерживает C-x/C-c/Meta и user prefixes;
   cancel/invalid sequence имеют явное поведение.
 - [ ] Ввести единый реестр/контракт команд для keys, M-x и Ruby API.
 - [ ] Выделить editor state/session; handler не зависит от всего Application.
@@ -83,10 +83,11 @@ file roundtrip не теряет текст. Коммит этапа до шир
 - [ ] KillRing обновляется из edit result, Buffer не получает KillRing dependency.
 - [ ] Единая публикация UI-state заменяет observers/direct-render/broadcast mix;
   insert/backspace/delete/newline продолжают перерисовываться.
-- [ ] Frontend получает initial active view/minibuffer/picker state при подключении.
+- [X] Frontend получает initial active buffer/minibuffer state при подключении;
+  picker state появится с общей picker model.
 - [ ] Cross-thread snapshots независимы и immutable; ядро — single writer.
 - [ ] Geometry policy использует именно активный source/view и учитывает overlays.
-- [ ] Core загружается без require curses/qt; launcher подключает выбранный adapter.
+- [X] Core загружается без require curses/qt; launcher подключает выбранный adapter.
 - [ ] Проверить два input streams, late frontend, два view одного buffer и edits.
 
 Критерий: headless core управляет views/commands; rendering имеет один путь,

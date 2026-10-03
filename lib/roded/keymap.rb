@@ -63,5 +63,10 @@ module Roded
 
       { type: entry[:type], payload: entry[:payload] || {} }
     end
+
+    def prefix?(key)
+      prefix = "#{key} "
+      @map.keys.any? { |binding| binding.start_with?(prefix) }
+    end
   end
 end

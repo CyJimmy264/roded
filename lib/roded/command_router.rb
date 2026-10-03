@@ -2,28 +2,18 @@ module Roded
   class CommandRouter
     def initialize(keymap)
       @keymap = keymap
-      @pending_prefix = nil
+      @pending_prefixes = {}
     end
 
-    def route(key)
+    def route(key, source_id: :default)
       return if key.nil?
 
-      if @pending_prefix
-        prefix = @pending_prefix
-        @pending_prefix = nil
-        combined = prefix == "M" ? "M-#{key}" : "#{prefix} #{key}"
-        mapped = resolve(combined)
-        return mapped if mapped
-      end
+      pending = @pending_prefixes[source_id]
+      return route_pending(pending, key, source_id) if pending
 
-      if key == "C-x"
-        @pending_prefix = "C-x"
-        return Event.new(:noop, {})
-      end
-
-      if key == "Esc"
-        @pending_prefix = "M"
-        return Event.new(:noop, {})
+      if key == "Esc" || @keymap&.prefix?(key)
+        @pending_prefixes[source_id] = [key]
+        return Event.new(:prefix_pending, { prefix: key })
       end
 
       mapped = resolve(key)
@@ -35,6 +25,20 @@ module Roded
     end
 
     private
+
+    def route_pending(pending, key, source_id)
+      @pending_prefixes.delete(source_id)
+      combined = pending.first == "Esc" ? "M-#{key}" : (pending + [key]).join(" ")
+      mapped = resolve(combined)
+      return mapped if mapped
+
+      if pending.first != "Esc" && @keymap&.prefix?(combined)
+        @pending_prefixes[source_id] = pending + [key]
+        return Event.new(:prefix_pending, { prefix: combined })
+      end
+
+      Event.new(:noop, { invalid_sequence: combined })
+    end
 
     def resolve(key)
       mapping = @keymap&.resolve(key)
