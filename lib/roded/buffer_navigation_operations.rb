@@ -25,6 +25,7 @@ module Roded
     end
 
     def page_size
+      return @active_page_size if @active_page_size
       return 1 if @frontends.empty?
 
       frontend = @frontends.find { |candidate| @frontend_sources[candidate] == @active_source_id }

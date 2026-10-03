@@ -1002,9 +1002,19 @@ File save здесь сохраняет текстовое представле�
   `alpha\n`, перешёл `M->` в пустую строку, ввёл `x` и Space, сохранил
   `alpha\nx ` и закрыл редактор. Smoke использовал private `XDG_CONFIG_HOME`,
   не подключался к пользовательскому DISPLAY. Screenshot
-  `/tmp/roded-qt-final-newline.rd4Ad5/final-newline-caret.png` показывает block
+  `/tmp/roded-qt-final-newline.bc1OHT/final-newline-caret.png` показывает block
   caret на второй строке, modeline `2:1`.
-- Полный `script/qt_live_smoke.sh` также прошёл под отдельным Xvfb:
-  `/tmp/roded-qt-live-smoke.gkSVjw`, 17 key, 1 wheel и 12 mouse-selection
-  events, включая Menu/Alt+Menu pickers, resize и выход. Smoke harness теперь
-  проверяет первый UI по его логу и no-argument scratch по отдельному логу.
+- Полный `script/qt_live_smoke.sh` после передачи page geometry также прошёл под
+  отдельным Xvfb: `/tmp/roded-qt-live-smoke.qqOet4`, 17 key, 1 wheel и 12
+  mouse-selection events, включая Menu/Alt+Menu pickers, resize и выход. Smoke
+  harness проверяет первый UI по его логу и no-argument scratch по отдельному.
+
+## 2026-10-03 — Qt page geometry передаётся из GUI-thread
+
+- Page movement key events измеряют размер текстового viewport активной Qt
+  pane до передачи в core. `Application#page_size` использует этот размер на
+  время команды, поэтому core не читает Qt scrollbar из своего потока.
+- Application regression проверяет page size в event payload и падает, если
+  core обращается к frontend. Qt input integration сравнивает `C-v` с реальным
+  page size pane. Полный suite: **253 examples, 0 failures**; RuboCop для
+  затронутых Ruby/spec файлов: **0 offenses**.

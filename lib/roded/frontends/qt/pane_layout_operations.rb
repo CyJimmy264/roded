@@ -2,6 +2,14 @@ module Roded
   module Frontends
     # Coordinates pane widgets with the current core window tree.
     module QtPaneLayoutOperations
+      def page_size(window_id = @active_window_id)
+        pane = @panes[window_id] || @panes[@active_window_id] || @panes[:single]
+        return 1 unless pane
+
+        scroll_bar = pane.editor.vertical_scroll_bar
+        [scroll_bar.page_step / [scroll_bar.single_step, 1].max, 1].max
+      end
+
       private
 
       def prepare_panes(records)

@@ -17,6 +17,7 @@ module Roded
       process_frontend_input(event)
     ensure
       @active_source_id = nil
+      @active_page_size = nil
     end
 
     private
@@ -48,8 +49,7 @@ module Roded
       refresh_snapshot = @focus == :buffer
       window_before = @current_window
       buffer_before = current_buffer
-      sync_buffer_cursor_to_window(window_before, buffer_before)
-      @active_source_id = event.payload.fetch(:source_id, :default)
+      prepare_input_context(event, window_before, buffer_before)
       routed_event = dispatch_routed_input(event)
       sync_window_cursor_to_buffer(window_before, buffer_before)
       broadcast_command(Command.new(:render, {})) if snapshot_refresh_required?(routed_event, refresh_snapshot)
@@ -71,6 +71,12 @@ module Roded
 
     def sync_buffer_cursor_to_window(window, buffer)
       buffer.cursor_pos = window.point if window && buffer
+    end
+
+    def prepare_input_context(event, window, buffer)
+      sync_buffer_cursor_to_window(window, buffer)
+      @active_source_id = event.payload.fetch(:source_id, :default)
+      @active_page_size = [event.payload[:page_size].to_i, 1].max if event.payload.key?(:page_size)
     end
 
     def dispatch_routed_input(event)

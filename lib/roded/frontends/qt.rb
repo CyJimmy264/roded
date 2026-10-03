@@ -28,7 +28,7 @@ module Roded
         @clipboard = QtClipboardBridge.new
         @view = QtEditorWindow.new
         @ui_dispatcher = QtUiDispatcher.new(@view, @qt_application, @clipboard)
-        @input_router = QtInputRouter.new(@application, QtKeyTranslator.new, @clipboard, input_source_id)
+        @input_router = create_input_router
         @input_router.connect(@view)
         @ui_dispatcher.start
       end
@@ -90,12 +90,19 @@ module Roded
         @ui_dispatcher.post(:quit)
       end
 
-      def page_size(_window_id = nil)
-        scroll_bar = @view.editor.vertical_scroll_bar
-        [scroll_bar.page_step / [scroll_bar.single_step, 1].max, 1].max
-      end
+      def page_size(window_id = nil) = @view.page_size(window_id)
 
       private
+
+      def create_input_router
+        QtInputRouter.new(
+          @application,
+          QtKeyTranslator.new,
+          @clipboard,
+          input_source_id,
+          page_size_provider: ->(window_id) { @view.page_size(window_id) }
+        )
+      end
 
       def render_initial_layout
         @view.render_layout(@application.editor_snapshot)

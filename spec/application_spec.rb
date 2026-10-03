@@ -932,6 +932,18 @@ RSpec.describe Roded::Application do
     expect(buffer.cursor_row).to eq(5)
   end
 
+  it "uses the page size captured with the input event without calling the frontend" do
+    application.startup
+    buffer = application.current_buffer
+    buffer.lines = (0..20).map(&:to_s)
+    application.current_window.point = { row: 0, col: 0 }
+    expect(frontend).not_to receive(:page_size)
+
+    application.handle_event(Roded::Event.new(:page_down, { page_size: 4 }))
+
+    expect(application.current_window.point).to eq(row: 4, col: 0)
+  end
+
   it "treats page up and page down in minibuffer as cursor-to-start/end" do
     application.start_minibuffer(:command, "M-x ")
     %w[a b c].each do |char|

@@ -37,7 +37,10 @@ module Roded
 
       def enqueue_key_event(key, payload, application, source_id)
         application.push_event(
-          Event.new(:key, { key:, source_id:, window_id: payload[:window_id] })
+          Event.new(
+            :key,
+            { key:, source_id:, window_id: payload[:window_id], page_size: payload[:page_size] }
+          )
         )
         :consume
       end

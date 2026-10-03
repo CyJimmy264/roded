@@ -132,6 +132,26 @@ RSpec.describe "Qt space and final newline through editor session" do
   end
 end
 
+RSpec.describe "Qt page geometry through editor session" do
+  include_context "Qt input integration lifecycle"
+  include QtInputIntegrationSpecHelpers
+
+  it "captures the active pane page size on the GUI input path" do
+    application, frontend = build_qt_editor((1..200).map { |number| "line #{number}" })
+    @frontends << frontend
+    window_id = application.current_window.object_id
+    page_size = frontend.view.page_size(window_id)
+
+    deliver_qt_payload(
+      application, frontend,
+      key: Qt::Key_V, modifiers: Qt::ControlModifier, text: "\u0016", window_id:
+    )
+
+    expect(page_size).to be > 1
+    expect(application.current_window.point).to eq(row: page_size, col: 0)
+  end
+end
+
 RSpec.describe "Qt wheel input through editor session" do
   include_context "Qt input integration lifecycle"
   include QtInputIntegrationSpecHelpers

@@ -2,11 +2,12 @@ module Roded
   module Frontends
     # Converts native Qt callbacks into source-tagged core input events.
     class QtInputRouter
-      def initialize(application, key_translator, clipboard, source_id)
+      def initialize(application, key_translator, clipboard, source_id, page_size_provider: nil)
         @application = application
         @key_translator = key_translator
         @clipboard = clipboard
         @source_id = source_id
+        @page_size_provider = page_size_provider
         @wheel_remainder = 0
         @selection_anchor = nil
       end
@@ -21,7 +22,9 @@ module Roded
 
       def enqueue_key(payload)
         key = @key_translator.translate(payload)
-        @clipboard.dispatch_key(key, payload, application: @application, source_id: @source_id)
+        @clipboard.dispatch_key(
+          key, with_page_size(payload), application: @application, source_id: @source_id
+        )
       end
 
       def enqueue_wheel(payload)
@@ -44,6 +47,12 @@ module Roded
       end
 
       private
+
+      def with_page_size(payload)
+        return payload unless @page_size_provider
+
+        payload.merge(page_size: @page_size_provider.call(payload[:window_id]).to_i)
+      end
 
       def close_requested
         @application.push_event(Event.new(:close_request, {}))
