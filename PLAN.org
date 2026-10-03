@@ -185,7 +185,10 @@ replace обратимы. Provider/history/preview не становятся cur
 - [X] Ripper byte columns преобразуются в core character columns; offsets после
   emoji и кириллицы проверены.
 - [ ] Tokenizer errors не рушат loop; frontend Unicode geometry/highlights
-  согласованы; проверить реальные curses colors, region/search и monochrome.
+  согласованы.
+- [X] Настоящий xterm-256color PTY показывает Ruby keyword/number/comment
+  spans цветом.
+- [ ] Проверить region/search colors и monochrome fallback.
 - [ ] Проверены реальные curses colors, region/search и monochrome fallback.
 
 Критерий: обязательные modes дают полезную устойчивую подсветку.

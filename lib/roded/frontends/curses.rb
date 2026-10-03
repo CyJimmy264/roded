@@ -301,7 +301,7 @@ module Roded
           span[:start] <= first + left_column && span[:finish] >= last + left_column
         end
         selected = selection && first + left_column >= selection.first && last + left_column <= selection.last
-        writer = -> { write_at(row, x + first, text[first...last], width - first) }
+        writer = proc { write_at(row, x + first, text[first...last], width - first) }
         if selected
           @screen.attron(::Curses::A_REVERSE, &writer)
         elsif token && (pair = @color_pairs[token[:category]])

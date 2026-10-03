@@ -15,7 +15,21 @@
   spec/syntax_snapshot_spec.rb` — **9 examples, 0 failures**; полный suite
   проверен отдельно в текущей среде.
 - Это подтверждает core character offsets; UTF-16 offsets внутри Qt document и
-  реальные curses color/selection проверки остаются открытыми.
+  curses region/search colors остаются открытыми.
+
+## 2026-10-03 — curses token colors в настоящем PTY
+
+- Запуск: `bundle exec bin/roded /tmp/roded-curses-colors.rb` в PTY 24×80,
+  `TERM=xterm-256color`, Ruby 3.4.2; файл содержит Ruby keyword, число и comment.
+  Ввод `C-x 3` вызывает split и полный snapshot render, затем `C-x C-c` завершает
+  приложение с exit code 0.
+- Захваченный xterm output содержит SGR `35m` (keyword), `33m` (number) и `37m`
+  (comment), а также reverse-video modeline; curses восстановил terminal при
+  выходе. Smoke обнаружил, что binding передаёт аргумент в block у `attron`,
+  который вызывал `ArgumentError` для строгого lambda; заменён на обычный proc.
+  Новый spec воспроизводит контракт `attron` и проходит.
+- Остаются проверками region/search colors, monochrome fallback и физические
+  curses сценарии с paste/resize.
 
 ## 2026-10-03 — Qt clipboard paste через общий core event
 
