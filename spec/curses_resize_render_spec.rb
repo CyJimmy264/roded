@@ -18,7 +18,7 @@ RSpec.describe Roded::Frontends::Curses do
     snapshot = { tree: { window_id: 1 }, active_window_id: 1, windows: [item] }
     rows = []
     modelines = []
-    allow(frontend).to receive(:draw_buffer_line) { |*arguments| rows << arguments[3] }
+    allow(frontend).to receive(:draw_buffer_line) { |context| rows << context.screen_row }
     allow(frontend).to receive(:draw_modeline) { |_item, row, *_arguments| modelines << row }
 
     frontend.send(:render_layout, snapshot)

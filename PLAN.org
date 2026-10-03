@@ -284,7 +284,7 @@ versions/backend/наблюдения/screenshots. OS-reserved shortcuts отм�
 - [ ] Проверить 10 000 строк, десятки buffers, real paste/resize/interrupt scenarios.
 - [ ] Обновить README: install/start обоих UI, keys, config, windows/modes/picker/REPL.
 - [ ] Docs отделяют реализованное от roadmap; logging полезно и не портит UI.
-- [ ] Убрать временный lint baseline; green =bundle exec rake=.
+- [X] Убрать временный lint baseline; green =bundle exec rake=.
 - [ ] Validation log содержит воспроизводимые commands/results, runtime UI evidence
   и оставшиеся ограничения; обязательные features не скрыты под TODO.
 - [ ] Основные этапы закоммичены; состояние tree и commit list проверены.

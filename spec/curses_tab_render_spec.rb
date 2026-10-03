@@ -11,6 +11,9 @@ RSpec.describe Roded::Frontends::Curses do
     item = { tokens: nil, mark: nil, point: { row: 0, col: 0 }, highlight: nil, lines: ["a\tb"] }
 
     expect(screen).to receive(:addstr).with("a b")
-    frontend.send(:draw_buffer_line, item, "a\tb", 0, 0, 0, 20, 0)
+    context = Roded::Frontends::CursesRenderContext::BufferLine.new(
+      item:, line: "a\tb", buffer_row: 0, screen_row: 0, left: 0, width: 20, left_column: 0
+    )
+    frontend.send(:draw_buffer_line, context)
   end
 end

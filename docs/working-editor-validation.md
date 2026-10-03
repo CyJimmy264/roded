@@ -1049,3 +1049,28 @@ File save здесь сохраняет текстовое представле�
 - `script/qt_live_smoke.sh` повторно прошёл под Xvfb после coalescing:
   `/tmp/roded-qt-live-smoke.u8EkFU` — key, wheel, mouse-selection, split,
   Menu/Alt+Menu, resize, save и shutdown сценарии завершились успешно.
+
+## 2026-10-03 — curses rendering modules and live quit routing
+
+- Разделены curses input, viewport, layout, overlays, commands, color setup,
+  modeline, line styling and styled-segment drawing into focused modules.
+  Shared immutable drawing contexts replace positional bundles of coordinates.
+- Live PTY check exposed that the `quit` command handler received its payload
+  although `wake_getch` accepted no arguments. The wake method now accepts that
+  unused payload; `spec/curses_command_spec.rb` covers the route.
+- `script/curses_live_smoke.rb` запускает настоящий `bin/roded` в private PTY с
+  временными XDG paths, отправляет `C-n` и `C-x C-c`, проверяет `move_cursor`,
+  quit и exit без runtime error. Результат: pass; лог
+  `/tmp/roded-curses-smoke.20261003-2-1w9sjx/roded.log`. Пользовательский
+  terminal/display не используется.
+- После исправления: `bundle exec rake` — **260 examples, 0 failures**;
+  RuboCop — **144 files, 0 offenses**.
+- Последовательно, в изолированных Xvfb, прошли `script/qt_live_smoke.sh`
+  (`/tmp/roded-qt-live-smoke.ONE3Rx`, включая no-argument empty scratch) и
+  `script/qt_final_newline_smoke.sh`
+  (`/tmp/roded-qt-final-newline.pJSPuN`). Empty scratch screenshot показывает
+  активную строку во всю ширину и видимый block caret; final-newline smoke
+  проверил ввод Space и сохранение. Оба запуска не использовали desktop DISPLAY.
+- Первый параллельный запуск двух xdotool/Xvfb smoke дал нестабильные результаты
+  ввода; последовательный запуск обоих сценариев прошёл. Запускать эти два
+  desktop smoke последовательно.

@@ -30,18 +30,20 @@ module Roded
         rectangle = pane_rectangle(snapshot, item[:id])
         return unless rectangle
 
-        pane_geometry = rectangle.drop(1)
-        cursor_geometry(old_item, item, pane_geometry)
+        cursor_geometry(old_item, item, rectangle)
       end
 
       def pane_rectangle(snapshot, active_id)
         area_height = [@screen.maxy - 1, 1].max
         rectangles = @frontend.send(:layout_rectangles, snapshot[:tree], 0, 0, @screen.maxx, area_height)
-        rectangles.find { |id, _left, _top, _width, _height| id == active_id }
+        rectangles.find { |rectangle| rectangle.window_id == active_id }
       end
 
-      def cursor_geometry(old_item, item, geometry)
-        left, top, width, height = geometry
+      def cursor_geometry(old_item, item, rectangle)
+        left = rectangle.left
+        top = rectangle.top
+        width = rectangle.width
+        height = rectangle.height
         text_height = [height - 1, 0].max
         old_first, first = cursor_origins(old_item, item, text_height)
         return unless old_first == first && text_height.positive?
@@ -77,12 +79,15 @@ module Roded
         screen_row = context[:top] + row - context[:first]
         return unless screen_row.between?(context[:top], context[:top] + context[:text_height] - 1)
 
-        @frontend.send(:draw_buffer_line, *row_arguments(context, row, screen_row))
+        @frontend.send(:draw_buffer_line, row_arguments(context, row, screen_row))
       end
 
       def row_arguments(context, row, screen_row)
         item = context[:item]
-        [item, item[:lines][row].to_s, row, screen_row, context[:left], context[:width], context[:left_column]]
+        CursesRenderContext::BufferLine.new(
+          item:, line: item[:lines][row].to_s, buffer_row: row, screen_row:, left: context[:left],
+          width: context[:width], left_column: context[:left_column]
+        )
       end
 
       def place_cursor(context)

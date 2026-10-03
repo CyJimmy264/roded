@@ -1,7 +1,7 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-- `lib/roded` holds the core editor classes (Application, Buffer, Window, StatusBar, Minibuffer, Event/Command, Logging); frontends live in `lib/roded/frontends` (currently curses).
+- `lib/roded` holds the core editor classes (Application, Buffer, Window, StatusBar, Minibuffer, Event/Command, Logging); curses and Qt frontends live in `lib/roded/frontends`.
 - Binaries: `bin/roded` entrypoint, `bin/console` for IRB sandboxing, `bin/setup` for bootstrapping.
 - Tests sit in `spec` with shared config in `spec/spec_helper.rb`; default Rake task runs tests and lint.
 - Packaging/metadata lives in `roded.gemspec`; docs in `docs/`; built gems accumulate in `pkg/`.
@@ -29,6 +29,7 @@
   `XDG_CONFIG_HOME`; do not launch them against the user's desktop session.
 - Cover command routing and buffer mutations when adding features; use test doubles for frontends when possible.
 - For Qt visual regressions, also run a live-widget smoke check modeled on the Qt gem's `examples/development_ordered_demos/02_live_layout_console.rb`: keep the `QApplication` and widgets referenced, perform widget changes on the GUI thread, and pump `QApplication.process_events` while the check runs. Verify the visible editor, caret/modeline, and scrolling (a changed `to_plain_text` value alone does not prove the frame updated); capture the UI in an isolated Xvfb session when a screenshot is useful. This is a diagnostic/test harness pattern, not a requirement to replace the application's event loop.
+- For a live curses input/quit check, run `script/curses_live_smoke.rb`. It starts the real binary in a private PTY with temporary XDG config/cache paths and sends `C-n`, `C-x C-c`; extend the key sequence for the behavior under investigation. It does not use the desktop display or terminal.
 
 ## Commit & Pull Request Guidelines
 - Commit messages short, imperative, and scoped (`Add cursor redraw command`); reserve `--wip-- [skip ci]` only for temporary checkpoints.

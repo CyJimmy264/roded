@@ -16,12 +16,15 @@ RSpec.describe Roded::Frontends::Curses do
     allow(screen).to receive(:setpos)
     frontend.instance_variable_set(:@screen, screen)
     rendered_rows = []
-    allow(frontend).to receive(:draw_buffer_line) do |_record, line, buffer_row, screen_row, *_|
-      rendered_rows << [line, buffer_row, screen_row]
+    allow(frontend).to receive(:draw_buffer_line) do |context|
+      rendered_rows << [context.line, context.buffer_row, context.screen_row]
     end
     allow(frontend).to receive(:draw_modeline)
 
-    frontend.send(:draw_window, item, 0, 0, 20, 4)
+    rectangle = Roded::Frontends::CursesRenderContext::Rectangle.new(
+      window_id: 1, left: 0, top: 0, width: 20, height: 4
+    )
+    frontend.send(:draw_window, item, rectangle)
 
     expect(rendered_rows).to include(["", 1, 1])
     expect(screen).to have_received(:setpos).with(1, 0)

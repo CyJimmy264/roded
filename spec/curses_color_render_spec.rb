@@ -13,6 +13,10 @@ RSpec.describe Roded::Frontends::Curses do
     frontend.instance_variable_set(:@color_pairs, { keyword: 3 })
     token = { start: 0, finish: 3, category: :keyword }
 
-    frontend.send(:write_styled_segment, nil, 0, 0, "def answer", 0, 3, 10, [token], nil, nil, 0, 0)
+    segment = Roded::Frontends::CursesRenderContext::StyledSegment.new(
+      row: 0, left: 0, text: "def answer", first_offset: 0, last: 3, width: 10, tokens: [token],
+      selection: nil, highlight: nil, left_column: 0, initial_column: 0
+    )
+    frontend.send(:write_styled_segment, segment)
   end
 end
