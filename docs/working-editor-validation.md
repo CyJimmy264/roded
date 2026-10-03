@@ -824,3 +824,14 @@ File save здесь сохраняет текстовое представле�
 - Полный RSpec: **208 examples, 0 failures**. `command_handler.rb` и
   `command_handler_event_maps.rb` проходят RuboCop без замечаний. Полный
   RuboCop снизился с **77 до 63 offenses**; выпускной gate пока не зелёный.
+
+## 2026-10-03 — безопасная среда для Qt specs
+
+- RSpec по умолчанию выбирает `QT_QPA_PLATFORM=offscreen` и задаёт
+  `XDG_CONFIG_HOME` внутри системного temp directory. При явных значениях из
+  окружения сохраняются пользовательские overrides. Полный `bundle exec rake`
+  больше не открывает modal предупреждение и не пытается писать Qt config в
+  `~/.config`.
+- Clipboard bridge specs: **4 examples, 0 failures**; полный RSpec:
+  **220 examples, 0 failures**. RuboCop debt сейчас **55 offenses**, поэтому
+  общий rake gate ещё красный.
