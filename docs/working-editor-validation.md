@@ -942,3 +942,9 @@ File save здесь сохраняет текстовое представле�
   открыли соответствующие core project/buffer pickers и отменились `C-g`.
   Smoke проверяет эти события и picker renders; пользовательский DISPLAY не
   используется. Проверка физической клавиши Menu на desktop остаётся отдельной.
+- Визуальная проверка показала, что фон активной строки на `QTextEdit` должен
+  быть задан форматированием всего paragraph block: теперь приглушённый фон
+  проходит по всей ширине редактора и виден также на строке с текстом.
+  Скриншот `/tmp/roded-qt-live-smoke.1Bgiul/after-edit-save.png`; связанные
+  Qt editor/mouse specs: **19 examples, 0 failures**; RuboCop для двух
+  изменённых Ruby-файлов: **0 offenses**. Xvfb smoke также прошёл.

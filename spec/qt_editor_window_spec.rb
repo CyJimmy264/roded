@@ -321,7 +321,7 @@ RSpec.describe Roded::Frontends::QtEditorWindow, "visible caret" do
     QApplication.process_events
 
     expect(view.editor.to_html).to include("#61afef")
-    expect(view.editor.to_html).to include("background-color:#30343d")
+    expect(view.editor.to_html).to include("background-color:#343a46")
     expect(view.editor.to_html).to include("background-color:#61afef")
     expect(view.editor.q_inspect[:properties][:cursorWidth]).to eq(2)
     expect(view.editor.height).to be > 0

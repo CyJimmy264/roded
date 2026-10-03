@@ -11,8 +11,8 @@ module Roded
       end
 
       def render
-        content = @lines.each_with_index.map { |line, row| render_line(line, row) }.join("<br>")
-        "<pre style=\"white-space: pre; font-family: monospace; margin: 0;\">#{content}</pre>"
+        blocks = @lines.each_with_index.map { |line, row| render_block(line, row) }.join
+        "<div style=\"white-space: pre; font-family: monospace; margin: 0;\">#{blocks}</div>"
       end
 
       private
@@ -29,6 +29,11 @@ module Roded
         boundaries.each_cons(2).map do |first, last|
           render_segment(line, row, first, last)
         end.join
+      end
+
+      def render_block(line, row)
+        background = @snapshot[:point]&.fetch(:row) == row ? "background-color: #343a46;" : ""
+        "<p style=\"margin: 0; padding: 0; white-space: pre; #{background}\">#{render_line(line, row)}</p>"
       end
 
       def cursor_column_for(row, line_length)
@@ -64,13 +69,7 @@ module Roded
       end
 
       def segment_style(line, row, first, last)
-        token_style(row, first, last) + current_line_style(row) +
-          overlay_style(line, row, first, last) + caret_style(line, row, first, last)
-      end
-
-      def current_line_style(row)
-        point = @snapshot[:point]
-        point && point[:row] == row ? "background-color: #30343d;" : ""
+        token_style(row, first, last) + overlay_style(line, row, first, last) + caret_style(line, row, first, last)
       end
 
       def token_style(row, first, last)
