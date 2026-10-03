@@ -47,6 +47,8 @@ RSpec.describe Roded::Buffer do
       expect(buffer.undo).to be(true)
       expect(buffer.to_s).to eq("alpha\n")
       expect(buffer.cursor_pos).to eq({ row: 1, col: 0 })
+      expect(buffer.redo).to be(true)
+      expect(buffer.to_s).to eq("alpha\nx")
     end
 
     it "adds another blank row when newline is inserted at the final row" do
@@ -69,6 +71,10 @@ RSpec.describe Roded::Buffer do
       expect(buffer.lines).to eq(["alpha"])
       expect(buffer.to_s).to eq("alpha")
       expect(buffer.cursor_pos).to eq({ row: 0, col: 5 })
+      expect(buffer.undo).to be(true)
+      expect(buffer.to_s).to eq("alpha\n")
+      expect(buffer.redo).to be(true)
+      expect(buffer.to_s).to eq("alpha")
     end
 
     it "rejects mixed line endings and invalid UTF-8" do
@@ -251,6 +257,8 @@ RSpec.describe Roded::Buffer do
       expect(killed).to eq("\n")
       buffer.undo
       expect(buffer.to_s).to eq("abc\n")
+      expect(buffer.redo).to be(true)
+      expect(buffer.to_s).to eq("abc")
     end
   end
 
@@ -265,6 +273,8 @@ RSpec.describe Roded::Buffer do
       expect(buffer.cursor_pos).to eq({ row: 0, col: 1 })
       expect(buffer.undo).to be(true)
       expect(buffer.to_s).to eq("aαb\r\ncd")
+      expect(buffer.redo).to be(true)
+      expect(buffer.to_s).to eq("ad")
     end
 
     it "does not delete a region in a readonly buffer" do

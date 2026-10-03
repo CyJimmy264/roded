@@ -220,6 +220,8 @@ RSpec.describe Roded::Application do
     expect(buffer.lines).to eq(%w[first second])
     expect(buffer.undo).to be(true)
     expect(buffer.to_s).to eq("")
+    expect(buffer.redo).to be(true)
+    expect(buffer.to_s).to eq("first\nsecond")
   end
 
   it "cuts and yanks a marked region with undoable buffer edits" do
@@ -246,6 +248,9 @@ RSpec.describe Roded::Application do
     expect(application.current_window.mark).to be_nil
     expect(buffer.undo).to be(true)
     expect(buffer.to_s).to eq("abcdef")
+    expect(buffer.redo).to be(true)
+    expect(buffer.to_s).to eq("acdef")
+    expect(buffer.undo).to be(true)
 
     application.handle_event(Roded::Event.new(:key, { key: "C-y" }))
     expect(buffer.to_s).to eq("abbcdef")
@@ -268,6 +273,10 @@ RSpec.describe Roded::Application do
     application.handle_event(Roded::Event.new(:key, { key: "Enter" }))
     expect(buffer.to_s).to eq("|first|")
 
+    expect(buffer.undo).to be(true)
+    expect(buffer.to_s).to eq("|second|")
+    expect(buffer.redo).to be(true)
+    expect(buffer.to_s).to eq("|first|")
     expect(buffer.undo).to be(true)
     expect(buffer.to_s).to eq("|second|")
     expect(buffer.undo).to be(true)
@@ -1121,6 +1130,10 @@ RSpec.describe Roded::Application do
     expect(buffer.to_s).to eq("cat dog fox cat")
     expect(buffer.undo).to be(true)
     expect(buffer.to_s).to eq("cat dog cat cat")
+    expect(buffer.redo).to be(true)
+    expect(buffer.to_s).to eq("cat dog fox cat")
+    expect(buffer.redo).to be(true)
+    expect(buffer.to_s).to eq("cat dog fox fox")
   end
 
   it "restores point when query replace is canceled" do

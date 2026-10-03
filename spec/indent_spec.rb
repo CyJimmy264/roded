@@ -16,6 +16,8 @@ RSpec.describe Roded::Application, "indent command" do
     expect(application.current_window.point).to eq(row: 1, col: 3)
     expect(application.undo).to be(true)
     expect(application.current_buffer.to_s).to eq("one\ntwo")
+    expect(application.redo).to be(true)
+    expect(application.current_buffer.to_s).to eq("one\n  two")
   end
 
   it "indents every selected line and keeps the selection positions aligned" do
@@ -32,6 +34,8 @@ RSpec.describe Roded::Application, "indent command" do
     expect(application.current_window.point).to eq(row: 1, col: 4)
     expect(application.undo).to be(true)
     expect(application.current_buffer.to_s).to eq("one\ntwo\nthree")
+    expect(application.redo).to be(true)
+    expect(application.current_buffer.to_s).to eq("  one\n  two\nthree")
   end
 
   it "does not change a readonly buffer" do

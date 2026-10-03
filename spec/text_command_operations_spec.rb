@@ -27,6 +27,8 @@ RSpec.describe Roded::Application, "text commands" do
     expect(application.current_buffer.to_s).to eq("\tfirst\tvalue\n\t\tsecond\n  third")
     expect(application.undo).to be(true)
     expect(application.current_buffer.to_s).to eq("  first  value\n    second\n  third")
+    expect(application.redo).to be(true)
+    expect(application.current_buffer.to_s).to eq("\tfirst\tvalue\n\t\tsecond\n  third")
   end
 
   it "untabifies indentation across the whole buffer when no region is active" do
@@ -37,6 +39,8 @@ RSpec.describe Roded::Application, "text commands" do
     expect(application.current_buffer.to_s).to eq("  first\n   second\ninline  value")
     expect(application.undo).to be(true)
     expect(application.current_buffer.to_s).to eq("\tfirst\n \tsecond\ninline\tvalue")
+    expect(application.redo).to be(true)
+    expect(application.current_buffer.to_s).to eq("  first\n   second\ninline  value")
   end
 
   it "inserts local date and time formats through registered commands" do
@@ -58,6 +62,8 @@ RSpec.describe Roded::Application, "text commands" do
     expect(application.current_buffer.to_s).to eq("  run_task\n  binding.irb")
     expect(application.undo).to be(true)
     expect(application.current_buffer.to_s).to eq("  run_task")
+    expect(application.redo).to be(true)
+    expect(application.current_buffer.to_s).to eq("  run_task\n  binding.irb")
   end
 
   it "does not edit readonly buffers from text commands" do

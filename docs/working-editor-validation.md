@@ -1201,3 +1201,14 @@ File save здесь сохраняет текстовое представле�
   offenses**. The live Qt smoke covered 25 key events, wheel, 12 mouse
   selections, Menu picker, Ctrl+/ undo and C-c r d redo; Qt Widgets **6.11.2**,
   gem `qt` **0.2.0**. The curses smoke passed in a private PTY.
+
+## 2026-10-03 — redo coverage for composite edits
+
+- Added redo assertions for final-newline insertion/removal, CRLF region cuts,
+  paste events, region kill/yank/yank-pop, query replace, current/region indent,
+  tabify/untabify, and `binding.irb` insertion. Existing checks cover insert,
+  delete, backspace, newline split/join, kill-line, grouped typing/paste,
+  saved-state restoration, redo invalidation, and Ruby editor API edits.
+- Targeted Buffer/Application/indent/text-command specs: **118 examples, 0
+  failures**. Full suite and live frontend evidence are recorded with the
+  preceding undo-routing entry.
