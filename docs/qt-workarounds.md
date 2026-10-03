@@ -79,13 +79,37 @@
   `copy`; its public methods have no `text_cursor`/`set_text_cursor`. Cursor
   movement skips a combined grapheme such as `e` plus a combining accent and a
   ZWJ family emoji as single visual units.
-- **Workaround:** map core character columns to the count of complete graphemes
-  before the point, then move Qt's presentation caret using `MoveOperation::Right`.
-  Real-widget tests select and copy the following character after an astral
-  emoji, combining sequence, and family emoji.
-- **Limits:** a core point inside a multi-codepoint grapheme is shown at the
-  preceding Qt caret boundary; the modeline still reports the core point. This
-  does not implement exact UTF-16 placement or mouse-to-core point mapping.
+- **Workaround:** add a unique private-use marker to the rendered HTML at the
+  exact core character boundary. `QTextEdit#find` locates it, and replacing the
+  selected marker with an empty string leaves Qt's native caret at that UTF-16
+  offset. The document is briefly made writable for this presentation-only
+  operation; native undo is disabled and no core text event is emitted. The
+  marker is removed synchronously before Qt paints the widget.
+- **Limits:** this provides exact visual caret placement, including between
+  codepoints inside combining and ZWJ graphemes. Direct QTextCursor APIs remain
+  unavailable, and mouse-to-core point mapping is still open.
+- **Verification:** a real Qt Widgets offscreen `QTextEdit` showed the following
+  combining mark after placing the caret between a base and its combining mark,
+  and showed the remainder of a family emoji after placing the caret after its
+  first codepoint. Carets after astral and complete ZWJ graphemes also map to the
+  expected next character. `spec/qt_editor_window_spec.rb` covers these cases.
+- A previous live smoke used XTest/`xdotool` against the active X11 display.
+  That can inject input into the user's desktop despite filesystem sandboxing
+  and may have caused visible desktop activity. Do not repeat it outside an
+  isolated display such as Xvfb; it did not prove physical keyboard delivery.
 - **Removal:** expose `QTextEdit#textCursor/#setTextCursor` and named cursor
-  operation/mode enums in qt, then translate each core character column to the
-  corresponding UTF-16 document offset and set the native cursor directly.
+  operation/mode enums in qt, then translate each core character column to its
+  UTF-16 offset and set the native cursor directly.
+
+## Disabling Qt text wrapping
+
+- **Location:** `lib/roded/frontends/qt/editor_pane.rb`.
+- **Observed binding:** qt 0.1.9 exposes `QTextEdit#setLineWrapMode(int)` but
+  generates no `QTextEdit::LineWrapMode` enum names.
+- **Reproducer:** `Qt::QTextEdit.constants.grep(/NoWrap|WidgetWidth/)` is empty;
+  `/usr/include/qt6/QtWidgets/qtextedit.h` defines `NoWrap` first in the enum.
+- **Workaround:** pass its public value `0` and render the body with HTML
+  `white-space: pre`; a real offscreen widget exposes horizontal scrolling for a
+  300-character line and scrolls its caret into view.
+- **Removal:** generate the `QTextEdit::LineWrapMode` constants in qt and use
+  `QTextEdit::NoWrap` instead of the numeric enum value.

@@ -94,6 +94,10 @@ RSpec.describe Roded::Frontends::QtEditorWindow, "Unicode syntax rendering" do
     expect(view.editor.to_plain_text).to eq("x = \"🙂\"; 42")
     expect(view.editor.to_html).to include("#d19a66")
   end
+end
+
+RSpec.describe Roded::Frontends::QtEditorWindow, "search rendering" do
+  include_context "Qt editor window lifecycle"
 
   it "renders search ranges with a distinct background color" do
     view = described_class.new
@@ -137,12 +141,13 @@ end
 RSpec.describe Roded::Frontends::QtEditorWindow, "Unicode caret" do
   include_context "Qt editor window lifecycle"
 
-  it "places the core caret before the next Qt grapheme" do
+  it "places the core caret at exact character boundaries inside graphemes" do
     clipboard = Roded::Frontends::QtClipboardBridge.new
     cases = [
       ["a🙂b", 2, "b"],
-      ["e\u0301x", 1, "e\u0301"],
+      ["e\u0301x", 1, "\u0301"],
       ["e\u0301x", 2, "x"],
+      ["👨‍👩‍👧‍👦x", 1, "‍👩‍👧‍👦"],
       ["👨‍👩‍👧‍👦x", 7, "x"]
     ]
 
@@ -155,5 +160,25 @@ RSpec.describe Roded::Frontends::QtEditorWindow, "Unicode caret" do
 
       expect(clipboard.read_text).to eq(expected_next_character)
     end
+  end
+end
+
+RSpec.describe Roded::Frontends::QtEditorWindow, "horizontal scrolling" do
+  include_context "Qt editor window lifecycle"
+
+  it "keeps long lines unwrapped and scrolls the Qt text viewport" do
+    view = described_class.new
+    @views << view
+    view.render_layout(
+      tree: { window_id: 101 }, active_window_id: 101,
+      windows: [{ id: 101, text: "x" * 300, point: { row: 0, col: 299 }, name: "long", active: true }]
+    )
+    view.show
+    view.window.resize(320, 180)
+    QApplication.process_events
+
+    expect(view.editor.to_plain_text).to eq("x" * 300)
+    expect(view.editor.horizontal_scroll_bar.maximum).to be > 0
+    expect(view.editor.horizontal_scroll_bar.value).to be > 0
   end
 end

@@ -662,3 +662,21 @@ File save здесь сохраняет текстовое представле�
   standout, region сохранил reverse-video. Qt offscreen проверил жёлтый фон
   отдельного search range в реальном `QTextEdit`; mark продолжает отображаться
   как отдельное выделение.
+
+## 2026-10-03 — точное положение Qt caret внутри grapheme
+
+- `qt` 0.1.9 не предоставляет `QTextEdit#textCursor/#setTextCursor`. Qt pane
+  кратко вставляет уникальный private-use marker на core character boundary в
+  presentation HTML, находит его штатным `QTextEdit#find`, удаляет выделенный
+  marker и до paint возвращает widget в read-only режим. Undo Qt отключён.
+- Qt Widgets **6.11.2**, реальный offscreen `QTextEdit`: после caret между
+  `e` и combining acute следующий Qt character movement скопировал только
+  combining mark; caret после первого codepoint family emoji оставил справа
+  остаток ZWJ sequence. Проверены также позиции после astral emoji, полного
+  combining sequence и полного family emoji; marker отсутствует в widget text.
+- На том же `QTextEdit` строка в 300 символов оставалась одной строкой и имела
+  горизонтальный scrollbar; caret в конце перемещал scrollbar, resize сохранял
+  прокрутку. Режим `QTextEdit::NoWrap` задан числовым enum, отсутствующим в gem.
+- `spec/qt_editor_window_spec.rb`: **7 examples, 0 failures**. Mouse-to-core
+  mapping, tab width, горизонтальная прокрутка core views и physical Super-key
+  desktop smoke остаются открытыми.

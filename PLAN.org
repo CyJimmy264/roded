@@ -229,13 +229,18 @@ replace обратимы. Provider/history/preview не становятся cur
 - [ ] Mouse focus/caret/selection/wheel и clipboard идут через core contracts.
 - [X] Qt visual caret maps core character columns to grapheme boundaries for
   astral emoji, combining text, and ZWJ emoji sequences.
-- [ ] Exact core-character/Qt UTF-16 position conversion, including points
-  inside a grapheme; tabs/long lines/scroll/resize.
+- [X] Exact core-character/Qt UTF-16 position conversion, including points
+  inside combining and ZWJ graphemes.
+- [X] Long lines stay unwrapped; a real Qt widget horizontally scrolls to its
+  caret and retains horizontal scrolling after resize.
+- [ ] Tab display width and horizontal scroll synchronization with core views.
 - [ ] Все обязательные Super/Menu aliases из таблицы, включая Alt+Super/punctuation.
 - [ ] s-Left/s-Right resizing split и configurable combinations.
 - [ ] Native close -> save/discard/cancel; отмена сохраняет рабочее desktop window.
 - [ ] UI-thread/snapshot/feedback-loop/REPL/shutdown integration checks.
-- [ ] Real-widget offscreen tests + desktop smoke с физическими Super keys.
+- [X] Real-widget offscreen tests cover layout, Unicode caret, syntax, region,
+  search, close, picker, resize and clipboard.
+- [ ] Desktop smoke с физическими Super keys.
 - [ ] Список hacks полон; TODO сообщает missing API и требуемую замену в qt.
 
 Критерий: сквозной acceptance scenario из GOAL выполнен в Qt, зафиксированы
