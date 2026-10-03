@@ -272,8 +272,10 @@ replace обратимы. Provider/history/preview не становятся cur
 - [X] Завершённая chord-команда очищает echo-area prefix hint; live Qt split
   smoke подтверждает пустую echo area и нормальный выход по `C-x C-c`.
 - [ ] Physical s-Left/s-Right desktop smoke and configurable key combinations.
-- [X] Offscreen native QWidget.close returns rejected and remains visible while
-  core decides; desktop save/discard/cancel interaction remains open.
+- [X] Native QWidget.close sends a close request to core and remains visible
+  while the decision is pending. A real-widget integration covers save/discard/
+  cancel; isolated Xvfb keyboard smoke checks saved content and continued editing
+  after cancel.
 - [X] UI-thread/snapshot/feedback-loop/REPL/shutdown integration checks.
 - [X] Qt UI dispatcher protects pending updates with a mutex and coalesces
   obsolete editor/picker/minibuffer snapshots while retaining discrete actions.

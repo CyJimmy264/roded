@@ -29,6 +29,86 @@ cleanup() {
 }
 trap cleanup EXIT
 
+wait_for_app_exit() {
+  for attempt in $(seq 1 50); do
+    app_state=$(ps -o stat= -p "$app_pid" || true)
+    [[ -z "$app_state" || "$app_state" == Z* ]] && break
+    sleep 0.1
+  done
+  if [[ -n "$app_state" && "$app_state" != Z* ]]; then
+    printf 'Qt app did not exit after close decision (state %s)\n' "$app_state" >&2
+    exit 1
+  fi
+  wait "$app_pid"
+  app_pid=
+}
+
+run_close_prompt_smoke() {
+  local choice=$1 expected_text=$2
+  local close_path="$smoke_dir/close-$choice.txt"
+  local close_log="$smoke_dir/close-$choice.log"
+  local close_window_id=
+  printf 'original\n' > "$close_path"
+  export RODED_LOG_PATH="$close_log"
+  bundle exec bin/roded --frontend qt "$close_path" >"$smoke_dir/close-$choice.out" 2>&1 &
+  app_pid=$!
+  for attempt in $(seq 1 100); do
+    close_window_id=$(xdotool search --onlyvisible --name '^Roded$' 2>/dev/null | head -n 1 || true)
+    if [[ -n "$close_window_id" ]]; then break; fi
+    sleep 0.1
+  done
+  if [[ -z "$close_window_id" ]]; then
+    cat "$smoke_dir/close-$choice.out"
+    exit 1
+  fi
+
+  sleep 0.5
+  xdotool windowfocus --sync "$close_window_id"
+  xdotool mousemove --window "$close_window_id" 30 30 click 1
+  xdotool type --clearmodifiers X
+  xdotool key --clearmodifiers ctrl+x
+  sleep 0.2
+  xdotool key --clearmodifiers ctrl+c
+  for attempt in $(seq 1 50); do
+    if rg -q 'publish_ui_update: minibuffer_render' "$close_log"; then break; fi
+    sleep 0.1
+  done
+  if ! rg -q 'publish_ui_update: minibuffer_render' "$close_log"; then
+    printf 'Qt did not show the modified-buffer close prompt (%s)\n' "$choice" >&2
+    exit 1
+  fi
+  xdotool type --clearmodifiers "$choice"
+  xdotool key --clearmodifiers Return
+
+  if [[ "$choice" == c ]]; then
+    sleep 0.5
+    app_state=$(ps -o stat= -p "$app_pid" || true)
+    if [[ -z "$app_state" || "$app_state" == Z* ]]; then
+      printf 'Qt app exited after close cancellation\n' >&2
+      exit 1
+    fi
+    if [[ "$(cat "$close_path")" != "original" ]]; then
+      printf 'Qt close cancellation changed the saved file\n' >&2
+      exit 1
+    fi
+    xdotool windowfocus --sync "$close_window_id"
+    xdotool mousemove --window "$close_window_id" 30 30 click 1
+    xdotool key --clearmodifiers ctrl+slash
+    sleep 0.3
+    xdotool key --clearmodifiers ctrl+x
+    sleep 0.2
+    xdotool key --clearmodifiers ctrl+c
+    wait_for_app_exit
+  else
+    wait_for_app_exit
+  fi
+
+  if [[ "$(cat "$close_path")" != "$expected_text" ]]; then
+    printf 'Qt %s close produced unexpected file contents: %s\n' "$choice" "$(cat "$close_path")" >&2
+    exit 1
+  fi
+}
+
 bundle exec bin/roded --frontend qt "$smoke_dir/lines.txt" >"$smoke_dir/app.out" 2>&1 &
 app_pid=$!
 window_id=
@@ -205,9 +285,14 @@ if ! rg -q 'Application initialized' "$smoke_dir/scratch.log" ||
   exit 1
 fi
 
+run_close_prompt_smoke s $'original\nX'
+run_close_prompt_smoke d "original"
+run_close_prompt_smoke c "original"
+
 RODED_LOG_PATH="$smoke_dir/roded.log"
 printf 'Qt live smoke screenshots and log: %s\n' "$smoke_dir"
 printf 'Empty scratch startup and keyboard quit: passed\n'
+printf 'Modified-buffer close: save, discard and cancel passed\n'
 printf 'Key events: '
 rg -c 'event received: key' "$RODED_LOG_PATH"
 printf 'Wheel events: '

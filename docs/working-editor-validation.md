@@ -1267,6 +1267,23 @@ File save здесь сохраняет текстовое представле�
   **6.11.2**, gem `qt` **0.2.0**; screenshots/log:
   `/tmp/roded-qt-live-smoke.3g2v5k`. Neither live check used desktop `DISPLAY`.
 
+## 2026-10-04 — Qt native close and modified-buffer decisions
+
+- A real `QWidget.close()` now has integration coverage through the Qt event
+  router and application core. For a dirty file, the echo area shows the
+  save/discard/cancel prompt; save writes the exact edited content, discard
+  exits without changing the file, and cancel preserves both the dirty buffer
+  and visible window.
+- `script/qt_live_smoke.sh` also runs each decision against the visible editor
+  under private Xvfb. Save and discard exit with their expected file contents;
+  cancel leaves the process alive, after which Ctrl+/ undoes and C-x C-c exits.
+  Log and screenshots: `/tmp/roded-qt-live-smoke.UXRx3x`. This does not use the
+  user's desktop display or window manager.
+- Targeted `bundle exec rspec spec/qt_close_prompt_integration_spec.rb`:
+  **1 example, 0 failures**; targeted RuboCop: **1 file, 0 offenses**. Full
+  `bundle exec rake`: **283 examples, 0 failures**; RuboCop: **148 files, 0
+  offenses**. `bash -n script/qt_live_smoke.sh` and `git diff --check` pass.
+
 ## 2026-10-04 — remove legacy console status bar
 
 - `Roded::Window` is the logical editor view with independent point/mark and
