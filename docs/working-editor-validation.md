@@ -680,3 +680,5 @@ File save здесь сохраняет текстовое представле�
 - `spec/qt_editor_window_spec.rb`: **7 examples, 0 failures**. Mouse-to-core
   mapping, tab width, горизонтальная прокрутка core views и physical Super-key
   desktop smoke остаются открытыми.
+- Полный RSpec: **208 examples, 0 failures**. RuboCop снизился с исходных
+  **87 до 77 offenses**; целевые Qt caret/renderer/pane/spec файлы чисты.

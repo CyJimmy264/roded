@@ -3,6 +3,7 @@ require_relative "text_geometry"
 module Roded
   module Frontends
     class Curses
+      # Draws the shared minibuffer state in the terminal footer.
       class Minibuffer
         def initialize(screen)
           @screen = screen

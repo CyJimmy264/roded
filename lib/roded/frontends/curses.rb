@@ -83,7 +83,7 @@ module Roded
       end
 
       # Scroll the display up by one line.
-      def scroll_up
+      def scroll_viewport_up
         return false unless @top.positive?
 
         @top -= 1
@@ -92,7 +92,7 @@ module Roded
       end
 
       # Scroll the display down by one line.
-      def scroll_down
+      def scroll_viewport_down
         return false unless @current_buffer
         return false if @top + @screen.maxy >= @current_buffer.lines.length
 
@@ -137,7 +137,7 @@ module Roded
 
           direction = command.payload[:direction]
           if %i[up down].include?(direction)
-            send("scroll_#{direction}")
+            send("scroll_viewport_#{direction}")
           else
             ensure_cursor_visible(direction)
             redraw
@@ -287,7 +287,8 @@ module Roded
         modified = item[:modified] ? "*" : ""
         readonly = item[:readonly] ? " RO" : ""
         mode_name = item[:mode] || :plain
-        modeline = "#{active_marker} #{item[:name]}#{modified}#{readonly}  #{mode_name}  #{point[:row] + 1}:#{point[:col] + 1}"
+        modeline = "#{active_marker} #{item[:name]}#{modified}#{readonly}  #{mode_name}  " \
+                   "#{point[:row] + 1}:#{point[:col] + 1}"
         if item[:active]
           @screen.attron(::Curses::A_REVERSE) { write_at(modeline_row, x, modeline, width) }
         else
@@ -310,7 +311,7 @@ module Roded
         highlight = highlight_columns(item, buffer_row, line.length)
         boundaries = [0, text.length]
         tokens.each do |token|
-          boundaries.concat([token[:start] - left_column, token[:finish] - left_column])
+          boundaries.push(token[:start] - left_column, token[:finish] - left_column)
         end
         boundaries.concat(selection.map { |column| column - left_column }) if selection
         boundaries.concat(highlight.map { |column| column - left_column }) if highlight

@@ -75,15 +75,18 @@ module Roded
 
     def replace_query_match
       state = @query_replace_state
-      row, column = state.fetch(:position)
-      first = { row:, col: column }
-      last = { row:, col: column + state.fetch(:query).length }
+      first, last = query_match_boundaries(state)
       current_window.highlight = { start: first, finish: last }
       current_buffer.with_undo_group do
         current_buffer.delete_region(first, last)
         current_buffer.insert_text(state.fetch(:replacement))
       end
       state[:position] = current_buffer.cursor_pos
+    end
+
+    def query_match_boundaries(state)
+      row, column = state.fetch(:position)
+      [{ row:, col: column }, { row:, col: column + state.fetch(:query).length }]
     end
 
     def replace_all_query_matches

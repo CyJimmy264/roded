@@ -1,4 +1,5 @@
 module Roded
+  # Displays buffer metadata for the legacy console interface.
   class StatusBar
     attr_accessor :buffer
 

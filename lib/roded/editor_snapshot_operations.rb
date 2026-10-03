@@ -49,11 +49,15 @@ module Roded
         point: window.point.dup.freeze,
         mark: window.mark&.dup&.freeze,
         highlight: window.highlight,
-        name: (buffer.filename || buffer.name || "*scratch*").to_s.dup.freeze,
+        name: snapshot_buffer_name(buffer),
         top_line: window.top_line,
         left_column: window.left_column,
         active: window.equal?(@current_window)
       }
+    end
+
+    def snapshot_buffer_name(buffer)
+      (buffer.filename || buffer.name || "*scratch*").to_s.dup.freeze
     end
   end
 end

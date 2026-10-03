@@ -57,9 +57,7 @@ module Roded
                    end
     end
 
-    def highlight
-      @highlight&.transform_values { |position| position.dup.freeze }&.freeze
-    end
+    def highlight = @highlight&.transform_values { |position| position.dup.freeze }&.freeze
 
     def copy
       window = self.class.new(@buffer)

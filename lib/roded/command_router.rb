@@ -1,4 +1,5 @@
 module Roded
+  # Resolves normalized key sequences through the active keymap.
   class CommandRouter
     def initialize(keymap)
       @keymap = keymap
