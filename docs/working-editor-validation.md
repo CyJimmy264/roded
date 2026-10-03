@@ -937,3 +937,8 @@ File save здесь сохраняет текстовое представле�
   `/tmp/roded-qt-live-smoke.ORaMLS/after-edit-save.png` показывает block caret и
   подсветку активной строки. Проверка изолирована Xvfb и не использовала
   пользовательский DISPLAY.
+- Повторный Xvfb smoke `/tmp/roded-qt-live-smoke.JIJ3rk` также посылает Qt
+  `Menu` и `Alt+Menu` через `xdotool`: оба native key events попали в editor,
+  открыли соответствующие core project/buffer pickers и отменились `C-g`.
+  Smoke проверяет эти события и picker renders; пользовательский DISPLAY не
+  используется. Проверка физической клавиши Menu на desktop остаётся отдельной.

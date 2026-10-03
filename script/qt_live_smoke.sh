@@ -89,6 +89,15 @@ xdotool key --clearmodifiers 3
 sleep 1
 import -window "$window_id" "$smoke_dir/after-split.png"
 xdotool windowfocus --sync "$window_id"
+xdotool key --clearmodifiers Menu
+sleep 0.5
+xdotool key --clearmodifiers ctrl+g
+sleep 0.3
+xdotool key --clearmodifiers alt+Menu
+sleep 0.5
+xdotool key --clearmodifiers ctrl+g
+sleep 0.3
+xdotool windowfocus --sync "$window_id"
 xdotool mousemove --window "$window_id" 300 100 click 1
 xdotool key --clearmodifiers Super_L+Right
 sleep 1
@@ -128,3 +137,10 @@ if [[ "$mouse_selection_events" -lt 5 ]] || ! rg -q 'event received: mouse_selec
   exit 1
 fi
 printf '%s\n' "$mouse_selection_events"
+if ! rg -q 'event received: key \{key: "Menu"' "$RODED_LOG_PATH" ||
+  ! rg -q 'event received: key \{key: "M-Menu"' "$RODED_LOG_PATH" ||
+  [[ $(rg -c 'broadcast_command: picker_render' "$RODED_LOG_PATH") -lt 2 ]]; then
+  printf 'Qt Menu/Alt+Menu did not open both core pickers\n' >&2
+  exit 1
+fi
+printf 'Menu shortcuts: project_files, switch_buffer\n'
