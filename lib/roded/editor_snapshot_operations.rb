@@ -46,14 +46,15 @@ module Roded
       {
         modified: buffer.modified?,
         readonly: buffer.readonly,
-        point: window.point.dup.freeze,
-        mark: window.mark&.dup&.freeze,
-        highlight: window.highlight,
         name: snapshot_buffer_name(buffer),
         top_line: window.top_line,
         left_column: window.left_column,
         active: window.equal?(@current_window)
-      }
+      }.merge(window_position_snapshot(window))
+    end
+
+    def window_position_snapshot(window)
+      { point: window.point.dup.freeze, mark: window.mark&.dup&.freeze, highlight: window.highlight }
     end
 
     def snapshot_buffer_name(buffer)

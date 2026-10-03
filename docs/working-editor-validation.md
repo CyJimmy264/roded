@@ -801,6 +801,15 @@ File save здесь сохраняет текстовое представле�
   tab is written as expanded spaces. Curses geometry/render specs: **8 examples,
   0 failures**.
 
+## 2026-10-03 — core routing and lifecycle cleanup
+
+- Split command routing into prefix detection, exact resolution and character
+  insertion helpers; separated window position fields in editor snapshots and
+  buffer-removal publication from close prompting. Behavior remains covered by
+  command-router/application specs: **77 examples, 0 failures**.
+- Full RuboCop debt decreased from **61 to 57 offenses**; the three touched core
+  files pass targeted lint.
+
 
 ## 2026-10-03 — табличная маршрутизация core input events
 

@@ -1,6 +1,30 @@
 module Roded
+  # Keeps frontends and views consistent after removing a buffer.
+  module CloseBufferRemoval
+    private
+
+    def unregister_frontends(buffer)
+      @frontends.each { |frontend| frontend.remove_buffer(buffer) if frontend.respond_to?(:remove_buffer) }
+    end
+
+    def preserve_writable_buffer
+      add_buffer(Buffer.new("*scratch*")) if @buffers.empty?
+    end
+
+    def replace_closed_buffer_views(buffer)
+      @windows.each { |window| window.buffer = @current_buffer if window.buffer == buffer }
+    end
+
+    def render_buffer_removal
+      @frontends.each { |frontend| frontend.render(@current_buffer) }
+      broadcast_command(Command.new(:render, {}))
+    end
+  end
+
   # Coordinates save/discard/cancel when a modified buffer or editor is closed.
   module CloseOperations
+    include CloseBufferRemoval
+
     def kill_current_buffer
       buffer = current_buffer
       return unless buffer
@@ -98,12 +122,11 @@ module Roded
     def remove_buffer(buffer)
       @buffers.delete(buffer)
       buffer.remove_edit_observer(self)
-      @frontends.each { |frontend| frontend.remove_buffer(buffer) if frontend.respond_to?(:remove_buffer) }
-      add_buffer(Buffer.new("*scratch*")) if @buffers.empty?
+      unregister_frontends(buffer)
+      preserve_writable_buffer
       @current_buffer = @buffers.first
-      @windows.each { |window| window.buffer = @current_buffer if window.buffer == buffer }
-      @frontends.each { |frontend| frontend.render(@current_buffer) }
-      broadcast_command(Command.new(:render, {}))
+      replace_closed_buffer_views(buffer)
+      render_buffer_removal
       display_message("Buffer killed.")
     end
 

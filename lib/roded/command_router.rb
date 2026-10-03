@@ -11,18 +11,9 @@ module Roded
 
       pending = @pending_prefixes[source_id]
       return route_pending(pending, key, source_id) if pending
+      return start_prefix(key, source_id) if prefix_key?(key)
 
-      if key == "Esc" || @keymap&.prefix?(key)
-        @pending_prefixes[source_id] = [key]
-        return Event.new(:prefix_pending, { prefix: key })
-      end
-
-      mapped = resolve(key)
-      return mapped if mapped
-
-      return Event.new(:insert_char, { char: key }) if insertable?(key)
-
-      Event.new(:noop, {})
+      resolve(key) || insert_character(key) || Event.new(:noop, {})
     end
 
     private
@@ -50,6 +41,19 @@ module Roded
 
     def insertable?(key)
       key.is_a?(String) && key.length == 1
+    end
+
+    def prefix_key?(key)
+      key == "Esc" || @keymap&.prefix?(key)
+    end
+
+    def start_prefix(key, source_id)
+      @pending_prefixes[source_id] = [key]
+      Event.new(:prefix_pending, { prefix: key })
+    end
+
+    def insert_character(key)
+      Event.new(:insert_char, { char: key }) if insertable?(key)
     end
   end
 end
