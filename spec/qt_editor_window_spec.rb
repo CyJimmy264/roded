@@ -12,6 +12,18 @@ module QtEditorWindowSpecHelpers
     window = { id: 101, text:, point: { row: 0, col: character_column }, name: "unicode", active: true }
     view.render_layout(tree: { window_id: 101 }, active_window_id: 101, windows: [window])
   end
+
+  def render_qt_split(view)
+    view.render_layout(
+      tree: {
+        direction: :vertical, first: { window_id: 101 }, second: { window_id: 202 }
+      },
+      active_window_id: 101,
+      windows: [101, 202].map do |id|
+        { id:, text: "pane #{id}", point: { row: 0, col: 0 }, name: "#{id}.rb", active: id == 101 }
+      end
+    )
+  end
 end
 
 RSpec.shared_context "Qt editor window lifecycle" do
@@ -52,6 +64,32 @@ RSpec.describe Roded::Frontends::QtEditorWindow, "split layout" do
     expect(view.editor_area.count).to eq(2)
     expect(view.instance_variable_get(:@panes).length).to eq(2)
     expect(view.editor).to equal(view.instance_variable_get(:@panes).fetch(202).editor)
+  end
+end
+
+RSpec.describe Roded::Frontends::QtEditorWindow, "minibuffer height" do
+  include_context "Qt editor window lifecycle"
+
+  it "sizes the echo area to its lines and gives the remaining height to split panes" do
+    view = described_class.new
+    @views << view
+    render_qt_split(view)
+    view.show
+    view.window.resize(960, 640)
+    3.times { QApplication.process_events }
+
+    echo = view.instance_variable_get(:@echo_area).widget
+    content = view.instance_variable_get(:@content_host)
+    line_height = echo.font_metrics.line_spacing
+    expect(echo.height).to eq(line_height)
+    expect(content.height).to be > view.window.height * 0.9
+
+    view.render_picker(prompt: "M-x ", query: "", selected_index: 0, candidates: %w[undo redo quit])
+    3.times { QApplication.process_events }
+    picker_lines = echo.text.split("\n", -1).length
+    expect(echo.height).to eq(line_height * picker_lines)
+    expect(echo.height).to be > line_height
+    expect(content.height + echo.height).to be_within(1).of(view.window.height)
   end
 end
 

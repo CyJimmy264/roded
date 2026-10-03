@@ -262,6 +262,8 @@ replace обратимы. Provider/history/preview не становятся cur
 - [X] Real-widget offscreen tests cover layout, Unicode caret and mouse hit-test,
   syntax, region, search, close, picker, resize, clipboard, empty scratch, blank
   rows, active-line background, visible block caret and initial editor focus.
+- [X] Qt echo area has a fixed height derived from its displayed line count;
+  split panes receive the remaining window height, including after picker updates.
 - [X] Изолированный Qt Xvfb smoke показывает пустую строку с фоном активной
   строки и block caret, запускает `bin/roded --frontend qt` без аргументов на
   `*scratch*`, и отправляет клавиши до клика в editor.

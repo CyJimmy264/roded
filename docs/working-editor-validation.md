@@ -1074,3 +1074,23 @@ File save здесь сохраняет текстовое представле�
 - Первый параллельный запуск двух xdotool/Xvfb smoke дал нестабильные результаты
   ввода; последовательный запуск обоих сценариев прошёл. Запускать эти два
   desktop smoke последовательно.
+
+## 2026-10-03 — Qt minibuffer height follows its visible rows
+
+- `QtEchoArea` now uses a fixed vertical size policy and recalculates its fixed
+  height from the Qt font line spacing and displayed line count. This keeps an
+  empty minibuffer at one line and lets picker rows grow it without letting the
+  echo widget consume half of a split window. The picker row budget is based on
+  the parent window height, rather than the now-small echo widget height.
+- Qt offscreen split geometry checks verify one-line empty echo, editor content
+  taking over 90% of a 960x640 window, and a multi-line picker sizing the echo
+  to the exact number of visible lines. Picker/editor-window specs: **27
+  examples, 0 failures**. Full `bundle exec rake`: **261 examples, 0 failures**;
+  RuboCop: **144 files, 0 offenses**.
+- `script/qt_live_smoke.sh` passed in a private Xvfb with `QT_QPA_PLATFORM=xcb`
+  and private `XDG_CONFIG_HOME`: 17 key events, wheel, mouse selection,
+  Menu/Alt+Menu, split, Super resize and no-argument scratch startup all passed.
+  The live split screenshot is `/tmp/roded-qt-live-smoke.kWKKeS/after-split.png`;
+  it shows both editor panes filling the window above the one-line echo area.
+  This run used Qt Widgets **6.11.2** and gem `qt` **0.2.0**; no desktop
+  `DISPLAY` was used.
