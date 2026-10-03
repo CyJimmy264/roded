@@ -80,7 +80,7 @@ file roundtrip не теряет текст. Коммит этапа до шир
 - [ ] Перенести cursor ownership из Buffer с сохранением существующих scenarios.
 - [X] Контролируемый edit API не отдаёт изменяемые live lines/cursor наружу;
   инварианты readonly/positions соблюдаются на каждом входе.
-- [ ] KillRing обновляется из edit result, Buffer не получает KillRing dependency.
+- [X] KillRing обновляется из edit result, Buffer не получает KillRing dependency.
 - [ ] Единая публикация UI-state заменяет observers/direct-render/broadcast mix;
   insert/backspace/delete/newline продолжают перерисовываться.
 - [X] Frontend получает initial active buffer/minibuffer state при подключении;
@@ -167,6 +167,9 @@ undo и modified state согласованы. FileService и edit history — �
 - [ ] Удалить/переопределить console Window/StatusBar.
 - [X] Реальный PTY/curses smoke: два файла, split, edit, save, quit —
   подтверждён 2026-10-03; подробности в validation log.
+- [X] C-n/C-p внутри видимой области обновляют только затронутые строки, а
+  resize сохраняет text pane и modeline внутри границ; проверено на настоящем
+  curses PTY и geometry regression specs.
 
 Критерий: основной file/window scenario выполняется в настоящем TUI.
 
@@ -252,7 +255,10 @@ replace обратимы. Provider/history/preview не становятся cur
   core decides; desktop save/discard/cancel interaction remains open.
 - [ ] UI-thread/snapshot/feedback-loop/REPL/shutdown integration checks.
 - [X] Real-widget offscreen tests cover layout, Unicode caret and mouse hit-test,
-  syntax, region, search, close, picker, resize and clipboard.
+  syntax, region, search, close, picker, resize, clipboard, empty scratch, blank
+  rows, active-line background, visible block caret and initial editor focus.
+- [X] Изолированный Qt Xvfb smoke показывает пустую строку с block caret и
+  запускает `bin/roded --frontend qt` без аргументов на `*scratch*`.
 - [X] Qt `C-n`/`C-p` input moves the active core point, and wheel input updates
   both core `top_line` and the real Qt scrollbar; integration specs cover the
   application/input-router/widget path.

@@ -34,6 +34,11 @@
   `bin/roded --frontend qt` без аргументов: создан `*scratch*`, окно снято в
   `/tmp/roded-qt-live-smoke.kaEpsG/empty-scratch.png`, `C-x C-c` завершил
   процесс с кодом **0**. Qt editor/mouse targeted specs и общий suite проходят.
+- Оставшееся расхождение перед Qt/curses parity: один final newline (`a\n`)
+  сейчас создаёт видимый пустой paragraph в Qt, а curses рисует только core
+  line. В core final newline хранится отдельно, а второй newline (`a\n\n`)
+  создаёт явную пустую строку. Нужно выбрать единое поведение и согласовать
+  cursor/edit semantics до отметки этого acceptance пункта.
 
 ## 2026-10-03 — переход на qt 0.2.0
 
