@@ -18,7 +18,6 @@ module Roded
 
     SCROLL_EVENTS = %i[scroll_line_up scroll_line_down scroll_page_up scroll_page_down].freeze
     BUFFER_OPERATIONS = {
-      kill_line: %i[kill_line kill_ring],
       backspace: [:backspace],
       delete: [:delete_char],
       enter: [:newline],
@@ -28,6 +27,7 @@ module Roded
 
     EDITOR_ACTIONS = {
       set_mark: [:set_mark],
+      kill_line: [:kill_line],
       kill_region: [:kill_region],
       copy_region: [:copy_region],
       yank: [:yank],

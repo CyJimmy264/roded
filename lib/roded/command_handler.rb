@@ -45,7 +45,6 @@ module Roded
       method, argument = BUFFER_OPERATIONS.fetch(event.type)
       args = buffer_operation_arguments(argument, event.payload)
       @editor.current_buffer&.public_send(method, *args)
-      @editor.broadcast_command(Command.new(:render, {})) if event.type == :kill_line
     end
 
     def buffer_operation_arguments(argument, payload)

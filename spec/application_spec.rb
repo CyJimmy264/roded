@@ -46,6 +46,17 @@ RSpec.describe Roded::Application do
     expect(clipboard_command.payload[:text]).to eq("eta")
   end
 
+  it "keeps KillRing ownership in the editor while merging consecutive C-k commands" do
+    application.startup
+    application.current_buffer.load_text("abc\ndef")
+
+    application.handle_event(Roded::Event.new(:key, { key: "C-k" }))
+    application.handle_event(Roded::Event.new(:key, { key: "C-k" }))
+
+    expect(application.current_buffer.to_s).to eq("def")
+    expect(application.kill_ring.last).to eq("abc\n")
+  end
+
   it "clears the pending prefix hint after a key sequence runs" do
     application.startup
     application.handle_event(Roded::Event.new(:key, { key: "C-x" }))

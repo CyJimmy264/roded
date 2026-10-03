@@ -14,6 +14,7 @@ module Roded
     include RubyReplEventOperations
     include RubyReplOutputOperations
     include BufferEditingOperations
+    include KillRingOperations
     include TextCommandOperations
     include TabConversionOperations
     include HelpOperations

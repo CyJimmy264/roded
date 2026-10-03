@@ -182,16 +182,14 @@ RSpec.describe Roded::Buffer do
   end
 
   describe "#kill_line" do
-    let(:kill_ring) { Roded::KillRing.new }
-
     it "kills text from the cursor to the end of the line" do
       buffer.lines = ["abcdef"]
       buffer.cursor_pos = { row: 0, col: 2 }
 
-      buffer.kill_line(kill_ring)
+      killed = buffer.kill_line
 
       expect(buffer.lines).to eq(["ab"])
-      expect(kill_ring.last).to eq("cdef")
+      expect(killed).to eq("cdef")
       expect(buffer.cursor_pos).to eq({ row: 0, col: 2 })
     end
 
@@ -199,10 +197,10 @@ RSpec.describe Roded::Buffer do
       buffer.lines = %w[abc def]
       buffer.cursor_pos = { row: 0, col: 3 }
 
-      buffer.kill_line(kill_ring)
+      killed = buffer.kill_line
 
       expect(buffer.lines).to eq(["abcdef"])
-      expect(kill_ring.last).to eq("\n")
+      expect(killed).to eq("\n")
       expect(buffer.cursor_pos).to eq({ row: 0, col: 3 })
     end
 
@@ -210,10 +208,10 @@ RSpec.describe Roded::Buffer do
       buffer.load_text("abc\n")
       buffer.cursor_pos = { row: 0, col: 3 }
 
-      buffer.kill_line(kill_ring)
+      killed = buffer.kill_line
 
       expect(buffer.to_s).to eq("abc")
-      expect(kill_ring.last).to eq("\n")
+      expect(killed).to eq("\n")
       buffer.undo
       expect(buffer.to_s).to eq("abc\n")
     end
@@ -253,7 +251,7 @@ RSpec.describe Roded::Buffer do
       buffer.backspace
       buffer.delete_char
       buffer.newline
-      buffer.kill_line(Roded::KillRing.new)
+      buffer.kill_line
 
       expect(buffer.lines).to eq(%w[abc def])
       expect(buffer.cursor_pos).to eq({ row: 0, col: 1 })
@@ -314,8 +312,7 @@ RSpec.describe Roded::Buffer do
       ].each do |text, cursor, operation, edited_text|
         buffer.load_text(text)
         buffer.cursor_pos = cursor
-        buffer.public_send(operation, Roded::KillRing.new) if operation == :kill_line
-        buffer.public_send(operation) unless operation == :kill_line
+        buffer.public_send(operation)
 
         expect(buffer.to_s).to eq(edited_text)
         expect(buffer.undo).to be(true)
@@ -356,12 +353,12 @@ RSpec.describe Roded::Buffer do
 
     it "joins consecutive line kills into one kill-ring item" do
       buffer.load_text("abc\ndef")
-      ring = Roded::KillRing.new
-      buffer.kill_line(ring)
-      buffer.kill_line(ring)
+      first_kill = buffer.kill_line
+      second_kill = buffer.kill_line
 
       expect(buffer.to_s).to eq("def")
-      expect(ring.items).to eq(["abc\n"])
+      expect(first_kill).to eq("abc")
+      expect(second_kill).to eq("\n")
     end
 
     it "groups multiple edits into one undo step and clears redo after a new edit" do

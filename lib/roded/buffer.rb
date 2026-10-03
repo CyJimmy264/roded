@@ -160,30 +160,26 @@ module Roded
       end
     end
 
-    def kill_line(kill_ring)
+    def kill_line
       return if readonly
 
       line = @lines[@cursor_pos[:row]]
       if @cursor_pos[:col] < line.length
         killed = line[@cursor_pos[:col]..]
         row = @cursor_pos[:row]
-        record_edit(row, 1, 1) do
-          kill_ring.push(killed)
-          @lines[row] = line[0...@cursor_pos[:col]]
-        end
+        record_edit(row, 1, 1) { @lines[row] = line[0...@cursor_pos[:col]] }
+        killed
       elsif @cursor_pos[:row] < @lines.length - 1
         row = @cursor_pos[:row]
         record_edit(row, 2, 1) do
-          kill_ring.push("\n")
           @lines[row] = line + @lines[row + 1]
           @lines.delete_at(row + 1)
         end
+        "\n"
       elsif @final_newline
         row = @cursor_pos[:row]
-        record_edit(row, 1, 1) do
-          kill_ring.push("\n")
-          @final_newline = false
-        end
+        record_edit(row, 1, 1) { @final_newline = false }
+        "\n"
       end
     end
 
