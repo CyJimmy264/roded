@@ -916,7 +916,7 @@ RSpec.describe Roded::Application do
     editor.submit_minibuffer
   end
 
-  it "scrolls the active view without moving point and clamps to document bounds" do
+  it "scrolls the active view and point together within document bounds" do
     application.startup
     buffer = application.current_buffer
     buffer.lines = (0..9).map(&:to_s)
@@ -925,12 +925,14 @@ RSpec.describe Roded::Application do
 
     application.handle_event(Roded::Event.new(:key, { key: "M-n" }))
     expect(application.current_window.top_line).to eq(1)
-    expect(application.current_window.point).to eq(point)
+    expect(application.current_window.point).to eq(row: 3, col: 0)
 
     application.handle_event(Roded::Event.new(:key, { key: "M-N" }))
     expect(application.current_window.top_line).to eq(4)
+    expect(application.current_window.point).to eq(row: 6, col: 0)
     application.handle_event(Roded::Event.new(:key, { key: "M-N" }))
     expect(application.current_window.top_line).to eq(7)
+    expect(application.current_window.point).to eq(row: 9, col: 0)
     application.handle_event(Roded::Event.new(:key, { key: "M-N" }))
     expect(application.current_window.top_line).to eq(7)
   end

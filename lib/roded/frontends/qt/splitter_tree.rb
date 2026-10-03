@@ -9,24 +9,30 @@ module Roded
         @layout = layout
         @pool = []
         @tree = nil
+        @mounted_widgets = {}
       end
 
       def mount(tree, &pane_for)
-        return if tree == @tree
+        widgets = widgets_for(tree, &pane_for)
+        return if tree == @tree && same_widgets?(widgets)
 
         @layout.remove_widget(@root) if @root
-        release(@root)
+        release_root
         @root = build(tree) { |id| pane_for.call(id) }
         @layout.add_widget(@root)
         @tree = tree
+        @mounted_widgets = widgets
       end
 
       def mount_single(widget)
+        return if @tree.nil? && @root.equal?(widget)
+
         @layout.remove_widget(@root) if @root
-        release(@root)
+        release_root
         @root = widget
         @layout.add_widget(@root)
         @tree = nil
+        @mounted_widgets = { single: widget }
       end
 
       private
@@ -35,6 +41,26 @@ module Roded
         return pane_for.call(tree.fetch(:window_id)).container if tree[:window_id]
 
         splitter_for(tree, &pane_for)
+      end
+
+      def widgets_for(tree, &pane_for)
+        return { tree.fetch(:window_id) => pane_for.call(tree.fetch(:window_id)).container } if tree[:window_id]
+
+        widgets_for(tree[:first], &pane_for).merge(widgets_for(tree[:second], &pane_for))
+      end
+
+      def same_widgets?(widgets)
+        widgets.length == @mounted_widgets.length && widgets.all? do |id, widget|
+          @mounted_widgets[id]&.equal?(widget)
+        end
+      end
+
+      def release_root
+        return unless @root
+        return release(@root) if @root.is_a?(QSplitter)
+
+        @root.hide
+        @root.set_parent(@parent)
       end
 
       def splitter_for(tree, &pane_for)

@@ -139,6 +139,63 @@ RSpec.describe Roded::Frontends::QtEditorWindow, "split cleanup" do
   end
 end
 
+RSpec.describe Roded::Frontends::QtEditorWindow, "pane replacement" do
+  include_context "Qt editor window lifecycle"
+
+  it "remounts a replacement pane when the window tree shape is unchanged" do
+    view = described_class.new
+    @views << view
+    snapshot = {
+      tree: { window_id: 101 }, active_window_id: 101,
+      windows: [{ id: 101, text: "old pane", point: { row: 0, col: 0 }, name: "doc", active: true }]
+    }
+    view.render_layout(snapshot)
+    view.show
+    QApplication.process_events
+    old_root = view.editor_area
+    replacement = Roded::Frontends::QtEditorPane.new(view.window)
+    view.instance_variable_get(:@panes)[101] = replacement
+    updated_snapshot = snapshot.merge(windows: [snapshot[:windows].first.merge(text: "new pane")])
+
+    view.render_layout(updated_snapshot)
+    QApplication.process_events
+
+    expect(view.editor_area.equal?(replacement.container)).to be(true)
+    expect(view.editor_area.is_visible).to be(true)
+    expect(old_root.is_visible).to be(false)
+    expect(view.editor.to_plain_text).to eq("new pane")
+  end
+end
+
+RSpec.describe Roded::Frontends::QtEditorWindow, "reused pane visibility" do
+  include_context "Qt editor window lifecycle"
+
+  it "shows a pane again after it was returned to the pool" do
+    view = described_class.new
+    @views << view
+    first = { id: 101, text: "first", point: { row: 0, col: 0 }, name: "first", active: true }
+    second = first.merge(id: 202, text: "second", active: false)
+    view.render_layout(
+      tree: { direction: :horizontal, first: { window_id: 101 }, second: { window_id: 202 } },
+      active_window_id: 101,
+      windows: [first, second]
+    )
+    view.show
+    QApplication.process_events
+    view.render_layout(tree: { window_id: 101 }, active_window_id: 101, windows: [first])
+    reused = first.merge(id: 303, text: "reused", active: false)
+    view.render_layout(
+      tree: { direction: :horizontal, first: { window_id: 101 }, second: { window_id: 303 } },
+      active_window_id: 101,
+      windows: [first, reused]
+    )
+    QApplication.process_events
+
+    expect(view.instance_variable_get(:@panes).fetch(303).container.is_visible).to be(true)
+    expect(view.instance_variable_get(:@panes).fetch(303).editor.to_plain_text).to eq("reused")
+  end
+end
+
 RSpec.describe Roded::Frontends::QtEditorWindow, "Unicode caret" do
   include_context "Qt editor window lifecycle"
 
@@ -195,7 +252,7 @@ RSpec.describe Roded::Frontends::QtEditorWindow, "vertical scrolling" do
     view.render_layout(
       tree: { window_id: 101 }, active_window_id: 101,
       windows: [{
-        id: 101, text: lines, point: { row: 0, col: 0 }, top_line: 30,
+        id: 101, text: lines, point: { row: 30, col: 0 }, top_line: 30,
         name: "long", active: true
       }]
     )
@@ -203,6 +260,28 @@ RSpec.describe Roded::Frontends::QtEditorWindow, "vertical scrolling" do
 
     scroll_bar = view.editor.vertical_scroll_bar
     expect(scroll_bar.value).to eq(30 * scroll_bar.single_step)
+  end
+end
+
+RSpec.describe Roded::Frontends::QtEditorWindow, "point visibility" do
+  include_context "Qt editor window lifecycle"
+
+  it "keeps a moved point visible when it leaves the current viewport" do
+    view = described_class.new
+    @views << view
+    lines = (1..100).map { |number| "line #{number}" }.join("\n")
+    view.render_layout(
+      tree: { window_id: 101 }, active_window_id: 101,
+      windows: [{ id: 101, text: lines, point: { row: 99, col: 8 }, top_line: 0, name: "long", active: true }]
+    )
+    view.show
+    QApplication.process_events
+
+    scroll_bar = view.editor.vertical_scroll_bar
+    expect(scroll_bar.value).to be > 0
+    expect(view.editor.to_plain_text).to include("line 100")
+    modeline = view.instance_variable_get(:@panes).fetch(101).instance_variable_get(:@modeline)
+    expect(modeline.text).to include("100:9")
   end
 end
 
@@ -238,6 +317,31 @@ RSpec.describe Roded::Frontends::QtEditorWindow, "visible caret" do
     expect(view.editor.height).to be > 0
     modeline = view.instance_variable_get(:@panes).fetch(101).instance_variable_get(:@modeline)
     expect(modeline.y).to be > view.editor.y
+  end
+end
+
+RSpec.describe Roded::Frontends::QtEditorWindow, "visible editor layout" do
+  include_context "Qt editor window lifecycle"
+
+  it "sizes the editor and modeline to the visible window after garbage collection" do
+    view = described_class.new
+    @views << view
+    render_qt_snapshot(view, "first\nsecond\nthird", 0)
+    view.show
+    GC.start
+    QApplication.process_events
+
+    pane = view.instance_variable_get(:@panes).fetch(101)
+    modeline = pane.instance_variable_get(:@modeline)
+    expect(pane.container.width).to be > 500
+    expect(pane.container.height).to be > 300
+    expect(view.window.is_visible).to be(true)
+    expect(pane.container.is_visible).to be(true)
+    expect(view.editor.is_visible).to be(true)
+    expect(view.editor.width).to be > 500
+    expect(view.editor.height).to be > 300
+    expect(modeline.y).to be > view.editor.y
+    expect(modeline.height).to be > 0
   end
 end
 

@@ -9,12 +9,13 @@ module Roded
 
       def initialize(parent)
         @container = QWidget.new(parent)
-        layout = QVBoxLayout.new(@container)
+        @layout = QVBoxLayout.new(@container)
+        @container.set_layout(@layout)
         @editor = QTextEdit.new(@container)
         configure_editor
         @modeline = QLabel.new(@container)
-        layout.add_widget(@editor)
-        layout.add_widget(@modeline)
+        @layout.add_widget(@editor)
+        @layout.add_widget(@modeline)
         @subscribed = false
       end
 
@@ -40,17 +41,27 @@ module Roded
       def render(snapshot)
         @snapshot = snapshot
         text = snapshot.fetch(:text).gsub("\r\n", "\n")
+        render_text(snapshot, text)
+        restore_scroll(snapshot)
+        schedule_scroll_restore
+        subscribe_layout
+        render_modeline(snapshot)
+      end
+
+      private
+
+      def render_text(snapshot, text)
         marker = QtCursorMapper.marker_for(text)
         snapshot = snapshot.merge(cursor_marker: marker)
         @editor.set_html(QtEditorHtmlRenderer.new(text, snapshot, marker).render)
         QtCursorMapper.place(@editor, snapshot, text)
-        restore_scroll(snapshot)
-        schedule_scroll_restore
-        subscribe_layout
-        @modeline.set_text(snapshot[:modeline] || modeline_for(snapshot))
       end
 
-      private
+      def render_modeline(snapshot)
+        @modeline.set_text(snapshot[:modeline] || modeline_for(snapshot))
+        @modeline.repaint
+        @container.repaint
+      end
 
       def subscribe_keys
         return if @subscribed || !@key_callback
@@ -78,9 +89,21 @@ module Roded
       end
 
       def restore_scroll(snapshot)
-        top_line = snapshot.fetch(:top_line, 0).to_i
         scroll_bar = @editor.vertical_scroll_bar
+        top_line = visible_origin(snapshot)
         scroll_bar.set_value(top_line * scroll_bar.single_step)
+        @editor.viewport.repaint
+      end
+
+      def visible_origin(snapshot)
+        origin = snapshot.fetch(:top_line, 0).to_i
+        point_row = snapshot.fetch(:point).fetch(:row).to_i
+        scroll_bar = @editor.vertical_scroll_bar
+        page_size = scroll_bar.page_step / [scroll_bar.single_step, 1].max
+        return point_row if point_row < origin
+        return point_row - page_size + 1 if page_size.positive? && point_row >= origin + page_size
+
+        origin
       end
 
       def schedule_scroll_restore

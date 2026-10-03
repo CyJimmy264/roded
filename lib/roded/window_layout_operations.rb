@@ -67,12 +67,24 @@ module Roded
     private
 
     def update_viewport_origin(origin)
-      last_origin = [current_buffer.lines.length - page_size, 0].max
-      origin = origin.clamp(0, last_origin)
-      return if origin == current_window.top_line
+      previous_origin = current_window.top_line
+      origin = clamp_viewport_origin(origin)
+      return if origin == previous_origin
 
       current_window.top_line = origin
+      move_point_with_viewport(origin - previous_origin)
       broadcast_command(Command.new(:render, {}))
+    end
+
+    def clamp_viewport_origin(origin)
+      last_origin = [current_buffer.lines.length - page_size, 0].max
+      origin.clamp(0, last_origin)
+    end
+
+    def move_point_with_viewport(delta)
+      point = current_window.point
+      current_window.point = point.merge(row: point[:row] + delta)
+      current_buffer.cursor_pos = current_window.point
     end
   end
 end

@@ -32,6 +32,12 @@ module QtInputIntegrationSpecHelpers
     drain_core_events(application, frontend)
   end
 
+  def deliver_qt_wheel(application, frontend, delta)
+    payload = { angle_delta_y: delta, pixel_delta_y: 0, window_id: application.current_window.object_id }
+    frontend.instance_variable_get(:@input_router).enqueue_wheel(payload)
+    drain_core_events(application, frontend)
+  end
+
   def drain_core_events(application, frontend)
     event_queue = application.instance_variable_get(:@event_queue)
     application.handle_event(event_queue.pop) until event_queue.empty?
@@ -53,7 +59,7 @@ RSpec.shared_context "Qt input integration lifecycle" do
   end
 end
 
-RSpec.describe "Qt input through editor session" do
+RSpec.describe "Qt Ctrl+N and Ctrl+P through editor session" do
   include_context "Qt input integration lifecycle"
   include QtInputIntegrationSpecHelpers
 
@@ -67,15 +73,43 @@ RSpec.describe "Qt input through editor session" do
     deliver_qt_payload(application, frontend, key: Qt::Key_P, modifiers: Qt::ControlModifier, text: "\u0010")
     expect(application.current_window.point).to eq(row: 0, col: 0)
   end
+end
+
+RSpec.describe "Qt Meta punctuation through editor session" do
+  include_context "Qt input integration lifecycle"
+  include QtInputIntegrationSpecHelpers
+
+  it "moves to the document boundaries with real Qt Alt+Shift punctuation" do
+    application, frontend = build_qt_editor((1..100).map { |number| "line #{number}" })
+    @frontends << frontend
+
+    deliver_qt_payload(
+      application,
+      frontend,
+      key: Qt::Key_Comma, modifiers: Qt::AltModifier | Qt::ShiftModifier, text: "<"
+    )
+    expect(application.current_window.point).to eq(row: 0, col: 0)
+
+    deliver_qt_payload(
+      application,
+      frontend,
+      key: Qt::Key_Period, modifiers: Qt::AltModifier | Qt::ShiftModifier, text: ">"
+    )
+    expect(application.current_window.point).to eq(row: 99, col: 8)
+  end
+end
+
+RSpec.describe "Qt wheel input through editor session" do
+  include_context "Qt input integration lifecycle"
+  include QtInputIntegrationSpecHelpers
 
   it "scrolls the core viewport and real Qt scrollbar from wheel input" do
     application, frontend = build_qt_editor((1..80).map { |number| "line #{number}" })
     @frontends << frontend
-    payload = { angle_delta_y: -120, pixel_delta_y: 0, window_id: application.current_window.object_id }
-    frontend.instance_variable_get(:@input_router).enqueue_wheel(payload)
-    drain_core_events(application, frontend)
+    deliver_qt_wheel(application, frontend, -120)
 
     expect(application.current_window.top_line).to eq(3)
+    expect(application.current_window.point).to eq(row: 3, col: 0)
     scroll_bar = frontend.view.editor.vertical_scroll_bar
     expect(scroll_bar.value).to eq(3 * scroll_bar.single_step)
   end
@@ -88,15 +122,10 @@ RSpec.describe "Qt fractional wheel input through editor session" do
   it "accumulates fractional wheel input before scrolling a line" do
     application, frontend = build_qt_editor((1..80).map { |number| "line #{number}" })
     @frontends << frontend
-    router = frontend.instance_variable_get(:@input_router)
-    payload = { angle_delta_y: -60, pixel_delta_y: 0, window_id: application.current_window.object_id }
-
-    router.enqueue_wheel(payload)
-    drain_core_events(application, frontend)
+    deliver_qt_wheel(application, frontend, -60)
     expect(application.current_window.top_line).to eq(0)
 
-    router.enqueue_wheel(payload)
-    drain_core_events(application, frontend)
+    deliver_qt_wheel(application, frontend, -60)
     expect(application.current_window.top_line).to eq(3)
     scroll_bar = frontend.view.editor.vertical_scroll_bar
     expect(scroll_bar.value).to eq(3 * scroll_bar.single_step)

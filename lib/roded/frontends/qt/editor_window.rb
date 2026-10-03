@@ -1,11 +1,15 @@
 require_relative "editor_pane"
 require_relative "echo_area"
 require_relative "splitter_tree"
+require_relative "pane_layout_operations"
+require_relative "window_theme"
 
 module Roded
   module Frontends
     # Presents editor snapshots in a tree of read-only Qt panes.
     class QtEditorWindow
+      include QtPaneLayoutOperations
+
       attr_reader :window, :editor, :editor_area
 
       def initialize
@@ -13,10 +17,11 @@ module Roded
         @window.set_window_title("Roded")
         @content_host = QWidget.new(@window)
         @content_layout = QVBoxLayout.new(@content_host)
+        @content_host.set_layout(@content_layout)
         @echo_area = QtEchoArea.new(@window)
         initialize_panes
         build_layout
-        apply_theme
+        QtWindowTheme.apply(@window)
       end
 
       def on_key_press(&callback) = bind_callback(:key_callback, callback)
@@ -30,6 +35,8 @@ module Roded
       def show(_payload = nil)
         @window.resize(960, 640)
         @window.show
+        @editor_area&.show
+        @panes.each_value { |pane| pane.container.show }
         @editor&.set_focus
       end
 
@@ -39,18 +46,15 @@ module Roded
         pane.render(snapshot)
         @splitter_tree.mount_single(pane.container)
         @editor_area = pane.container
+        @editor_area.show
         @editor = pane.editor
         @editor.set_focus
       end
 
       def render_layout(snapshot)
         records = snapshot[:windows].to_h { |item| [item[:id], item] }
-        migrate_single_pane(records)
-        bind_panes(records)
-        remove_stale_panes(records.keys)
-        render_panes(records)
-        @splitter_tree.mount(snapshot[:tree]) { |id| @panes.fetch(id) }
-        @editor_area = @splitter_tree.root
+        prepare_panes(records)
+        mount_editor_tree(snapshot[:tree])
         activate_editor(snapshot[:active_window_id])
       end
 
@@ -72,9 +76,10 @@ module Roded
       end
 
       def build_layout
-        layout = QVBoxLayout.new(@window)
-        layout.add_widget(@content_host)
-        layout.add_widget(@echo_area.widget)
+        @window_layout = QVBoxLayout.new(@window)
+        @window.set_layout(@window_layout)
+        @window_layout.add_widget(@content_host)
+        @window_layout.add_widget(@echo_area.widget)
       end
 
       def pane_for(id)
@@ -119,14 +124,6 @@ module Roded
         @editor = @panes.fetch(active_id).editor
         @editor.set_focus if active_id != @active_window_id
         @active_window_id = active_id
-      end
-
-      def apply_theme
-        @window.set_style_sheet(
-          "QWidget { background: #292b34; color: #bbc2cf; } " \
-          "QTextEdit { background: #282c34; color: #bbc2cf; border: 0; " \
-          "selection-background-color: #3e4451; } QLabel { padding: 4px; }"
-        )
       end
     end
   end

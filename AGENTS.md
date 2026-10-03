@@ -25,7 +25,8 @@
 - `spec/spec_helper.rb` must force Qt specs to `QT_QPA_PLATFORM=offscreen` and
   use a per-process `XDG_CONFIG_HOME` under the system temp directory, even if
   the caller has exported desktop Qt or user config settings. Live UI smoke
-  checks run separately under Xvfb.
+  checks run separately under Xvfb. Standalone Qt probes must also set a private
+  `XDG_CONFIG_HOME`; do not launch them against the user's desktop session.
 - Cover command routing and buffer mutations when adding features; use test doubles for frontends when possible.
 - For Qt visual regressions, also run a live-widget smoke check modeled on the Qt gem's `examples/development_ordered_demos/02_live_layout_console.rb`: keep the `QApplication` and widgets referenced, perform widget changes on the GUI thread, and pump `QApplication.process_events` while the check runs. Verify the visible editor, caret/modeline, and scrolling (a changed `to_plain_text` value alone does not prove the frame updated); capture the UI in an isolated Xvfb session when a screenshot is useful. This is a diagnostic/test harness pattern, not a requirement to replace the application's event loop.
 
