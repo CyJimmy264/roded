@@ -1,4 +1,4 @@
-RSpec.describe Roded::WindowLayout do
+RSpec.describe Roded::WindowLayout, "split rectangles" do
   it "calculates nested horizontal and vertical split rectangles" do
     buffer = Roded::Buffer.new("doc")
     first = Roded::Window.new(buffer)
@@ -17,7 +17,9 @@ RSpec.describe Roded::WindowLayout do
                                                                                          height: 12)
                                                         ])
   end
+end
 
+RSpec.describe Roded::WindowLayout, "split removal" do
   it "collapses a split after removing a leaf and can keep one window" do
     buffer = Roded::Buffer.new("doc")
     first = Roded::Window.new(buffer)
@@ -32,7 +34,9 @@ RSpec.describe Roded::WindowLayout do
     layout.keep(third)
     expect(layout.windows).to eq([third])
   end
+end
 
+RSpec.describe Roded::WindowLayout, "split resizing" do
   it "resizes the active side of a vertical split within safe bounds" do
     buffer = Roded::Buffer.new("doc")
     first = Roded::Window.new(buffer)

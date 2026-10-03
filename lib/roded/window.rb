@@ -115,12 +115,13 @@ module Roded
 
     def map_position_after_edit(position, change)
       row_delta = change.new_end[:row] - change.old_end[:row]
-      if position[:row] == change.old_end[:row]
-        return { row: change.new_end[:row],
-                 col: change.new_end[:col] + position[:col] - change.old_end[:col] }
-      end
+      return map_position_on_replaced_row(position, change) if position[:row] == change.old_end[:row]
 
       { row: position[:row] + row_delta, col: position[:col] }
+    end
+
+    def map_position_on_replaced_row(position, change)
+      { row: change.new_end[:row], col: change.new_end[:col] + position[:col] - change.old_end[:col] }
     end
   end
 end

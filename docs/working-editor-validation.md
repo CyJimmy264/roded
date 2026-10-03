@@ -835,3 +835,11 @@ File save здесь сохраняет текстовое представле�
 - Clipboard bridge specs: **4 examples, 0 failures**; полный RSpec:
   **220 examples, 0 failures**. RuboCop debt сейчас **55 offenses**, поэтому
   общий rake gate ещё красный.
+
+## 2026-10-03 — position transforms views
+
+- Упростил перевод point/mark после multi-line edit: replacement-row mapping
+  теперь отдельный helper, а window layout specs разделены по независимым
+  сценариям.
+- Window/layout specs: **6 examples, 0 failures**; targeted RuboCop чистый.
+  Эти правки помогли сократить общий lint debt до **55 offenses**.
