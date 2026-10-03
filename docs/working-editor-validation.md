@@ -1306,6 +1306,19 @@ File save здесь сохраняет текстовое представле�
 - `bundle exec rake`: **288 examples, 0 failures**; RuboCop: **148 files, 0
   offenses**.
 
+## 2026-10-04 — curses undo through a terminal emulator
+
+- The private PTY smoke above sends terminal byte `0x1f` directly. To verify
+  the keyboard mapping too, `script/curses_xvfb_keyboard_smoke.sh` starts
+  Alacritty **0.17.0** and the real curses app under Xvfb, with private
+  `XDG_CONFIG_HOME`, `XDG_CACHE_HOME` and `XDG_RUNTIME_DIR`. `xdotool` sends
+  Ctrl+/ through Alacritty; the application log records normalized `C-_`, and
+  saving after undo restores the exact file bytes. The process exits cleanly.
+- Runtime: Ruby **3.4.2**, curses gem **1.5.3**, `TERM=xterm-256color`, Alacritty
+  X11 on isolated Xvfb (1280×800×24). Command and result:
+  `script/curses_xvfb_keyboard_smoke.sh` — passed; log:
+  `/tmp/roded-curses-xvfb.Fxbti9/roded.log`. No desktop `DISPLAY` was used.
+
 ## 2026-10-04 — remove legacy console status bar
 
 - `Roded::Window` is the logical editor view with independent point/mark and
