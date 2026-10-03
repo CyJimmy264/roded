@@ -13,8 +13,7 @@ module Roded
       :position_change, keyword_init: true
     )
 
-    attr_accessor :filename, :readonly, :file_revision
-    attr_accessor :major_mode
+    attr_accessor :filename, :readonly, :file_revision, :major_mode
     attr_reader :line_ending, :final_newline, :name
 
     def initialize(name = nil)
@@ -378,7 +377,7 @@ module Roded
       end
     end
 
-  private
+    private
 
     def record_edit(row, before_count, after_count)
       before = edit_snapshot(row, before_count)
@@ -465,7 +464,7 @@ module Roded
     def common_prefix_length(before_chars, after_chars)
       index = 0
       index += 1 while index < before_chars.length && index < after_chars.length &&
-                        before_chars[index] == after_chars[index]
+                       before_chars[index] == after_chars[index]
       index
     end
 

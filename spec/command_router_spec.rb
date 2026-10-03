@@ -76,7 +76,7 @@ RSpec.describe Roded::CommandRouter do
   it "resolves arbitrary multi-key sequences from the keymap" do
     custom_map = Roded::Keymap.new(Roded::Keymap::DEFAULT.merge(
                                      "C-c r r" => { type: :ruby_repl }
-    ))
+                                   ))
     custom_router = described_class.new(custom_map)
 
     expect(custom_router.route("C-c").type).to eq(:prefix_pending)

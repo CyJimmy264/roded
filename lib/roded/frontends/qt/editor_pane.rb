@@ -97,9 +97,7 @@ module Roded
         token = tokens.to_a.find { |span| span[:start] <= first && span[:finish] >= last }
         styles << "color: #{SyntaxHighlighter::COLORS.fetch(token[:category])};" if token
         selected = selected_columns(line, row, range)
-        if selected && first >= selected.first && last <= selected.last
-          styles << "background-color: #3e4451;"
-        end
+        styles << "background-color: #3e4451;" if selected && first >= selected.first && last <= selected.last
         styles.empty? ? value : "<span style=\"#{styles.join}\">#{value}</span>"
       end
 

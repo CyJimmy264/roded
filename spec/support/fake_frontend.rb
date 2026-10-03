@@ -30,7 +30,6 @@ class FakeFrontend
   def render(buffer)
     renders << buffer
   end
-
 end
 
 class ScriptedFrontend

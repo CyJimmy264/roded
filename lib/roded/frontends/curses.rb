@@ -5,6 +5,7 @@ module Roded
   module Frontends
     class Curses
       include Logging
+
       attr_accessor :keymap, :focus
 
       def initialize
@@ -101,6 +102,7 @@ module Roded
         logger.debug("next_event: read_key: #{key.inspect}")
         return Event.new(:noop, {}) unless key
         return Event.new(:quit, {}) if key == :quit_signal
+
         Event.new(:key, { key: })
       end
 
@@ -248,9 +250,7 @@ module Roded
         end
 
         expected = expected_utf8_length(@input_buffer.getbyte(0))
-        if expected.nil? || @input_buffer.bytesize >= expected
-          @input_buffer.clear
-        end
+        @input_buffer.clear if expected.nil? || @input_buffer.bytesize >= expected
 
         nil
       end
@@ -265,8 +265,8 @@ module Roded
       end
 
       def normalize_input(ch)
-        return "Enter" if ch == "\n" || ch == "\r"
-        return "Backspace" if ch == "\u007F" || ch == "\b"
+        return "Enter" if ["\n", "\r"].include?(ch)
+        return "Backspace" if ["\u007F", "\b"].include?(ch)
 
         codepoint = ch.ord
         return "C-SPC" if codepoint.zero?
@@ -290,7 +290,7 @@ module Roded
         return unless @screen
 
         @screen.clear
-        visible_lines = (@data_lines || [])[ @top, @screen.maxy ] || []
+        visible_lines = (@data_lines || [])[@top, @screen.maxy] || []
         visible_lines.each_with_index do |line, idx|
           @screen.setpos(idx, 0)
           @screen.addstr(line.ljust(@screen.maxx)[0, @screen.maxx])
@@ -369,16 +369,14 @@ module Roded
         tokens.each do |token|
           boundaries.concat([token[:start] - left_column, token[:finish] - left_column])
         end
-        if selection
-          boundaries.concat(selection.map { |column| column - left_column })
-        end
+        boundaries.concat(selection.map { |column| column - left_column }) if selection
         boundaries = boundaries.map { |column| column.clamp(0, text.length) }.uniq.sort
         boundaries.each_cons(2) do |first, last|
           write_styled_segment(item, screen_row, x, text, first, last, width, tokens, selection, left_column)
         end
       end
 
-      def write_styled_segment(item, row, x, text, first, last, width, tokens, selection, left_column)
+      def write_styled_segment(_item, row, x, text, first, last, width, tokens, selection, left_column)
         return if first >= last
 
         token = tokens.find do |span|

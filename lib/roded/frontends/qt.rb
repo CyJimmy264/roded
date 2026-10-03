@@ -7,7 +7,7 @@ require_relative "qt/ui_dispatcher"
 
 module Roded
   module Frontends
-      # Connects the shared editor core to a Qt desktop window.
+    # Connects the shared editor core to a Qt desktop window.
     class Qt
       attr_reader :view
 

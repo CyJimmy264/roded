@@ -9,10 +9,13 @@ RSpec.describe Roded::WindowLayout do
     layout.split(second, third, :horizontal)
 
     expect(layout.rectangles(80, 24).map(&:last)).to eq([
-      described_class::Rectangle.new(x: 0, y: 0, width: 40, height: 24),
-      described_class::Rectangle.new(x: 40, y: 0, width: 40, height: 12),
-      described_class::Rectangle.new(x: 40, y: 12, width: 40, height: 12)
-    ])
+                                                          described_class::Rectangle.new(x: 0, y: 0, width: 40,
+                                                                                         height: 24),
+                                                          described_class::Rectangle.new(x: 40, y: 0, width: 40,
+                                                                                         height: 12),
+                                                          described_class::Rectangle.new(x: 40, y: 12, width: 40,
+                                                                                         height: 12)
+                                                        ])
   end
 
   it "collapses a split after removing a leaf and can keep one window" do

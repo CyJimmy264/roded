@@ -796,7 +796,7 @@ RSpec.describe Roded::Application do
 
   it "cancels line search without moving the view point" do
     application.startup
-    application.current_buffer.lines = ["needle", "other"]
+    application.current_buffer.lines = %w[needle other]
     application.current_window.point = { row: 1, col: 2 }
 
     %w[C-s n e e d l e C-g].each do |key|
@@ -808,7 +808,7 @@ RSpec.describe Roded::Application do
 
   it "searches forward from M-x and goes to a requested line" do
     application.startup
-    application.current_buffer.lines = ["alpha", "needle", "omega"]
+    application.current_buffer.lines = %w[alpha needle omega]
     application.current_window.point = { row: 0, col: 0 }
     application.process_command("isearch-forward")
     "needle".each_char { |character| application.minibuffer.insert_char(character) }
