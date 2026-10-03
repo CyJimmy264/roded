@@ -257,6 +257,8 @@ replace обратимы. Provider/history/preview не становятся cur
 - [X] Offscreen native QWidget.close returns rejected and remains visible while
   core decides; desktop save/discard/cancel interaction remains open.
 - [ ] UI-thread/snapshot/feedback-loop/REPL/shutdown integration checks.
+- [X] Qt UI dispatcher protects pending updates with a mutex and coalesces
+  obsolete editor/picker/minibuffer snapshots while retaining discrete actions.
 - [X] Real-widget offscreen tests cover layout, Unicode caret and mouse hit-test,
   syntax, region, search, close, picker, resize, clipboard, empty scratch, blank
   rows, active-line background, visible block caret and initial editor focus.

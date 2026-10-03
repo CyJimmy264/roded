@@ -75,3 +75,51 @@ RSpec.describe "Qt clipboard key routing" do
     expect(events.map { |event| event.payload[:source_id] }).to eq(%i[qt qt])
   end
 end
+
+RSpec.describe Roded::Frontends::QtUiDispatcher do
+  it "coalesces obsolete editor snapshots while preserving discrete UI actions" do
+    first = { revision: 1 }.freeze
+    latest = { revision: 2 }.freeze
+    view = double(render_layout: nil, display_message: nil)
+    clipboard = double(write_text: nil)
+    dispatcher = described_class.new(view, Object.new, clipboard)
+
+    dispatcher.post(:layout, first)
+    dispatcher.post(:message, "saved")
+    dispatcher.post(:clipboard_write, "copied")
+    dispatcher.post(:layout, latest)
+    dispatcher.send(:drain)
+
+    expect(view).to have_received(:render_layout).once.with(latest)
+    expect(view).to have_received(:display_message).once.with("saved")
+    expect(clipboard).to have_received(:write_text).once.with("copied")
+  end
+end
+
+RSpec.describe Roded::Frontends::QtUiDispatcher, "coalesced echo state" do
+  it "keeps only the latest pending picker and minibuffer states" do
+    view = double(render_picker: nil, render_minibuffer: nil, clear_minibuffer: nil)
+    dispatcher = described_class.new(view, Object.new, Object.new)
+
+    dispatcher.post(:picker, { query: "old" })
+    dispatcher.post(:minibuffer, { text: "draft" })
+    dispatcher.post(:picker, { query: "new" })
+    dispatcher.post(:minibuffer_clear)
+    dispatcher.send(:drain)
+
+    expect(view).to have_received(:render_picker).once.with(query: "new")
+    expect(view).not_to have_received(:render_minibuffer)
+    expect(view).to have_received(:clear_minibuffer).once
+  end
+end
+
+RSpec.describe Roded::Frontends::QtUiDispatcher, "render queue bounds" do
+  it "bounds repeated render publications to the newest editor snapshot" do
+    dispatcher = described_class.new(Object.new, Object.new, Object.new)
+    500.times { |revision| dispatcher.post(:layout, { revision: }.freeze) }
+
+    pending = dispatcher.instance_variable_get(:@queue)
+
+    expect(pending).to eq([[:layout, { revision: 499 }]])
+  end
+end

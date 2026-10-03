@@ -2,6 +2,11 @@ module Roded
   module Frontends
     # Applies queued widget updates on the Qt GUI thread.
     class QtUiDispatcher
+      COALESCED_ACTION_GROUPS = [
+        %i[render layout],
+        %i[picker],
+        %i[minibuffer minibuffer_clear]
+      ].freeze
       ACTION_ROUTES = {
         render: %i[view render],
         layout: %i[view render_layout],
@@ -18,14 +23,19 @@ module Roded
         @application = application
         @clipboard = clipboard
         @targets = { view: @view, clipboard: @clipboard, self: self }
-        @queue = Queue.new
+        @queue = []
+        @queue_mutex = Mutex.new
         @timer = QTimer.new
         @timer.set_interval(12)
         @timer.connect("timeout") { |_payload| drain }
       end
 
       def post(action, payload = nil)
-        @queue << [action, payload]
+        @queue_mutex.synchronize do
+          group = coalesced_action_group(action)
+          @queue.reject! { |queued_action, _queued_payload| group&.include?(queued_action) }
+          @queue << [action, payload]
+        end
       end
 
       def start
@@ -35,9 +45,12 @@ module Roded
       private
 
       def drain
-        apply(*@queue.pop(true)) until @queue.empty?
-      rescue ThreadError
-        nil
+        actions = @queue_mutex.synchronize { @queue.shift(@queue.length) }
+        actions.each { |action, payload| apply(action, payload) }
+      end
+
+      def coalesced_action_group(action)
+        COALESCED_ACTION_GROUPS.find { |group| group.include?(action) }
       end
 
       def apply(action, payload)

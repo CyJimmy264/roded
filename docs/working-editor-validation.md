@@ -1018,3 +1018,16 @@ File save здесь сохраняет текстовое представле�
   core обращается к frontend. Qt input integration сравнивает `C-v` с реальным
   page size pane. Полный suite: **253 examples, 0 failures**; RuboCop для
   затронутых Ruby/spec файлов: **0 offenses**.
+
+## 2026-10-03 — Qt UI dispatcher coalesces render snapshots
+
+- Очередь UI dispatcher теперь synchronized и заменяет накопившиеся editor,
+  picker и minibuffer state updates их последним состоянием. Сообщения и
+  clipboard writes остаются отдельными FIFO actions. GUI timer забирает
+  текущий batch и выполняет его на UI thread.
+- Specs проверяют latest-wins для panes/picker/minibuffer, сохранение сообщений
+  и clipboard, и что 500 render posts занимают одну позицию. Полный suite:
+  **256 examples, 0 failures**; RuboCop dispatcher/spec: **0 offenses**.
+- `script/qt_live_smoke.sh` повторно прошёл под Xvfb после coalescing:
+  `/tmp/roded-qt-live-smoke.u8EkFU` — key, wheel, mouse-selection, split,
+  Menu/Alt+Menu, resize, save и shutdown сценарии завершились успешно.
