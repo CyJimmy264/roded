@@ -138,7 +138,8 @@ file roundtrip не теряет текст. Коммит этапа до шир
 - [ ] Mark/region, kill/copy/yank/KillRing и readonly на всех edit entrypoints.
 - [X] Unicode position transforms корректируют point/mark всех views на edits/undo.
 - [X] Tab и `indent-region` добавляют по два пробела в текущую строку или
-  строки region; группируются в одну undo-операцию, включая реальный curses PTY.
+  строки region; `tabify` / `untabify` работают с выбранными строками или всем
+  buffer, преобразуют whitespace и группируют edits для undo.
 - [ ] Word/document movement, multiline paste и длинные строки.
 - [ ] Headless integration open/edit/save/close/quit и failure/cancel cases.
 
@@ -174,7 +175,8 @@ undo и modified state согласованы. FileService и edit history — �
 - [X] `C-h b` / `M-x describe-bindings` показывают actual keymap и registry;
   core test проверяет user binding, а настоящий curses PTY открывает help buffer.
 - [X] User keymap validation показывает ошибки в frontend; prefix hints и
-  минимальные custom commands работают через общий router и registry.
+  custom commands из таблицы (`select-current-line`, tabify/untabify,
+  дата/время, `binding.irb`) работают через общий router и registry.
 - [ ] Проверки всех providers, query edit, cancel/replace и layout interactions.
 
 Критерий: нужный файл/buffer/команда/строка выбираются в живом UI, поиск и

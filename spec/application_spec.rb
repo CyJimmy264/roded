@@ -21,8 +21,8 @@ RSpec.describe Roded::Application do
       Roded::Command.new(:minibuffer_render, { prompt: "M-x ", text: "", cursor: 0 })
     )
     expect(frontend.commands.last.type).to eq(:picker_render)
-    expect(frontend.commands.last.payload[:candidates]).to include("describe-bindings", "open")
-    expect(application.command_names).to include("quit")
+    expect(frontend.commands.last.payload[:candidates]).to include("describe-bindings", "insert-current-time")
+    expect(application.command_names).to include("open", "quit")
   end
 
   it "submits M-x quit through routed key events" do
@@ -50,7 +50,7 @@ RSpec.describe Roded::Application do
 
   it "moves the selected M-x candidate with C-n and C-p" do
     application.start_minibuffer(:command, "M-x ")
-    application.minibuffer.insert_char("u")
+    "buffer".each_char { |character| application.minibuffer.insert_char(character) }
     application.refresh_picker
     expect(application.selected_picker_value).to eq("kill-buffer")
     application.handle_event(Roded::Event.new(:key, { key: "C-n" }))

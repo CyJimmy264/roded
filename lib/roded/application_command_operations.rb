@@ -29,6 +29,7 @@ module Roded
       register_prompt_commands
       register_search_commands
       register_mode_and_repl_commands
+      register_text_commands
     end
 
     def register_simple_commands
@@ -79,6 +80,33 @@ module Roded
         editor.start_minibuffer(:major_mode, "Major mode: ")
       end
       @command_registry.register("ruby-repl", description: "Open the in-process Ruby REPL", &:open_ruby_repl)
+    end
+
+    def register_text_commands
+      register_indentation_commands
+      register_insertion_commands
+      register_viewport_commands
+    end
+
+    def register_indentation_commands
+      @command_registry.register("select-current-line", &:select_current_line)
+      @command_registry.register("tabify", &:tabify)
+      @command_registry.register("untabify", &:untabify)
+    end
+
+    def register_insertion_commands
+      @command_registry.register("insert-current-date-time", &:insert_current_date_time)
+      @command_registry.register("insert-current-time", &:insert_current_time)
+      @command_registry.register("insert-binding-irb", &:insert_binding_irb)
+    end
+
+    def register_viewport_commands
+      @command_registry.register("enlarge-window-horizontally") { |editor| editor.resize_window(0.05) }
+      @command_registry.register("shrink-window-horizontally") { |editor| editor.resize_window(-0.05) }
+      @command_registry.register("scroll-line-up") { |editor| editor.scroll_viewport(-1) }
+      @command_registry.register("scroll-line-down") { |editor| editor.scroll_viewport(1) }
+      @command_registry.register("scroll-page-up") { |editor| editor.scroll_viewport(-editor.page_size) }
+      @command_registry.register("scroll-page-down") { |editor| editor.scroll_viewport(editor.page_size) }
     end
   end
 end

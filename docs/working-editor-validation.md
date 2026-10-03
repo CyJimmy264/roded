@@ -119,6 +119,31 @@
   gate сообщает **88 offenses в 98 files**. Physical Super keys и остальные
   незакрытые Qt UI flows остаются обязательными.
 
+## 2026-10-03 — personal text commands и сквозной Qt input route
+
+- Реализованы и зарегистрированы `select-current-line`, `tabify`, `untabify`,
+  `insert-current-date-time`, `insert-current-time`, `insert-binding-irb`, а
+  также M-x aliases для viewport scrolling и split resizing. Leader bindings
+  `C-c d d/t`, `C-c l`, `C-c r b`, плюс `s-l`, `M-s-u`, `M-s-Tab`, `M-s-d/t/b`
+  вызывают те же registry actions.
+- `C-@` транслируется в Qt как отдельный input token и ведёт в mark command;
+  curses NUL остаётся alias `C-SPC`. Qt `Menu`/`M-Menu` ведут к project/buffer
+  pickers. `C-x <left>/<right>` добавлены как aliases к переключению buffers.
+- `tabify`/`untabify` применяют tab width **2** к пробельным группам по всему
+  выбранному тексту или buffer. Все views сохраняют соответствующий character
+  point/mark; операция одной undo group. Commands не меняют readonly buffer.
+- Specs: line selection, tab conversion/undo, local date/time formats,
+  `binding.irb` indentation, readonly guards, Qt Menu/Ctrl+@ and shortcut routes.
+  Настоящий `QtInputRouter` + Qt clipboard widget получил QKeyEvent-shaped
+  `M-s-b` payload и изменил core buffer до `\nbinding.irb`.
+- Curses PTY (`TERM=xterm-256color`, 24×80, Ruby 3.4.2): после сигнала готовности
+  input mode выполнена последовательность `C-c d d`, затем save/quit; файл
+  содержит `03/10/2026 13:52:54`, процесс завершился с кодом **0**.
+- Полный `bundle exec rake`: **185 examples, 0 failures**; общий RuboCop gate
+  остаётся **88 offenses в 101 file**. Новые text/Qt shortcut files проходят
+  targeted RuboCop без offenses. Физические Super keys и Qt desktop acceptance
+  не проверялись в этом этапе.
+
 ## 2026-10-03 — Qt clipboard paste через общий core event
 
 - Runtime probe qt 0.1.9 / Qt Widgets 6.11.2: `QApplication.clipboard`

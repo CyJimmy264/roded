@@ -15,7 +15,8 @@ module Roded
         ::Qt::Key_Down => "Down",
         ::Qt::Key_Tab => "Tab",
         ::Qt::Key_Space => "SPC",
-        ::Qt::Key_F7 => "F7"
+        ::Qt::Key_F7 => "F7",
+        ::Qt::Key_Menu => "Menu"
       }.freeze
 
       def translate(payload)
@@ -35,11 +36,20 @@ module Roded
 
       def key_name(key, text, modifiers)
         return SPECIAL_KEYS[key] if SPECIAL_KEYS.key?(key)
-        return key.chr.downcase if modifiers.anybits?(::Qt::ControlModifier) && key.between?(::Qt::Key_A, ::Qt::Key_Z)
+        return control_key_name(key) if control_key?(key, modifiers)
 
         return text.to_s unless text.to_s.empty?
 
         key.chr if key.between?(::Qt::Key_A, ::Qt::Key_Z)
+      end
+
+      def control_key?(key, modifiers)
+        modifiers.anybits?(::Qt::ControlModifier) &&
+          (key == ::Qt::Key_At || key.between?(::Qt::Key_A, ::Qt::Key_Z))
+      end
+
+      def control_key_name(key)
+        key == ::Qt::Key_At ? "@" : key.chr.downcase
       end
 
       def modified_name(name, modifiers)

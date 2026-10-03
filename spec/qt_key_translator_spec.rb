@@ -14,6 +14,8 @@ module Qt
     Key_Tab: 0x01000001,
     Key_Space: 0x20,
     Key_F7: 0x01000036,
+    Key_Menu: 0x01000055,
+    Key_At: 0x40,
     Key_A: 0x41,
     Key_Z: 0x5a,
     ControlModifier: 0x04000000,
@@ -27,6 +29,7 @@ end
 
 require_relative "../lib/roded/frontends/qt/key_translator"
 
+# rubocop:disable Metrics/BlockLength
 RSpec.describe Roded::Frontends::QtKeyTranslator do
   subject(:translator) { described_class.new }
 
@@ -50,4 +53,18 @@ RSpec.describe Roded::Frontends::QtKeyTranslator do
     expect(translator.translate({ key: Qt::Key_Space, modifiers: Qt::ControlModifier, text: "" })).to eq("C-SPC")
     expect(translator.translate({ key: Qt::Key_Tab, modifiers: Qt::ShiftModifier, text: "\t" })).to eq("S-Tab")
   end
+
+  it "translates the Qt Menu key with and without Alt" do
+    expect(translator.translate({ key: Qt::Key_Menu, modifiers: 0, text: "" })).to eq("Menu")
+    expect(translator.translate({ key: Qt::Key_Menu, modifiers: Qt::AltModifier, text: "" })).to eq("M-Menu")
+  end
+
+  it "keeps Ctrl+@ distinct from the Ctrl+Space alias" do
+    ctrl_at = { key: Qt::Key_At, modifiers: Qt::ControlModifier | Qt::ShiftModifier, text: "@" }
+    ctrl_space = { key: Qt::Key_Space, modifiers: Qt::ControlModifier, text: "" }
+
+    expect(translator.translate(ctrl_at)).to eq("C-@")
+    expect(translator.translate(ctrl_space)).to eq("C-SPC")
+  end
 end
+# rubocop:enable Metrics/BlockLength
