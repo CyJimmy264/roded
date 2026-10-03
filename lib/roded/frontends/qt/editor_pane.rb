@@ -1,6 +1,7 @@
 require_relative "cursor_mapper"
 require_relative "editor_html_renderer"
 require_relative "mouse_input_adapter"
+require_relative "layout_spacing"
 
 module Roded
   module Frontends
@@ -11,11 +12,11 @@ module Roded
       def initialize(parent)
         @container = QWidget.new(parent)
         @layout = QVBoxLayout.new(@container)
-        @container.set_layout(@layout)
         @editor = QTextEdit.new(@container)
         @mouse_input = QtMouseInputAdapter.new(@editor)
         configure_editor
         @modeline = QLabel.new(@container)
+        QtLayoutSpacing.configure_pane(@container, @layout, @editor, @modeline)
         @layout.add_widget(@editor)
         @layout.add_widget(@modeline)
         @subscribed = false

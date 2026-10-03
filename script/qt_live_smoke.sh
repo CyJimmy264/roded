@@ -69,12 +69,12 @@ fi
 sleep 0.5
 import -window "$window_id" "$smoke_dir/after-edit-save.png"
 xdotool windowfocus --sync "$window_id"
-xdotool mousemove --window "$window_id" 30 64 click 1
+xdotool mousemove --window "$window_id" 30 40 click 1
 sleep 0.5
 import -window "$window_id" "$smoke_dir/after-blank-line-caret.png"
 xdotool windowfocus --sync "$window_id"
-xdotool mousemove --window "$window_id" 30 100 mousedown 1
-xdotool mousemove --sync --window "$window_id" 90 100
+xdotool mousemove --window "$window_id" 30 90 mousedown 1
+xdotool mousemove --sync --window "$window_id" 90 90
 xdotool mouseup 1
 xdotool key --clearmodifiers ctrl+shift+c
 sleep 0.5

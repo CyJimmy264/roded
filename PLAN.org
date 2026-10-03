@@ -262,13 +262,15 @@ replace обратимы. Provider/history/preview не становятся cur
 - [X] Real-widget offscreen tests cover layout, Unicode caret and mouse hit-test,
   syntax, region, search, close, picker, resize, clipboard, empty scratch, blank
   rows, active-line background, visible block caret and initial editor focus.
-- [X] Изолированный Qt Xvfb smoke показывает пустую строку с block caret и
-  запускает `bin/roded --frontend qt` без аргументов на `*scratch*`.
+- [X] Изолированный Qt Xvfb smoke показывает пустую строку с фоном активной
+  строки и block caret, запускает `bin/roded --frontend qt` без аргументов на
+  `*scratch*`, и отправляет клавиши до клика в editor.
 - [X] Qt `C-n`/`C-p` input moves the active core point, and wheel input updates
   both core `top_line` and the real Qt scrollbar; integration specs cover the
   application/input-router/widget path.
-- [X] Qt plain Space inserts a literal space; at EOL the Qt caret remains after
-  the text instead of highlighting the last character. Xvfb edit/save smoke.
+- [X] Qt plain Space inserts a literal space; at EOL a blue block caret appears
+  in its own cell after the text instead of covering the last character. Xvfb
+  edit/save screenshot verifies the visible frame.
 - [ ] Desktop smoke с физическими Super keys.
 - [X] Активные Qt binding workarounds учтены; удалённые решения перечислены в
   qt-workarounds.md без устаревших TODO в production code.

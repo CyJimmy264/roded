@@ -4,6 +4,7 @@ require_relative "splitter_tree"
 require_relative "pane_layout_operations"
 require_relative "window_theme"
 require_relative "window_focus_operations"
+require_relative "layout_spacing"
 
 module Roded
   module Frontends
@@ -20,6 +21,7 @@ module Roded
         @content_host = QWidget.new(@window)
         @content_layout = QVBoxLayout.new(@content_host)
         @content_host.set_layout(@content_layout)
+        QtLayoutSpacing.reset(@content_layout)
         @echo_area = QtEchoArea.new(@window)
         initialize_panes
         build_layout
@@ -83,6 +85,7 @@ module Roded
       def build_layout
         @window_layout = QVBoxLayout.new(@window)
         @window.set_layout(@window_layout)
+        QtLayoutSpacing.reset(@window_layout)
         @window_layout.add_widget(@content_host)
         @window_layout.add_widget(@echo_area.widget)
       end

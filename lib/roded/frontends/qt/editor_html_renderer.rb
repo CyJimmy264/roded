@@ -7,6 +7,7 @@ module Roded
     class QtEditorHtmlRenderer
       def initialize(text, snapshot)
         @lines = text.split("\n", -1)
+        @lines = [""] if @lines.empty?
         @snapshot = snapshot
         @range = ordered_range(snapshot[:mark], snapshot[:point])
       end

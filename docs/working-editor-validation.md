@@ -1009,6 +1009,24 @@ File save здесь сохраняет текстовое представле�
   mouse-selection events, включая Menu/Alt+Menu pickers, resize и выход. Smoke
   harness проверяет первый UI по его логу и no-argument scratch по отдельному.
 
+## 2026-10-03 — Qt caret на пустом документе и геометрия UI
+
+- Пустая строка теперь всегда создаёт Qt paragraph. В пустом `*scratch*` видны
+  фон активной строки и block caret; Xvfb снимок
+  `/tmp/roded-qt-live-smoke.NEBmYw/empty-scratch.png` подтверждает кадр.
+- У pane/window layouts и editor/labels обнулены margins и spacing; stylesheet
+  отключает padding у widgets. Modeline отделена тонкой верхней границей.
+  Проверяются реальные Qt layout/widget margins, spacing, label margin и border
+  selector; live снимок `/tmp/roded-qt-live-smoke.NEBmYw/after-edit-save.png`.
+- Полный Xvfb `script/qt_live_smoke.sh`: 17 key, 1 wheel, 12 mouse-selection
+  events, Menu/Alt+Menu, split/resize, save, empty scratch и shutdown прошли.
+  No-click keyboard/save сценарий `script/qt_final_newline_smoke.sh` также прошёл;
+  `/tmp/roded-qt-final-newline.tQjKiJ/end-of-line-caret.png` показывает текст `x`
+  и видимый block caret в ячейке после него. Оба smoke используют отдельный
+  Xvfb/private config и не подключаются к desktop DISPLAY.
+- Полный `bundle exec rspec`: **259 examples, 0 failures**; targeted RuboCop по
+  Qt layout/render/focus/input и specs: **10 files, 0 offenses**.
+
 ## 2026-10-03 — Qt page geometry передаётся из GUI-thread
 
 - Page movement key events измеряют размер текстового viewport активной Qt

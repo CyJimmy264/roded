@@ -4,9 +4,11 @@ module Roded
     module QtWindowTheme
       def self.apply(window)
         window.set_style_sheet(
-          "QWidget { background: #292b34; color: #bbc2cf; } " \
+          "QWidget { background: #292b34; color: #bbc2cf; margin: 0px; padding: 0px; } " \
           "QTextEdit { background: #282c34; color: #bbc2cf; border: 0; " \
-          "selection-background-color: #3e4451; } QLabel { padding: 4px; }"
+          "selection-background-color: #3e4451; } " \
+          "QLabel { padding: 0px; margin: 0px; border: 0px; } " \
+          "QLabel#rodedModeline { border-top: 1px solid #4b5263; }"
         )
       end
     end

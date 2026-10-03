@@ -3,6 +3,10 @@ require_relative "../lib/roded/frontends/qt/editor_window"
 require_relative "../lib/roded/frontends/qt/clipboard_bridge"
 
 module QtEditorWindowSpecHelpers
+  def margin_values(margins)
+    %i[left top right bottom].map { |side| margins.public_send(side) }
+  end
+
   def render_qt_snapshot(view, text, character_column)
     @views << view
     window = { id: 101, text:, point: { row: 0, col: character_column }, name: "unicode", active: true }
@@ -363,8 +367,10 @@ RSpec.describe Roded::Frontends::QtEditorWindow, "empty scratch" do
     view = described_class.new
     render_qt_snapshot(view, "", 0)
 
-    expect(view.editor.to_plain_text).to eq("")
+    expect(view.editor.to_plain_text).to eq(" ")
     expect(view.editor.text_cursor.position).to eq(0)
+    expect(view.editor.to_html).to include("background-color:#343a46")
+    expect(view.editor.to_html).to include("background-color:#61afef")
   end
 end
 
@@ -448,6 +454,30 @@ RSpec.describe Roded::Frontends::QtEditorWindow, "visible editor layout" do
     expect(view.editor.height).to be > 300
     expect(modeline.y).to be > view.editor.y
     expect(modeline.height).to be > 0
+  end
+end
+
+RSpec.describe Roded::Frontends::QtEditorWindow, "zero-spacing editor widgets" do
+  include_context "Qt editor window lifecycle"
+
+  it "removes layout and widget margins around panes, modelines, and echo area" do
+    view = described_class.new
+    render_qt_snapshot(view, "text", 0)
+    pane = view.instance_variable_get(:@panes).fetch(101)
+    modeline = pane.instance_variable_get(:@modeline)
+
+    expect(margin_values(pane.container.layout.contents_margins)).to eq([0, 0, 0, 0])
+    expect(pane.container.layout.spacing).to eq(0)
+    expect(margin_values(pane.container.contents_margins)).to eq([0, 0, 0, 0])
+    expect(margin_values(view.editor.contents_margins)).to eq([0, 0, 0, 0])
+    expect(margin_values(view.instance_variable_get(:@window_layout).contents_margins)).to eq([0, 0, 0, 0])
+    expect(margin_values(view.instance_variable_get(:@content_layout).contents_margins)).to eq([0, 0, 0, 0])
+    expect(view.instance_variable_get(:@window_layout).spacing).to eq(0)
+    expect(view.instance_variable_get(:@content_layout).spacing).to eq(0)
+    expect(modeline.object_name).to eq("rodedModeline")
+    expect(modeline.margin).to eq(0)
+    expect(view.instance_variable_get(:@echo_area).widget.margin).to eq(0)
+    expect(view.window.style_sheet).to include("QLabel#rodedModeline { border-top: 1px solid #4b5263; }")
   end
 end
 

@@ -8,6 +8,7 @@ module Roded
 
       def initialize(parent)
         @widget = QLabel.new(parent)
+        @widget.set_margin(0)
       end
 
       def render_minibuffer(payload)
