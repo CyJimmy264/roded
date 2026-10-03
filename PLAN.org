@@ -1,167 +1,212 @@
-- [X] (P0) Стабилизировать базовую ветку перед рефакторингом
-  До продолжения архитектурных изменений нужен минимальный safety net.
+#+TITLE: План первой рабочей версии Roded
+#+DATE: 2026-10-03
 
-  - [X] (P0) Убрать шаблонный падающий spec и добиться green `bundle exec rspec`
+* Цель и источники истины
 
-  - [X] (P1) Добавить unit-тесты для Buffer
-    Вставка/удаление, курсор, newline, kill, readonly.
+Довести ветку =1-architecture= до рабочего редактора с curses и Qt frontend.
+Обязательный продукт и критерии завершения заданы в =GOAL.md=.
+Горячие клавиши: =docs/keybindings.md=. Qt: =docs/qt-frontend.md=.
+Основание пересмотра: =docs/architecture-review-2026-10-03.md=.
 
-  - [X] (P1) Добавить unit-тесты для CommandRouter
-    Последовательности клавиш, префиксы `C-x`/`M-`, insertable keys, noop.
+Одна общая editor session, произвольное число buffers, split windows/view
+с независимыми point/mark; frontend выбирается при запуске.
+Оба frontend реализуют полный обязательный сценарий через общий core.
+Физический viewport/layout принадлежит frontend; текст/point/mark/history — core.
+Поддержка одновременного Qt+curses и нескольких desktop frames пока не нужна.
 
-  - [X] (P1) Добавить frontend doubles / smoke specs
-    Проверить happy path без curses: welcome buffer, minibuffer, open/save, quit.
+Это исполнимый план, а не перечень новых классов. Завершение этапа означает
+работающий сценарий и проверки. Имена EditorState/FileService/FrontendManager
+можно уточнить, если ответственность и контракт сохранены.
 
-  - [X] (P1) Зафиксировать текущий happy path как baseline
-    Любой следующий шаг рефакторинга должен сохранять это поведение.
+* Уже сделано до этой версии
 
-- [X] (P1) Разделить ввод и базовую маршрутизацию в core
-  Базовый перенос уже сделан и его не нужно переделывать с нуля.
+- [X] Перенесены Keymap resolution и базовая маршрутизация из curses в core.
+- [X] Введён CommandHandler как начальный шаг разделения команд и runtime.
+- [X] Есть независимая модель Minibuffer.
+- [X] Есть 28 baseline specs Buffer/CommandRouter/Application.
+- [X] Page up/down меняют cursor в core; clamp_cursor_into_view удалён из curses.
+- [X] Выполнена ревизия локального HEAD c134459 относительно develop.
+- [X] Составлены продуктовый goal, keymap scope и новый порядок этапов.
 
-  - [X] (P1) Frontend отдает сырые key events в core
+Baseline не означает готовность редактора: lifecycle и реальные UI flows
+пока не покрыты. На ревизии specs проходят, RuboCop сообщает 70 offenses,
+=bundle exec rake= возвращает ошибку. State/services/views ещё не выделены.
 
-  - [X] (P1) Вынести обработку префиксов и Keymap resolution из frontend
-    Ввести `CommandRouter` в core.
+* Правила выполнения и коммитов
 
-  - [X] (P1) Убрать загрузку Keymap из frontend
-    `Keymap` загружается в `Application` и передается frontend'ам извне.
+- [ ] После каждого законченного этапа обновлять этот план и validation log.
+- [ ] Основные этапы коммитить отдельными осмысленными коммитами с imperative
+  subject; крупный этап разбивать на меньшие проверяемые коммиты.
+- [ ] Перед коммитом выполнять затронутые specs и lint, проверять diff.
+  После начала реализации все specs должны оставаться зелёными. Существующий
+  lint debt не увеличивать; временный точечный baseline только с описанием.
+  К завершению убрать временный baseline и добиться green =bundle exec rake=.
+- [ ] Не смешивать одновременно перенос state, File IO и Qt UI в один коммит.
+- [ ] Не отмечать пункт выполненным по одному mock expectation или skeleton.
+- [ ] Заканчивать обязательные функции и проверки без запросов продолжения
+  после каждого уже согласованного этапа. Существенный scope change согласовать.
+- [ ] Не включать посторонние пользовательские изменения и не переписывать
+  историю ветки. Push/PR/release этим заданием не запрошены.
+- [ ] Сохранять review как исторический документ; актуальные доказательства
+  писать в =docs/working-editor-validation.md=, не переписывать старые результаты.
 
-  - [X] (P1) Ввести `CommandHandler`
-    `Application` больше не исполняет весь editor flow напрямую в одном case.
+* Этап 1 — P0: устранить подтверждённые поломки и стабилизировать runtime
 
-- [-] (P1) Зафиксировать контракты сообщений и владение состоянием
-  До следующего большого переноса нужно формально определить, какие сообщения
-  ходят между слоями и кто владеет каким состоянием.
+- [ ] Quit устанавливает stop state core, не ждёт обратный Event(:quit) из UI.
+- [ ] Routed C-x C-c и M-x quit проверены с настоящим event loop и timeout.
+- [ ] Системные signal/EOF/failure обрабатываются независимо от focus.
+- [ ] Shutdown/wake/join/close и восстановление signal handlers имеют ensure;
+  ошибка команды не оставляет terminal в raw mode или живые input workers.
+- [ ] Пустой файл редактируется; Buffer сохраняет допустимые строки/позиции.
+- [ ] Open/save сохраняет final newline и поддерживаемые LF/CRLF/UTF-8 данные.
+- [ ] Specs проверяют ошибку IO, runtime exception и очистку ресурсов.
+- [ ] Создан validation log; lint debt зафиксирован/сокращён без blanket disable.
 
-  - [ ] (P1) Определить `Event`
-    `Event` = факт внешнего мира -> core (`:key`, `:signal`, позже при необходимости
-    другие input/system events). `Event` не описывает render/update instructions.
+Критерий: baseline + регрессии из review проходят; lifecycle завершает run,
+file roundtrip не теряет текст. Коммит этапа до широкого рефакторинга.
 
-  - [ ] (P1) Определить контракт editor commands
-    Это действие редактора внутри core (`move`, `insert`, `start_command`,
-    `save_buffer`, `quit` и т.п.), полученное после маршрутизации input.
+* Этап 2 — P1: общий core contract, session/views и публикация UI
 
-  - [ ] (P1) Определить отдельный контракт для core -> frontend
-    Render/focus/minibuffer/quit сообщения не должны смешиваться с
-    editor commands. В коде это либо отдельный `FrontendCommand`, либо
-    переименование текущего `Command`.
+- [ ] Разделить InputEvent, EditorCommand и UI update; сохранить source/view id.
+- [ ] Pending key sequence хранится по независимому input stream.
+- [ ] Dynamic key sequence resolution поддерживает C-x/C-c/Meta и user prefixes;
+  cancel/invalid sequence имеют явное поведение.
+- [ ] Ввести единый реестр/контракт команд для keys, M-x и Ruby API.
+- [ ] Выделить editor state/session; handler не зависит от всего Application.
+- [ ] Определить Buffer text/history и EditorWindow point/mark/active buffer;
+  логический window tree принадлежит session, physical geometry — frontend.
+- [ ] Перенести cursor ownership из Buffer с сохранением существующих scenarios.
+- [ ] Контролируемый edit API не отдаёт изменяемые live lines/cursor наружу;
+  инварианты readonly/positions соблюдаются на каждом входе.
+- [ ] KillRing обновляется из edit result, Buffer не получает KillRing dependency.
+- [ ] Единая публикация UI-state заменяет observers/direct-render/broadcast mix;
+  insert/backspace/delete/newline продолжают перерисовываться.
+- [ ] Frontend получает initial active view/minibuffer/picker state при подключении.
+- [ ] Cross-thread snapshots независимы и immutable; ядро — single writer.
+- [ ] Geometry policy использует именно активный source/view и учитывает overlays.
+- [ ] Core загружается без require curses/qt; launcher подключает выбранный adapter.
+- [ ] Проверить два input streams, late frontend, два view одного buffer и edits.
 
-  - [ ] (P1) Зафиксировать ownership доменного состояния
-    `EditorState` владеет buffers/current_buffer/focus/minibuffer/file session/
-    kill_ring и другой editor state.
+Критерий: headless core управляет views/commands; rendering имеет один путь,
+ввод источников не смешивается. Миграция этого этапа — несколько коммитов,
+сохраняющих запуск curses после каждого законченного подшага.
 
-  - [ ] (P1) Зафиксировать ownership состояния представления
-    Frontend владеет только viewport/top/visible range/кэшами отрисовки и не
-    мутирует `Buffer`, курсор или другое доменное состояние.
+* Этап 3 — P1: ранний работающий Qt slice
 
-- [-] (P1) Зафиксировать семантику cursor vs viewport до переноса кода
-  Сейчас логика page scroll и cursor visibility двусмысленна; сначала описать,
-  потом переносить.
+Не откладывать совместимость с qt до завершения всех features.
 
-  - [X] (P1) Решить, что делают `page_up` / `page_down`
-    `page_up` / `page_down` двигают cursor на страницу; viewport следует за
-    cursor и не является независимым источником истины для этих команд.
+- [ ] Проверить опубликованный/installed qt gem и local API по =docs/qt-frontend.md=.
+- [ ] Probe реальных events: key/text/modifiers, consume, resize/focus/close.
+- [ ] Проверить доступные text/cursor/selection/highlight APIs используемой сборки.
+- [ ] QApplication и widgets в GUI/main thread; выбрать явную runtime интеграцию.
+- [ ] Один buffer: Qt input -> core edit -> UI snapshot -> рабочее отображение.
+- [ ] Super test binding вызывает core command ровно один раз; Alt/Super различаются.
+- [ ] Close/exception не вызывают widgets из чужого потока и не зависают.
+- [ ] Qt dependency/CLI boot воспроизводимы без обязательного local absolute path.
+- [ ] Missing bindings обходить локально; каждый hack получает TODO(qt): HACK
+  и запись с API gap/reproducer/test/normal replacement в qt-workarounds.md.
 
-  - [ ] (P1) Определить правило visibility cursor
-    После cursor-moving commands cursor обязан оставаться в видимой области;
-    policy определяется в core/state, а frontend только применяет viewport.
+Критерий: рабочий вертикальный сценарий с реальным Qt, а не только doubles.
+Сохранить probe evidence и отдельный коммит интеграции. Полная parity — этап 9.
 
-  - [X] (P1) Определить судьбу `scroll_page`
-    В текущем flow отдельная `scroll_page` больше не используется для
-    `page_up` / `page_down`; команды двигают cursor в core, а viewport следует
-    за ним через обычный render/update path.
+* Этап 4 — P1: надёжный файл и полноценный edit model
 
-- [ ] (P2) Ввести `EditorState` и очистить `Application`
-  `Application` должен остаться оркестратором запуска, wiring и main loop.
+- [ ] Выделить FileService с results/errors; core принимает решения и prompts.
+- [ ] CLI file arguments, find-file/new file/save/save-as/cancel/dedup paths.
+- [ ] Safe save, permissions/symlinks, overwrite и внешние conflicts.
+- [ ] Modified revision, saved state, save/discard/cancel при kill-buffer/quit.
+- [ ] Undo/redo для всех обязательных edits; grouping и paste transactions.
+- [ ] Mark/region, kill/copy/yank/KillRing и readonly на всех edit entrypoints.
+- [ ] Unicode position transforms корректируют point/mark всех views на edits/undo.
+- [ ] Word/document movement, tabs/indent, multiline paste и длинные строки.
+- [ ] Headless integration open/edit/save/close/quit и failure/cancel cases.
 
-  - [ ] (P2) Ввести `EditorState`
-    Хранить buffers/current_buffer/focus/minibuffer_kind/minibuffer_state/
-    kill_ring и связанный editor state.
+Критерий: файл можно безопасно редактировать и сохранять без потери данных,
+undo и modified state согласованы. FileService и edit history — разные коммиты.
 
-  - [ ] (P2) Перенести focus/minibuffer/current_buffer management в `EditorState`
+* Этап 5 — P1: окна и usable curses frontend
 
-  - [ ] (P2) Перенести decision-making над editor state из `Application`
+- [ ] Scratch/startup, Emacs-подобный dark UI, modeline и echo/minibuffer.
+- [ ] Switch/next/previous/kill buffer в активном окне, одинаковые basenames различимы.
+- [ ] Horizontal/vertical split, other/delete/only window; последний view сохраняется.
+- [ ] Один buffer в двух окнах: общий текст, независимые point/mark/positions.
+- [ ] Viewport follows point с горизонтальным scrolling; page size из text area.
+- [ ] Custom line/page scrolling с явно определённой core/view policy.
+- [ ] Resize/small screen, prompts/picker overlays, сохранение active view.
+- [ ] Robust input decode: function keys, Meta, Unicode, prefixes, paste, EOF.
+- [ ] Default/native UI rendering нигде не меняет domain model.
+- [ ] Удалить/переопределить console Window/StatusBar и пустые wrappers.
+- [ ] Первый реальный PTY/curses smoke: несколько файлов, split, edit, save, quit.
 
-  - [ ] (P2) Критерий завершения
-    `Application` не хранит buffers/current_buffer/focus/minibuffer_kind/
-    kill_ring и не принимает доменные решения напрямую.
+Критерий: основной file/window scenario выполняется в настоящем TUI.
 
-- [ ] (P2) Отделить выполнение команд и файловые операции от `Application`
-  File IO и command side effects не должны жить в orchestration layer.
+* Этап 6 — P1: общий picker, поиск и справка
 
-  - [ ] (P2) Ввести `FileService`
-    open/save + structured result/errors без прямого `File.read`/`File.write`
-    в `Application`.
+- [ ] Переиспользуемый picker model/provider API, live orderless filtering и history.
+- [ ] Providers: commands, buffers, file paths, project/root files, lines, KillRing.
+- [ ] Navigation/accept/cancel, empty/Unicode candidates, list scrolling/resize.
+- [ ] Preview отменяется с восстановлением исходного view/buffer/point.
+- [ ] C-s line search, forward/backward search, goto-line и query-replace.
+- [ ] Help/describe-bindings отображают actual user keymap и зарегистрированные commands.
+- [ ] User keymap validation, prefix hints и минимальные custom commands из таблицы.
+- [ ] Проверки всех providers, query edit, cancel/replace и layout interactions.
 
-  - [ ] (P2) Перевести open/save flow на commands/results
-    Вместо прямого render из `Application`.
+Критерий: нужный файл/buffer/команда/строка выбираются в живом UI, поиск и
+replace обратимы. Provider/history/preview не становятся curses-only logic.
 
-  - [ ] (P2) Свести `Application` к boot/main loop/shutdown/wiring
+* Этап 7 — P1: независимые modes и syntax highlighting
 
-- [ ] (P2) Привести `Buffer` к более чистому API
-  Минимизировать внешние зависимости, side effects и прямую мутацию извне.
+- [ ] Plain text fallback и modes по filename, ручная смена mode.
+- [ ] Ruby/JSON/YAML/Markdown token spans и theme mapping.
+- [ ] Multiline/incomplete Ruby и изменение tokens после edits/undo.
+- [ ] Rendering spans не изменяет text/history/point/modified state.
+- [ ] Tokenizer errors не рушат loop; geometry Unicode и highlights согласованы.
+- [ ] Проверены реальные curses colors, region/search и monochrome fallback.
 
-  - [ ] (P2) Убрать `kill_ring` из `Buffer`
-    `Buffer#kill_line` возвращает killed text или edit result; `KillRing`
-    обновляется снаружи.
+Критерий: обязательные modes дают полезную устойчивую подсветку.
 
-  - [ ] (P2) Убрать публичную запись в `cursor_pos`
-    Внешний код не должен менять cursor hash напрямую.
+* Этап 8 — P1: встроенный programmable Ruby REPL
 
-  - [ ] (P3) Определить единый способ уведомления об изменениях
-    Либо observers, либо edit results/domain events, но не бесконтрольная смесь.
+- [ ] Persistent in-process binding, multiline input, history и *ruby* buffer.
+- [ ] Results/stdout/stderr/exceptions отображаются без повреждения UI.
+- [ ] Инспекция реальных state/buffers/views и документированный mutation API.
+- [ ] Edits из REPL идут через core, поддерживают undo/readonly/modified и все views.
+- [ ] Register command/binding из Ruby, запуск через M-x и клавиатуру.
+- [ ] Simple long evaluation interrupt, exit из REPL, exception recovery и cleanup.
+- [ ] Нет competing state owners или вызовов GUI из REPL worker.
+- [ ] Примеры Ruby API в README проверены; исходники qt live IRB — reference,
+  отдельный external IRB вместо доступа к живому state не считается выполнением.
 
-- [ ] (P2) Убрать мутацию модели из frontend
-  Frontend только читает domain state и рисует.
+Критерий: из UI можно изменить живой editor и увидеть/отменить результат.
 
-  - [ ] (P2) Переместить `clamp_cursor_into_view` из curses в core/state policy
+* Этап 9 — P1: полная Qt parity и Super shortcuts
 
-  - [ ] (P2) Оставить во frontend только viewport/visible range/render
+- [ ] Qt показывает общий window tree/modeline/minibuffer/picker/REPL в dark UI.
+- [ ] Общие commands, file flows, region/undo/search/modes работают как в curses.
+- [ ] Native text/undo/context menu не образуют вторую editor model.
+- [ ] Mouse focus/caret/selection/wheel и clipboard идут через core contracts.
+- [ ] Unicode core/UTF-16 Qt offset conversion, tabs/long lines/scroll/resize.
+- [ ] Все обязательные Super/Menu aliases из таблицы, включая Alt+Super/punctuation.
+- [ ] s-Left/s-Right resizing split и configurable combinations.
+- [ ] Native close -> save/discard/cancel; отмена сохраняет рабочее desktop window.
+- [ ] UI-thread/snapshot/feedback-loop/REPL/shutdown integration checks.
+- [ ] Real-widget offscreen tests + desktop smoke с физическими Super keys.
+- [ ] Список hacks полон; TODO сообщает missing API и требуемую замену в qt.
 
-  - [ ] (P2) Проверить, что frontend не меняет `Buffer`, `cursor_pos`, `lines`
-    даже при page scroll и redraw.
+Критерий: сквозной acceptance scenario из GOAL выполнен в Qt, зафиксированы
+versions/backend/наблюдения/screenshots. OS-reserved shortcuts отмечены отдельно.
 
-- [ ] (P3) Отделить lifecycle frontend'ов от доменной логики
-  Потоки, wake-up и shutdown должны жить отдельно от editor state.
+* Этап 10 — P1: выпуск рабочей версии и окончательная проверка
 
-  - [ ] (P3) Ввести `FrontendManager`
-    Регистрация frontend'ов, запуск потоков, broadcast, wake/shutdown.
+- [ ] Пройти весь acceptance checklist GOAL в curses и Qt, не только unit specs.
+- [ ] Проверить 10 000 строк, десятки buffers, real paste/resize/interrupt scenarios.
+- [ ] Обновить README: install/start обоих UI, keys, config, windows/modes/picker/REPL.
+- [ ] Docs отделяют реализованное от roadmap; logging полезно и не портит UI.
+- [ ] Убрать временный lint baseline; green =bundle exec rake=.
+- [ ] Validation log содержит воспроизводимые commands/results, runtime UI evidence
+  и оставшиеся ограничения; обязательные features не скрыты под TODO.
+- [ ] Основные этапы закоммичены; состояние tree и commit list проверены.
+- [ ] Финальный отчёт содержит способы запуска, проверки и commit list.
 
-  - [ ] (P3) Зафиксировать минимальный frontend contract
-    Инициализация view state, чтение input events, прием frontend-команд,
-    показ сообщений и корректное закрытие.
-
-  - [ ] (P3) Убрать управление frontend threads из `Application`
-
-- [ ] (P3) Разобраться с `Window` и `StatusBar`
-  Сейчас это legacy-артефакты, не встроенные в реальный curses flow.
-
-  - [ ] (P3) Либо удалить `Window` / `StatusBar`
-
-  - [ ] (P3) Либо переопределить их как frontend-agnostic view models
-
-  - [ ] (P3) Удалить пустые/неиспользуемые frontend wrappers
-
-- [ ] (P4) Нормализовать логирование
-  Логи не должны быть размазаны по слоям без контракта.
-
-  - [ ] (P4) Логи в core только про domain decisions/state transitions
-
-  - [ ] (P4) Логи во frontend только про input/render/frontend IO
-
-- [ ] (P4) Обновить README / Docs после стабилизации архитектуры
-  Документация должна описывать реальное состояние и реальные роли модулей.
-
-  - [ ] (P4) Обновить README под текущую архитектуру
-
-  - [ ] (P4) Переписать docs так, чтобы они не обещали несделанные подсистемы
-
-- [ ] (P1) Держать миграцию маленькими шагами
-  Это не отдельная фича, а правило выполнения плана.
-
-  - [ ] (P1) Не смешивать `EditorState`, `FileService` и `FrontendManager`
-    в одном большом коммите
-
-  - [ ] (P1) После каждого этапа держать green `bundle exec rspec`
-
-  - [ ] (P1) После каждого этапа обновлять статусы в этом файле
+Критерий: все обязательные пункты GOAL подтверждены, PLAN обновлён.
+Внешний blocker проверки реального UI документируется и не выдаётся за готовность.
