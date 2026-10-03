@@ -120,6 +120,23 @@ RSpec.describe Roded::Application do
     end
   end
 
+  it "prompts for a path when saving an unnamed buffer with C-x C-s" do
+    buffer = Roded::Buffer.new("*scratch*")
+    buffer.insert_char("scratch")
+    application.add_buffer(buffer)
+    path = File.join(Dir.tmpdir, "roded-save-key-#{Process.pid}-#{object_id}.txt")
+
+    ["C-x", "C-s"].each { |key| application.handle_event(Roded::Event.new(:key, { key: })) }
+    expect(application.focus).to eq(:minibuffer)
+    answer_minibuffer(application, path)
+
+    expect(File.binread(path)).to eq("scratch")
+    expect(buffer.filename).to eq(path)
+    expect(buffer.modified?).to be(false)
+  ensure
+    File.delete(path) if path && File.exist?(path)
+  end
+
   it "kills clean buffers but keeps a writable scratch buffer available" do
     buffer = Roded::Buffer.new("temporary")
     application.add_buffer(buffer)
@@ -131,7 +148,7 @@ RSpec.describe Roded::Application do
     expect(application.current_buffer.readonly).to be(false)
   end
 
-  it "refuses to kill a buffer with unsaved changes" do
+  it "asks before killing a buffer with unsaved changes" do
     buffer = Roded::Buffer.new("temporary")
     buffer.insert_char("x")
     application.add_buffer(buffer)
@@ -140,7 +157,127 @@ RSpec.describe Roded::Application do
 
     expect(application.current_buffer).to equal(buffer)
     expect(application.buffers).to include(buffer)
-    expect(frontend.messages.last).to match(/unsaved changes/)
+    expect(application.focus).to eq(:minibuffer)
+    answer_minibuffer(application, "cancel")
+    expect(application.current_buffer).to equal(buffer)
+    expect(buffer.modified?).to be(true)
+  end
+
+  it "saves a dirty buffer before killing it when requested" do
+    Tempfile.create("roded-kill-save") do |file|
+      file.write("original")
+      file.flush
+      application.open_file(file.path)
+      buffer = application.current_buffer
+      buffer.insert_char("x")
+
+      application.kill_current_buffer
+      answer_minibuffer(application, "save")
+
+      expect(File.binread(file.path)).to eq("xoriginal")
+      expect(application.current_buffer.name).to eq("*scratch*")
+      expect(application.buffers).not_to include(buffer)
+    end
+  end
+
+  it "cancels close confirmation through C-g" do
+    buffer = Roded::Buffer.new("dirty")
+    buffer.insert_char("x")
+    application.add_buffer(buffer)
+    application.request_quit
+
+    application.handle_event(Roded::Event.new(:key, { key: "C-g" }))
+
+    expect(application.focus).to eq(:buffer)
+    expect(application.instance_variable_get(:@stop_requested)).to be(false)
+    expect(buffer.modified?).to be(true)
+  end
+
+  it "cancels a quit confirmation without losing buffer edits" do
+    buffer = Roded::Buffer.new("dirty")
+    buffer.insert_char("x")
+    application.add_buffer(buffer)
+
+    application.request_quit
+    answer_minibuffer(application, "cancel")
+
+    expect(application.instance_variable_get(:@stop_requested)).to be(false)
+    expect(buffer.modified?).to be(true)
+  end
+
+  it "discards edited buffers only after the user confirms quit" do
+    buffer = Roded::Buffer.new("dirty")
+    buffer.insert_char("x")
+    application.add_buffer(buffer)
+
+    application.request_quit
+    answer_minibuffer(application, "discard")
+
+    expect(application.instance_variable_get(:@stop_requested)).to be(true)
+    expect(buffer.to_s).to eq("x")
+  end
+
+  it "saves every dirty buffer before quitting when requested" do
+    Tempfile.create("roded-save-on-quit-one") do |first|
+      Tempfile.create("roded-save-on-quit-two") do |second|
+        first.write("first")
+        first.flush
+        second.write("second")
+        second.flush
+        application.open_file(first.path)
+        first_buffer = application.current_buffer
+        first_buffer.insert_char("x")
+        application.open_file(second.path)
+        second_buffer = application.current_buffer
+        second_buffer.insert_char("y")
+
+        application.request_quit
+        answer_minibuffer(application, "save")
+
+        expect(File.binread(first.path)).to eq("xfirst")
+        expect(File.binread(second.path)).to eq("ysecond")
+        expect(first_buffer.modified?).to be(false)
+        expect(second_buffer.modified?).to be(false)
+        expect(application.instance_variable_get(:@stop_requested)).to be(true)
+      end
+    end
+  end
+
+  it "asks for a path when saving an unnamed buffer during quit" do
+    buffer = Roded::Buffer.new("*scratch*")
+    buffer.insert_char("scratch text")
+    application.add_buffer(buffer)
+    path = File.join(Dir.tmpdir, "roded-save-#{Process.pid}-#{object_id}.txt")
+
+    application.request_quit
+    answer_minibuffer(application, "save")
+    expect(application.focus).to eq(:minibuffer)
+    answer_minibuffer(application, path)
+
+    expect(File.binread(path)).to eq("scratch text")
+    expect(application.instance_variable_get(:@stop_requested)).to be(true)
+  ensure
+    File.delete(path) if path && File.exist?(path)
+  end
+
+  it "keeps the editor open if a close save encounters a disk conflict" do
+    Tempfile.create("roded-conflict-on-quit") do |file|
+      file.write("original")
+      file.flush
+      application.open_file(file.path)
+      buffer = application.current_buffer
+      buffer.insert_char("x")
+      File.write(file.path, "external")
+
+      application.request_quit
+      answer_minibuffer(application, "save")
+      expect(application.focus).to eq(:minibuffer)
+      answer_minibuffer(application, "cancel")
+
+      expect(application.instance_variable_get(:@stop_requested)).to be(false)
+      expect(buffer.modified?).to be(true)
+      expect(File.binread(file.path)).to eq("external")
+    end
   end
 
   it "synchronizes a late frontend to the active buffer" do
@@ -191,10 +328,11 @@ RSpec.describe Roded::Application do
 
       application.save_file(file.path)
 
+      expect(application.focus).to eq(:minibuffer)
+      answer_minibuffer(application, "cancel")
       expect(File.binread(file.path)).to eq("external")
       expect(application.current_buffer.to_s).to eq("xoriginal")
       expect(application.current_buffer.modified?).to be(true)
-      expect(frontend.messages.last).to match(/Error saving file: file changed on disk/)
     end
   end
 
@@ -302,6 +440,66 @@ RSpec.describe Roded::Application do
     end
   end
 
+  it "asks before save-as replaces an existing file" do
+    Tempfile.create("roded-save-as-source") do |source|
+      Tempfile.create("roded-save-as-target") do |target|
+        source.write("source")
+        source.flush
+        target.write("target")
+        target.flush
+        application.open_file(source.path)
+        application.current_buffer.insert_char("x")
+
+        application.save_file(target.path)
+
+        expect(application.focus).to eq(:minibuffer)
+        expect(File.binread(target.path)).to eq("target")
+        answer_minibuffer(application, "no")
+        expect(application.current_buffer.filename).to eq(source.path)
+        expect(application.current_buffer.modified?).to be(true)
+        expect(File.binread(target.path)).to eq("target")
+      end
+    end
+  end
+
+  it "overwrites a save-as target after explicit confirmation" do
+    Tempfile.create("roded-save-as-confirm-source") do |source|
+      Tempfile.create("roded-save-as-confirm-target") do |target|
+        source.write("source")
+        source.flush
+        target.write("target")
+        target.flush
+        application.open_file(source.path)
+        buffer = application.current_buffer
+        buffer.insert_char("x")
+
+        application.save_file(target.path)
+        answer_minibuffer(application, "yes")
+
+        expect(File.binread(target.path)).to eq("xsource")
+        expect(buffer.filename).to eq(target.path)
+        expect(buffer.modified?).to be(false)
+      end
+    end
+  end
+
+  it "checks for an external file appearing after an unsaved path was created" do
+    Dir.mktmpdir("roded-appeared") do |directory|
+      path = File.join(directory, "new.txt")
+      application.open_file(path)
+      buffer = application.current_buffer
+      buffer.insert_char("editor")
+      File.write(path, "external")
+
+      application.save_file(path)
+
+      expect(application.focus).to eq(:minibuffer)
+      expect(File.binread(path)).to eq("external")
+      answer_minibuffer(application, "no")
+      expect(buffer.modified?).to be(true)
+    end
+  end
+
   it "moves the buffer cursor by a page in buffer focus" do
     buffer = Roded::Buffer.new("buffer")
     buffer.lines = %w[a b c d e f]
@@ -355,6 +553,11 @@ RSpec.describe Roded::Application do
 
     expect(application.current_buffer.cursor_pos).to eq({ row: 0, col: 0 })
     expect(frontend.commands.last).to eq(Roded::Command.new(:render, {}))
+  end
+
+  def answer_minibuffer(editor, response)
+    response.each_char { |character| editor.minibuffer.insert_char(character) }
+    editor.submit_minibuffer
   end
 end
 # rubocop:enable Metrics/BlockLength

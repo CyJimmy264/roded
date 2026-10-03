@@ -15,7 +15,7 @@ RSpec.describe Roded::CommandRouter do
     second = router.route("C-c")
 
     expect(first).to eq(Roded::Event.new(:prefix_pending, { prefix: "C-x" }))
-    expect(second).to eq(Roded::Event.new(:quit, {}))
+    expect(second).to eq(Roded::Event.new(:request_quit, {}))
   end
 
   it "resolves meta bindings through escape prefix" do
@@ -49,7 +49,7 @@ RSpec.describe Roded::CommandRouter do
 
     expect(first.type).to eq(:prefix_pending)
     expect(second).to eq(Roded::Event.new(:noop, {}))
-    expect(completed).to eq(Roded::Event.new(:quit, {}))
+    expect(completed).to eq(Roded::Event.new(:request_quit, {}))
   end
 
   it "resolves arbitrary multi-key sequences from the keymap" do

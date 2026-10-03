@@ -88,7 +88,7 @@ module Roded
       def configure_events
         @view.on_key_press { |payload| enqueue_key(payload) }
         @view.on_close do |_payload|
-          @application.push_event(Event.new(:quit, {}))
+          @application.push_event(Event.new(:close_request, {}))
           :consume
         end
         @view.on_resize { |_payload| @application.push_event(Event.new(:resize, {})) }

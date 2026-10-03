@@ -96,9 +96,22 @@ File save здесь сохраняет текстовое представле�
   поведение: **63 examples, 0 failures**.
 - Buffer picker с completion/preview и предложением save/discard/cancel,
   disambiguation совпадающих basename и полноценное multipane UI остаются этапом 5/6.
-- Настоящий curses PTY с двумя CLI-файлами показал второй документ, обработал
-  `C-x C-c`, завершился с exit 0 и восстановил alternate screen. Полный
-  acceptance путь edit/save/split ещё не выполнен.
+- Настоящий curses PTY с двумя CLI-файлами показал второй документ; `C-x b` с
+  путём первого файла переключил экран на него. `C-x C-c` завершил процесс с
+  exit 0 и восстановил alternate screen. Полный acceptance edit/save/split ещё
+  не выполнен.
+
+## 2026-10-03 — save/close prompts
+
+- `C-x C-s` для unnamed buffer запрашивает путь; `C-x C-w` вызывает Save As.
+  Существующая цель требует yes/no подтверждение, внешняя revision conflict
+  требует подтверждение overwrite, отмена сохраняет buffer и файл без изменений.
+- `C-x C-c`, `M-x quit`, Qt close request и `C-x k` предлагают save/discard/cancel
+  для dirty buffers. Save проходит по всем изменённым документам, запрашивает
+  путь для unnamed buffer и не закрывает редактор, если запись отклонена.
+  Сигналы/EOF завершают процесс без интерактивного ожидания.
+- Проверки: **74 examples, 0 failures**. Не реализовано повторное чтение disk
+  version из conflict prompt; доступен overwrite или cancel.
 
 ## 2026-10-03 — этап 2, подэтап: source routing и загрузка core
 

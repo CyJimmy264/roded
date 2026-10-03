@@ -42,8 +42,12 @@ module Roded
         @editor.current_buffer&.kill_line(@editor.kill_ring)
         @editor.broadcast_command(Command.new(:render, {}))
       when :save_buffer
-        filename = @editor.current_buffer&.filename || "untitled"
-        @editor.save_file(filename)
+        filename = @editor.current_buffer&.filename
+        filename ? @editor.save_file(filename) : @editor.start_minibuffer(:save, "Save file as: ")
+      when :save_as_buffer
+        @editor.start_minibuffer(:save_as, "Save as: ")
+      when :open_file
+        @editor.start_minibuffer(:open, "Open file: ")
       when :switch_buffer
         @editor.start_minibuffer(:switch_buffer, "Buffer name or path: ")
       when :previous_buffer
@@ -55,6 +59,8 @@ module Roded
       when :render
         @editor.broadcast_command(Command.new(:render, {}))
       when :quit
+        @editor.request_quit
+      when :request_quit
         @editor.request_quit
       when :start_command
         @editor.start_minibuffer(:command, "M-x ")

@@ -117,12 +117,14 @@ file roundtrip не теряет текст. Коммит этапа до шир
 - [X] Начальный FileService с read/write results/errors; core сообщает ошибки.
   Путь resolution, prompts и save/discard/cancel остаются открытыми.
 - [X] CLI file arguments, find-file/new file and existing-path deduplication.
-- [ ] Save-as/cancel and save-path overwrite confirmation.
+- [X] Save-as path prompt, cancel and overwrite confirmation.
 - [X] Атомарная запись, permissions/symlinks и обнаружение внешнего изменения.
-- [ ] Подтверждение overwrite/conflict с выбором reload/overwrite/cancel.
+- [X] Overwrite/cancel response for existing save-as targets and changed files.
+- [ ] Reload choice when the file changed on disk.
 - [X] Buffer tracks modified state against saved text; loads and successful saves
   reset the baseline, while failed/conflicting saves preserve dirty state.
-- [ ] Save/discard/cancel при kill-buffer/quit; undo до saved state.
+- [X] Save/discard/cancel при kill-buffer/quit, включая все dirty buffers.
+- [ ] Undo до saved state.
 - [ ] Undo/redo для всех обязательных edits; grouping и paste transactions.
 - [ ] Mark/region, kill/copy/yank/KillRing и readonly на всех edit entrypoints.
 - [ ] Unicode position transforms корректируют point/mark всех views на edits/undo.
