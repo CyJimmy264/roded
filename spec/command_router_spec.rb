@@ -44,7 +44,7 @@ RSpec.describe Roded::CommandRouter do
 
   it "keeps pending prefixes separate for independent input sources" do
     first = router.route("C-x", source_id: :first)
-    second = router.route("C-c", source_id: :second)
+    second = router.route("C-z", source_id: :second)
     completed = router.route("C-c", source_id: :first)
 
     expect(first.type).to eq(:prefix_pending)

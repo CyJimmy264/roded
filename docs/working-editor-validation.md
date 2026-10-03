@@ -117,6 +117,21 @@ File save здесь сохраняет текстовое представле�
   проходят через отдельный handler. Их specs остались зелёными, новые workflow
   files проходят RuboCop без offenses.
 
+## 2026-10-03 — базовая edit history
+
+- Buffer сохраняет локальные line deltas и cursor/line-ending metadata для
+  insert, backspace, delete, newline и kill-line; реализованы undo, redo и
+  вложенно безопасная группировка изменений. Новая правка очищает redo history.
+- `M-x undo` и `M-x redo` применяются к активному buffer; keymap также содержит
+  `C-/`, `C-_`, `C-x u` и `C-c r d`.
+- Проверки: **79 examples, 0 failures**. Unicode insert, LF/CRLF/final newline,
+  undo до clean saved state, redo, группировка и readonly buffer покрыты specs.
+- Полные region/kill-ring transactions, paste grouping, все изменяющие entry
+  points и синхронизация независимых views остаются открытыми. Stage 4 не завершён.
+- RuboCop ещё не зелёный: изменённые Buffer/Application/CommandHandler содержат
+  metric/style offenses; они остаются в текущем общем lint debt и будут устранены
+  при завершении соответствующих core модулей.
+
 ## 2026-10-03 — этап 2, подэтап: source routing и загрузка core
 
 - `bundle exec rspec`: **45 examples, 0 failures**.

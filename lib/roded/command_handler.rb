@@ -56,6 +56,10 @@ module Roded
         @editor.next_buffer
       when :kill_buffer
         @editor.kill_current_buffer
+      when :undo
+        @editor.undo
+      when :redo
+        @editor.redo
       when :render
         @editor.broadcast_command(Command.new(:render, {}))
       when :quit

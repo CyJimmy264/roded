@@ -33,6 +33,19 @@ RSpec.describe Roded::Application do
     expect(application.instance_variable_get(:@stop_requested)).to be(true)
   end
 
+  it "runs undo and redo commands against the active buffer" do
+    application.startup
+    buffer = application.current_buffer
+    buffer.insert_char("a")
+
+    application.process_command("undo")
+    expect(buffer.to_s).to eq("")
+
+    application.process_command("redo")
+    expect(buffer.to_s).to eq("a")
+    expect(frontend.commands.last).to eq(Roded::Command.new(:render, {}))
+  end
+
   it "opens a file and renders the loaded buffer" do
     Tempfile.create("roded-open") do |file|
       file.write("alpha\nbeta\n")

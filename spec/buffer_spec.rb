@@ -14,7 +14,7 @@ RSpec.describe Roded::Buffer do
 
       expect(buffer.lines).to eq(["a"])
       expect(buffer.cursor_pos).to eq({ row: 0, col: 1 })
-      expect(observer).to have_received(:update).with(buffer)
+      expect(observer).to have_received(:update).with(buffer).at_least(:once)
     end
 
     it "ignores nil and empty input" do
@@ -61,7 +61,7 @@ RSpec.describe Roded::Buffer do
 
       expect(buffer.lines).to eq(["ac"])
       expect(buffer.cursor_pos).to eq({ row: 0, col: 1 })
-      expect(observer).to have_received(:update).with(buffer)
+      expect(observer).to have_received(:update).with(buffer).at_least(:once)
     end
 
     it "joins with the previous line at the start of a line" do
@@ -84,7 +84,7 @@ RSpec.describe Roded::Buffer do
 
       expect(buffer.lines).to eq(["ac"])
       expect(buffer.cursor_pos).to eq({ row: 0, col: 1 })
-      expect(observer).to have_received(:update).with(buffer)
+      expect(observer).to have_received(:update).with(buffer).at_least(:once)
     end
 
     it "joins with the next line at end of line" do
@@ -107,7 +107,7 @@ RSpec.describe Roded::Buffer do
 
       expect(buffer.lines).to eq(%w[ab cd])
       expect(buffer.cursor_pos).to eq({ row: 1, col: 0 })
-      expect(observer).to have_received(:update).with(buffer)
+      expect(observer).to have_received(:update).with(buffer).at_least(:once)
     end
   end
 
@@ -195,7 +195,7 @@ RSpec.describe Roded::Buffer do
 
       expect(buffer.lines).to eq(%w[abc def])
       expect(buffer.cursor_pos).to eq({ row: 0, col: 1 })
-      expect(observer).not_to have_received(:update)
+      expect(observer).to have_received(:update).once
     end
   end
 
@@ -214,6 +214,59 @@ RSpec.describe Roded::Buffer do
       buffer = described_class.new.load_text("loaded\n")
 
       expect(buffer.modified?).to be(false)
+    end
+  end
+
+  describe "edit history" do
+    it "undoes and redoes Unicode edits without losing saved state" do
+      buffer.load_text("A\n")
+      buffer.insert_char("界")
+
+      expect(buffer.to_s).to eq("界A\n")
+      expect(buffer.undo).to be(true)
+      expect(buffer.to_s).to eq("A\n")
+      expect(buffer.modified?).to be(false)
+      expect(buffer.redo).to be(true)
+      expect(buffer.to_s).to eq("界A\n")
+      expect(buffer.modified?).to be(true)
+    end
+
+    it "restores line splits, joins, and line-ending metadata" do
+      buffer.load_text("alpha\r\nbeta")
+      buffer.cursor_pos = { row: 0, col: 2 }
+      buffer.newline
+
+      expect(buffer.to_s).to eq("al\r\npha\r\nbeta")
+      buffer.undo
+      expect(buffer.to_s).to eq("alpha\r\nbeta")
+      expect(buffer.cursor_pos).to eq({ row: 0, col: 2 })
+      buffer.redo
+      expect(buffer.to_s).to eq("al\r\npha\r\nbeta")
+    end
+
+    it "groups multiple edits into one undo step and clears redo after a new edit" do
+      buffer.with_undo_group do
+        buffer.insert_char("a")
+        buffer.insert_char("b")
+      end
+
+      expect(buffer.undo).to be(true)
+      expect(buffer.to_s).to eq("")
+      expect(buffer.redo).to be(true)
+      expect(buffer.to_s).to eq("ab")
+      buffer.undo
+      buffer.insert_char("c")
+      expect(buffer.redo).to be(false)
+      expect(buffer.to_s).to eq("c")
+    end
+
+    it "does not mutate readonly buffers" do
+      buffer.insert_char("a")
+      buffer.readonly = true
+
+      expect(buffer.undo).to be(false)
+      expect(buffer.redo).to be(false)
+      expect(buffer.to_s).to eq("a")
     end
   end
 end

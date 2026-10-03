@@ -6,6 +6,12 @@ module Roded
   # text, such as inserting and deleting characters, and allows other
   # objects to observe its state.
   class Buffer
+    Edit = Struct.new(
+      :row, :before_lines, :after_lines, :before_cursor, :after_cursor,
+      :before_line_ending, :after_line_ending, :before_final_newline, :after_final_newline,
+      keyword_init: true
+    )
+
     attr_accessor :filename, :readonly, :file_revision
     attr_reader :lines, :cursor_pos, :line_ending, :final_newline, :name
 
@@ -20,20 +26,33 @@ module Roded
       @observers = []
       @readonly = false
       @saved_text = to_s
+      @undo_stack = []
+      @redo_stack = []
+      @undo_group_depth = 0
+      @undo_group_edits = []
     end
 
     def lines=(lines)
-      @lines = Array(lines).map(&:to_s)
-      @lines = [""] if @lines.empty?
-      clamp_cursor
+      return if readonly
+
+      new_lines = Array(lines).map(&:to_s)
+      new_lines = [""] if new_lines.empty?
+      record_edit(0, @lines.length, new_lines.length) do
+        @lines = new_lines
+        clamp_cursor
+      end
     end
 
     def load_text(text)
       validate_text!(text)
       @line_ending = text.scan(/\r\n|\n/).uniq.first || "\n"
       @final_newline = text.end_with?("\n")
-      self.lines = text.gsub("\r\n", "\n").split("\n", -1).tap { |lines| lines.pop if @final_newline }
+      @lines = text.gsub("\r\n", "\n").split("\n", -1).tap { |lines| lines.pop if @final_newline }
+      @lines = [""] if @lines.empty?
       @cursor_pos = { row: 0, col: 0 }
+      @undo_stack.clear
+      @redo_stack.clear
+      @undo_group_edits.clear
       mark_saved
       self
     end
@@ -59,30 +78,33 @@ module Roded
       return if readonly
       return if char.nil? || char.empty?
 
-      line = @lines[@cursor_pos[:row]]
-      @lines[@cursor_pos[:row]] = line.dup.insert(@cursor_pos[:col], char)
-      @cursor_pos[:col] = [@cursor_pos[:col] + 1, line_at_cursor.length].min
-      notify_observers
+      row = @cursor_pos[:row]
+      record_edit(row, 1, 1) do
+        line = @lines[row]
+        @lines[row] = line.dup.insert(@cursor_pos[:col], char)
+        @cursor_pos[:col] = [@cursor_pos[:col] + char.length, line_at_cursor.length].min
+      end
     end
 
     def backspace
       return if readonly
 
       if @cursor_pos[:col].positive?
-        line = @lines[@cursor_pos[:row]]
-        line.slice!(@cursor_pos[:col] - 1)
-        @lines[@cursor_pos[:row]] = line
-        @cursor_pos[:col] = [@cursor_pos[:col] - 1, 0].max
-        notify_observers
+        row = @cursor_pos[:row]
+        record_edit(row, 1, 1) do
+          line = @lines[row].dup
+          line.slice!(@cursor_pos[:col] - 1)
+          @lines[row] = line
+          @cursor_pos[:col] = [@cursor_pos[:col] - 1, 0].max
+        end
       elsif @cursor_pos[:row].positive? # Backspace at start of line should join previous
-        prev_line = @lines[@cursor_pos[:row] - 1]
-        current_line = @lines[@cursor_pos[:row]]
-        new_col = prev_line.length
-        @lines[@cursor_pos[:row] - 1] = prev_line + current_line
-        @lines.delete_at(@cursor_pos[:row])
-        @cursor_pos[:row] -= 1
-        @cursor_pos[:col] = new_col
-        notify_observers
+        row = @cursor_pos[:row] - 1
+        record_edit(row, 2, 1) do
+          previous_line = @lines[row]
+          @lines[row] = previous_line + @lines[row + 1]
+          @lines.delete_at(row + 1)
+          @cursor_pos = { row:, col: previous_line.length }
+        end
       end
     end
 
@@ -91,14 +113,18 @@ module Roded
 
       line = @lines[@cursor_pos[:row]]
       if @cursor_pos[:col] < line.length
-        line.slice!(@cursor_pos[:col])
-        @lines[@cursor_pos[:row]] = line
-        notify_observers
+        row = @cursor_pos[:row]
+        record_edit(row, 1, 1) do
+          edited_line = @lines[row].dup
+          edited_line.slice!(@cursor_pos[:col])
+          @lines[row] = edited_line
+        end
       elsif @cursor_pos[:row] < @lines.length - 1
-        next_line = @lines[@cursor_pos[:row] + 1]
-        @lines[@cursor_pos[:row]] = line + next_line
-        @lines.delete_at(@cursor_pos[:row] + 1)
-        notify_observers
+        row = @cursor_pos[:row]
+        record_edit(row, 2, 1) do
+          @lines[row] = line + @lines[row + 1]
+          @lines.delete_at(row + 1)
+        end
       end
     end
 
@@ -108,14 +134,17 @@ module Roded
       line = @lines[@cursor_pos[:row]]
       if @cursor_pos[:col] < line.length
         killed = line[@cursor_pos[:col]..]
-        kill_ring.push(killed)
-        @lines[@cursor_pos[:row]] = line[0...@cursor_pos[:col]]
-        notify_observers
+        row = @cursor_pos[:row]
+        record_edit(row, 1, 1) do
+          kill_ring.push(killed)
+          @lines[row] = line[0...@cursor_pos[:col]]
+        end
       elsif @cursor_pos[:row] < @lines.length - 1
-        next_line = @lines[@cursor_pos[:row] + 1]
-        @lines[@cursor_pos[:row]] = line + next_line
-        @lines.delete_at(@cursor_pos[:row] + 1)
-        notify_observers
+        row = @cursor_pos[:row]
+        record_edit(row, 2, 1) do
+          @lines[row] = line + @lines[row + 1]
+          @lines.delete_at(row + 1)
+        end
       end
     end
 
@@ -169,18 +198,53 @@ module Roded
       to_s != @saved_text
     end
 
+    def undo
+      return false if readonly || @undo_stack.empty?
+
+      edits = @undo_stack.pop
+      edits.reverse_each { |edit| apply_edit(edit, :before) }
+      @redo_stack << edits
+      notify_observers
+      true
+    end
+
+    def redo
+      return false if readonly || @redo_stack.empty?
+
+      edits = @redo_stack.pop
+      edits.each { |edit| apply_edit(edit, :after) }
+      @undo_stack << edits
+      notify_observers
+      true
+    end
+
+    def with_undo_group
+      @undo_group_depth += 1
+      yield
+    ensure
+      @undo_group_depth -= 1
+      if @undo_group_depth.zero? && !@undo_group_edits.empty?
+        @undo_stack << @undo_group_edits
+        @undo_group_edits = []
+      end
+    end
+
     def mark_saved
       @saved_text = to_s
     end
 
     def final_newline=(value)
-      @final_newline = !!value
+      return if readonly
+
+      record_edit(0, @lines.length, @lines.length) { @final_newline = !!value }
     end
 
     def line_ending=(value)
       raise ArgumentError, "unsupported line ending" unless ["\n", "\r\n"].include?(value)
 
-      @line_ending = value
+      return if readonly
+
+      record_edit(0, @lines.length, @lines.length) { @line_ending = value }
     end
 
     def line_at_cursor
@@ -198,17 +262,53 @@ module Roded
     def newline
       return if readonly
 
-      line = @lines[@cursor_pos[:row]]
-      before = line[0...@cursor_pos[:col]]
-      after = line[@cursor_pos[:col]..] || ""
-      @lines[@cursor_pos[:row]] = before
-      @lines.insert(@cursor_pos[:row] + 1, after)
-      @cursor_pos[:row] += 1
-      @cursor_pos[:col] = 0
+      row = @cursor_pos[:row]
+      record_edit(row, 1, 2) do
+        line = @lines[row]
+        before = line[0...@cursor_pos[:col]]
+        after = line[@cursor_pos[:col]..] || ""
+        @lines[row] = before
+        @lines.insert(row + 1, after)
+        @cursor_pos = { row: row + 1, col: 0 }
+      end
+    end
+
+  private
+
+    def record_edit(row, before_count, after_count)
+      before = edit_snapshot(row, before_count)
+      yield
+      after = edit_snapshot(row, after_count)
+      return if before == after
+
+      edit = Edit.new(
+        row:, before_lines: before.fetch(:lines), after_lines: after.fetch(:lines),
+        before_cursor: before.fetch(:cursor), after_cursor: after.fetch(:cursor),
+        before_line_ending: before.fetch(:line_ending), after_line_ending: after.fetch(:line_ending),
+        before_final_newline: before.fetch(:final_newline), after_final_newline: after.fetch(:final_newline)
+      )
+      @undo_group_depth.positive? ? @undo_group_edits << edit : @undo_stack << [edit]
+      @redo_stack.clear
       notify_observers
     end
 
-    private
+    def edit_snapshot(row, line_count)
+      {
+        lines: @lines.slice(row, line_count).map(&:dup), cursor: @cursor_pos.dup,
+        line_ending: @line_ending.dup, final_newline: @final_newline
+      }
+    end
+
+    def apply_edit(edit, direction)
+      previous = direction == :before
+      source_lines = previous ? edit.after_lines : edit.before_lines
+      target_lines = previous ? edit.before_lines : edit.after_lines
+      @lines[edit.row, source_lines.length] = target_lines.map(&:dup)
+      @cursor_pos = (previous ? edit.before_cursor : edit.after_cursor).dup
+      @line_ending = (previous ? edit.before_line_ending : edit.after_line_ending).dup
+      @final_newline = previous ? edit.before_final_newline : edit.after_final_newline
+      clamp_cursor
+    end
 
     def move_cursor_by_page(delta)
       @cursor_pos[:row] = [@cursor_pos[:row] + delta, 0].max

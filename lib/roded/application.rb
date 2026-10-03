@@ -130,6 +130,10 @@ module Roded
         start_minibuffer(:save, "Save file as: ")
       when "quit"
         request_quit
+      when "undo"
+        undo
+      when "redo"
+        self.redo
       when "", nil
         broadcast_command(Command.new(:render, {}))
       else
@@ -143,6 +147,18 @@ module Roded
 
     def buffers
       @buffers.dup.freeze
+    end
+
+    def undo
+      changed = current_buffer&.undo
+      broadcast_command(Command.new(:render, {})) if changed
+      changed
+    end
+
+    def redo
+      changed = current_buffer&.redo
+      broadcast_command(Command.new(:render, {})) if changed
+      changed
     end
 
     def next_buffer
