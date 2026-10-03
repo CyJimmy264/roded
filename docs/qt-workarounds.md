@@ -24,3 +24,23 @@
   physical Super-key checks remain open.
 - **Removal:** add generated `QTextCursor::MoveOperation` enum constants to qt,
   then replace the integer values with their named bindings and remove the TODO.
+
+## QClipboard text access
+
+- **Location:** `lib/roded/frontends/qt/clipboard_bridge.rb`
+- **Observed binding:** qt 0.1.9 on Ruby 3.4.2, Qt Widgets 6.11.2.
+- **Gap:** `QApplication.clipboard` returns a `Qt::QObject` wrapper without
+  `QClipboard#text` or `QClipboard#setText`; those calls are unavailable from Ruby.
+- **Reproducer:** `QApplication.clipboard.class` is `Qt::QObject`, and the
+  returned object's public methods do not include `text` or `set_text`.
+- **Workaround:** a transport-only `QTextEdit` invokes Qt's native `paste` and
+  `copy` slots. It is always cleared and never stores editor state. Clipboard
+  paste is translated to one core `:paste` event; `C-S-v` keeps Emacs `C-v`
+  available for page-down.
+- **Limits:** this transports text only. Clipboard copy/cut commands and native
+  mouse selection routing remain part of the larger Qt parity work.
+- **Verification:** the offscreen Qt 6.11.2 widget round-tripped multiline UTF-8
+  text including a non-BMP emoji; the Qt key callback produced a core paste
+  event with the same text, source id, and active window id.
+- **Removal:** expose `QClipboard#text` and `QClipboard#setText` in qt and replace
+  the transport widget with those direct clipboard calls.

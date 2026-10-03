@@ -3,6 +3,23 @@
 Этот журнал содержит воспроизводимые результаты текущей ветки. Исторический
 отчёт ревизии остаётся в `architecture-review-2026-10-03.md`.
 
+## 2026-10-03 — Qt clipboard paste через общий core event
+
+- Runtime probe qt 0.1.9 / Qt Widgets 6.11.2: `QApplication.clipboard`
+  возвращает QObject без `text`/`set_text`; `QTextEdit` предоставляет реальные
+  `paste`, `copy`, `can_paste`, `set_plain_text` и `to_plain_text` методы.
+- Добавлен transport-only `QTextEdit` workaround. На настоящем Qt Widgets
+  offscreen он round-trip-ит `alpha\nвторой 🙂` через clipboard. Qt callback для
+  `C-S-v` посылает ровно один `Event(:paste)` с UTF-8 payload, `source_id: :qt`
+  и id активного окна. `C-v` остаётся page-down.
+- Команда: `GEM_HOME=/tmp/roded-qt-gems GEM_PATH=/home/mveynberg/.rbenv/versions/3.4.2/lib/ruby/gems/3.4.0:/tmp/roded-qt-gems QT_QPA_PLATFORM=offscreen XDG_CONFIG_HOME=/tmp/roded-qt-spec-config bundle exec rspec spec/qt_clipboard_bridge_spec.rb spec/qt_key_translator_spec.rb`
+  — **5 примеров, 0 failures**.
+- Полный `rspec` на Qt offscreen: **154 примера, 0 failures**. Он выявил
+  namespace collision в splitter (`Qt::Horizontal/Vertical` разрешались в
+  frontend class); ссылки исправлены на top-level `::Qt`, split-widget specs
+  прошли в полной suite.
+- Полная проверка desktop system clipboard и copy/cut parity остаётся открытой.
+
 ## 2026-10-03 — bracketed paste в настоящем curses TUI
 
 - Curses включает terminal bracketed-paste mode, собирает `ESC[200~` …

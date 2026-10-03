@@ -3,6 +3,7 @@ require_relative "qt/key_translator"
 require_relative "qt/editor_pane"
 require_relative "qt/splitter_tree"
 require_relative "qt/editor_window"
+require_relative "qt/clipboard_bridge"
 require_relative "qt/ui_dispatcher"
 
 module Roded
@@ -16,6 +17,7 @@ module Roded
         @input_queue = Queue.new
         @key_translator = QtKeyTranslator.new
         @qt_application = QApplication.new(0, ["roded"])
+        @clipboard = QtClipboardBridge.new
         @view = QtEditorWindow.new
         @ui_dispatcher = QtUiDispatcher.new(@view, @qt_application)
         configure_events
@@ -107,6 +109,8 @@ module Roded
 
       def enqueue_key(payload)
         key = @key_translator.translate(payload)
+        return :consume if @clipboard.enqueue_paste(key, payload, application: @application, source_id: input_source_id)
+
         if key
           @application.push_event(
             Event.new(:key, { key:, source_id: input_source_id, window_id: payload[:window_id] })

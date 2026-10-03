@@ -39,7 +39,7 @@ module Roded
 
       def splitter_for(tree, &pane_for)
         splitter = @pool.pop || QSplitter.new(@parent)
-        splitter.orientation = tree[:direction] == :vertical ? Qt::Horizontal : Qt::Vertical
+        splitter.orientation = tree[:direction] == :vertical ? ::Qt::Horizontal : ::Qt::Vertical
         splitter.add_widget(build(tree[:first]) { |id| pane_for.call(id) })
         splitter.add_widget(build(tree[:second]) { |id| pane_for.call(id) })
         first_weight = (tree.fetch(:ratio, 0.5) * 100).round

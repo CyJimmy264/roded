@@ -2,6 +2,7 @@ module Roded
   module Frontends
     # Converts Qt key event payloads into the editor's shared key notation.
     class QtKeyTranslator
+      SHIFTABLE_SPECIAL_KEYS = %w[Tab Enter Left Right Up Down].freeze
       SPECIAL_KEYS = {
         ::Qt::Key_Escape => "Esc",
         ::Qt::Key_Return => "Enter",
@@ -46,10 +47,16 @@ module Roded
         parts << "C" if modifiers.anybits?(::Qt::ControlModifier)
         parts << "M" if modifiers.anybits?(::Qt::AltModifier)
         parts << "s" if modifiers.anybits?(::Qt::MetaModifier)
-        parts << "S" if modifiers.anybits?(::Qt::ShiftModifier) && name.match?(/\A(?:Tab|Enter|Left|Right|Up|Down)\z/)
+        shifted_key = shifted_key?(name, modifiers)
+        parts << "S" if modifiers.anybits?(::Qt::ShiftModifier) && shifted_key
         return name if parts.empty?
 
         "#{parts.join("-")}-#{name}"
+      end
+
+      def shifted_key?(name, modifiers)
+        SHIFTABLE_SPECIAL_KEYS.include?(name) ||
+          (modifiers.anybits?(::Qt::ControlModifier) && name.match?(/\A[a-z]\z/))
       end
     end
   end

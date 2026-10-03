@@ -122,3 +122,8 @@ Unicode offset conversion, native editing interception и exception shutdown.
 Зафиксировать Qt/gem/backend versions, результаты probes и screenshots.
 Offscreen modifiers доказывают input translation; физические shortcuts отдельно
 доказывают доставку events в пользовательском окружении.
+
+В установленном `qt` 0.1.9 `QApplication.clipboard` возвращает QObject без
+`QClipboard#text`/`#setText`. Текущий workaround использует только clipboard
+slots transport-only `QTextEdit`; shortcut `C-S-v` передаёт один core `:paste`
+event и не конфликтует с `C-v` page-down. Copy/cut parity остаётся незакрытой.

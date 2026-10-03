@@ -20,7 +20,9 @@ module Qt
     AltModifier: 0x08000000,
     ShiftModifier: 0x02000000,
     MetaModifier: 0x10000000
-  }.each { |name, value| const_set(name, value) }
+  }.each do |name, value|
+    const_set(name, value) unless const_defined?(name, false)
+  end
 end
 
 require_relative "../lib/roded/frontends/qt/key_translator"
@@ -39,6 +41,8 @@ RSpec.describe Roded::Frontends::QtKeyTranslator do
     payload = { key: ",".ord, modifiers: Qt::AltModifier | Qt::MetaModifier, text: "," }
     expect(translator.translate(payload)).to eq("M-s-,")
     expect(translator.translate({ key: Qt::Key_A, modifiers: Qt::ShiftModifier, text: "A" })).to eq("A")
+    shifted_paste = { key: "V".ord, modifiers: Qt::ControlModifier | Qt::ShiftModifier, text: "" }
+    expect(translator.translate(shifted_paste)).to eq("C-S-v")
   end
 
   it "uses key event aliases from generated Qt payloads" do
