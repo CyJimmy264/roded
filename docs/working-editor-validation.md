@@ -112,6 +112,10 @@ File save здесь сохраняет текстовое представле�
   Сигналы/EOF завершают процесс без интерактивного ожидания.
 - Проверки: **74 examples, 0 failures**. Не реализовано повторное чтение disk
   version из conflict prompt; доступен overwrite или cancel.
+- File open/save, overwrite confirmation и dirty-close state вынесены из
+  `Application` в отдельные workflow modules; completed minibuffer actions
+  проходят через отдельный handler. Их specs остались зелёными, новые workflow
+  files проходят RuboCop без offenses.
 
 ## 2026-10-03 — этап 2, подэтап: source routing и загрузка core
 
