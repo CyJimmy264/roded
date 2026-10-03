@@ -4,6 +4,7 @@ require "tempfile"
 module Roded
   # Reads UTF-8 documents and replaces files without truncating their originals.
   class FileService
+    ABSENT_REVISION = Object.new.freeze
     Revision = Struct.new(:digest, :device, :inode, :file_size, :mtime_sec, :mtime_nsec, keyword_init: true)
     ReadResult = Struct.new(:path, :content, :revision, keyword_init: true)
 
@@ -15,6 +16,14 @@ module Roded
       content = File.binread(path).force_encoding(Encoding::UTF_8)
       validate_content!(content)
       ReadResult.new(path:, content:, revision: revision_for(path, content))
+    end
+
+    def create_new(filename)
+      path = File.expand_path(filename)
+      raise Errno::EEXIST, path if File.exist?(path) || File.symlink?(path)
+      raise Errno::ENOENT, File.dirname(path) unless Dir.exist?(File.dirname(path))
+
+      ReadResult.new(path:, content: "", revision: ABSENT_REVISION)
     end
 
     def write(filename, content, expected_revision: nil)
@@ -51,6 +60,12 @@ module Roded
     end
 
     def verify_revision!(path, expected_revision)
+      if expected_revision.equal?(ABSENT_REVISION)
+        raise Conflict, "file appeared on disk after the buffer was created" if File.exist?(path) || File.symlink?(path)
+
+        return
+      end
+
       current = revision_for(path, File.binread(path).force_encoding(Encoding::UTF_8))
       raise Conflict, "file changed on disk since it was opened" unless current == expected_revision
     rescue Errno::ENOENT

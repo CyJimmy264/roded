@@ -49,6 +49,56 @@ RSpec.describe Roded::Application do
     end
   end
 
+  it "creates a new buffer for a missing file without creating its parent" do
+    Dir.mktmpdir("roded-new-file") do |directory|
+      path = File.join(directory, "new.txt")
+      application.open_file(path)
+
+      expect(application.current_buffer.filename).to eq(path)
+      expect(application.current_buffer.to_s).to eq("")
+      expect(File.exist?(path)).to be(false)
+      application.current_buffer.insert_char("x")
+      application.save_file(path)
+      expect(File.binread(path)).to eq("x")
+    end
+  end
+
+  it "reuses an open file buffer through different path spellings" do
+    Dir.mktmpdir("roded-path-alias") do |directory|
+      path = File.join(directory, "file.txt")
+      alias_path = File.join(directory, "alias.txt")
+      File.write(path, "text")
+      File.symlink(path, alias_path)
+
+      application.open_file(path)
+      original = application.current_buffer
+      application.open_file(alias_path)
+
+      expect(application.current_buffer).to equal(original)
+      expect(application.buffers.count { |buffer| buffer.filename == path }).to eq(1)
+    end
+  end
+
+  it "opens all command-line paths and starts with a writable scratch buffer when none are given" do
+    Dir.mktmpdir("roded-startup") do |directory|
+      first = File.join(directory, "first.txt")
+      second = File.join(directory, "second.txt")
+      File.write(first, "one")
+      File.write(second, "two")
+
+      application.startup([first, second])
+
+      expect(application.buffers.map(&:filename)).to eq([first, second])
+      expect(application.current_buffer.filename).to eq(second)
+      expect(application.instance_variable_get(:@windows).length).to eq(1)
+    end
+
+    scratch_app = described_class.new
+    scratch_app.startup
+    expect(scratch_app.current_buffer.name).to eq("*scratch*")
+    expect(scratch_app.current_buffer.readonly).to be(false)
+  end
+
   it "synchronizes a late frontend to the active buffer" do
     Tempfile.create("roded-late-frontend") do |file|
       file.write("current")

@@ -41,6 +41,18 @@ module Roded
       add_window(Window.new(welcome_buffer))
     end
 
+    def startup(paths = [])
+      paths = Array(paths)
+      if paths.empty?
+        add_buffer(Buffer.new("*scratch*"))
+        display_message("Edit text, C-x C-f opens a file, C-x C-s saves.")
+      else
+        paths.each { |path| open_file(path) }
+      end
+      add_buffer(Buffer.new("*scratch*")) unless current_buffer
+      add_window(Window.new(current_buffer)) if current_buffer && @windows.empty?
+    end
+
     def add_buffer(buffer)
       @buffers << buffer
       @current_buffer ||= buffer
@@ -123,7 +135,11 @@ module Roded
     end
 
     def open_file(filename)
-      result = file_service.read(filename)
+      identity = file_service.path_identity(filename)
+      existing_buffer = @buffers.find { |buffer| buffer.filename == identity }
+      return activate_buffer(existing_buffer) if existing_buffer
+
+      result = File.file?(identity) ? file_service.read(identity) : file_service.create_new(identity)
       activate_loaded_file(result)
     rescue Errno::ENOENT
       display_message("File not found: #{filename}")
@@ -146,6 +162,10 @@ module Roded
 
     def current_buffer
       @current_buffer || @buffers.first
+    end
+
+    def buffers
+      @buffers.dup.freeze
     end
 
     def request_quit
@@ -218,6 +238,12 @@ module Roded
       @current_buffer = buffer
       @frontends.each { |frontend| frontend.render(buffer) }
       display_message("File '#{result.path}' opened.")
+    end
+
+    def activate_buffer(buffer)
+      @current_buffer = buffer
+      @frontends.each { |frontend| frontend.render(buffer) }
+      display_message("File '#{buffer.filename}' is already open.")
     end
 
     def file_service

@@ -27,13 +27,13 @@ case frontend_name
 when "curses"
   require "roded/frontends/curses"
   app.add_frontend(Roded::Frontends::Curses.new)
-  app.welcome
+  app.startup(ARGV)
   app.run
 when "qt"
   require "roded/frontends/qt"
   frontend = Roded::Frontends::Qt.new(app)
   app.add_frontend(frontend)
-  app.welcome
+  app.startup(ARGV)
   frontend.run
 else
   warn "Unknown frontend '#{frontend_name}'. Choose 'curses' or 'qt'."

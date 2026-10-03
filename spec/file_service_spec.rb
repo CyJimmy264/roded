@@ -59,5 +59,18 @@ RSpec.describe Roded::FileService do
       expect(File.exist?(File.dirname(path))).to be(false)
     end
   end
+
+  it "detects a file created after a new buffer was made" do
+    Dir.mktmpdir("roded-new-file-conflict") do |directory|
+      path = File.join(directory, "new.txt")
+      result = service.create_new(path)
+      File.write(path, "external")
+
+      expect do
+        service.write(path, "editor", expected_revision: result.revision)
+      end.to raise_error(Roded::FileService::Conflict, /appeared on disk/)
+      expect(File.binread(path)).to eq("external")
+    end
+  end
 end
 # rubocop:enable Metrics/BlockLength

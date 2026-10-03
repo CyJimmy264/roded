@@ -116,7 +116,8 @@ file roundtrip не теряет текст. Коммит этапа до шир
 
 - [X] Начальный FileService с read/write results/errors; core сообщает ошибки.
   Путь resolution, prompts и save/discard/cancel остаются открытыми.
-- [ ] CLI file arguments, find-file/new file/save/save-as/cancel/dedup paths.
+- [X] CLI file arguments, find-file/new file and existing-path deduplication.
+- [ ] Save-as/cancel and save-path overwrite confirmation.
 - [X] Атомарная запись, permissions/symlinks и обнаружение внешнего изменения.
 - [ ] Подтверждение overwrite/conflict с выбором reload/overwrite/cancel.
 - [X] Buffer tracks modified state against saved text; loads and successful saves
@@ -133,7 +134,8 @@ undo и modified state согласованы. FileService и edit history — �
 
 * Этап 5 — P1: окна и usable curses frontend
 
-- [ ] Scratch/startup, Emacs-подобный dark UI, modeline и echo/minibuffer.
+- [X] Writable *scratch* startup, startup file arguments and initial window.
+- [ ] Emacs-подобный dark UI, modeline and echo/minibuffer.
 - [ ] Switch/next/previous/kill buffer в активном окне, одинаковые basenames различимы.
 - [ ] Horizontal/vertical split, other/delete/only window; последний view сохраняется.
 - [ ] Один buffer в двух окнах: общий текст, независимые point/mark/positions.
