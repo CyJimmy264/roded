@@ -34,7 +34,7 @@ module Roded
       end
 
       def pane_rectangle(snapshot, active_id)
-        area_height = [@screen.maxy - 1, 1].max
+        area_height = @frontend.send(:editor_area_height)
         rectangles = @frontend.send(:layout_rectangles, snapshot[:tree], 0, 0, @screen.maxx, area_height)
         rectangles.find { |rectangle| rectangle.window_id == active_id }
       end

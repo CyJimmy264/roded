@@ -79,9 +79,17 @@ def exercise_curses_undo_redo(session)
   send_smoke_input(session, "\e>", 0.4)
   send_smoke_input(session, "\e<", 0.4)
   send_smoke_input(session, "\x0e", 0.8)
+  exercise_curses_picker(session)
   exercise_typing_undo_redo(session)
   exercise_paste_undo_redo(session)
   exercise_curses_close_cancel(session)
+end
+
+def exercise_curses_picker(session)
+  send_smoke_input(session, "\x03pf", 0.5)
+  send_smoke_input(session, "\x0e", 0.3)
+  send_smoke_input(session, "\x10", 0.3)
+  send_smoke_input(session, "\x07", 0.5)
 end
 
 def exercise_curses_close_cancel(session)
@@ -153,6 +161,9 @@ required_log_entries = [
   'next_event: read_key: "M->"',
   'next_event: read_key: "M-<"',
   'next_event: read_key: "C-n"',
+  'next_event: read_key: "C-p"',
+  "publish_ui_update: picker_render",
+  "publish_ui_update: minibuffer_clear",
   "publish_ui_update: move_cursor",
   'next_event: read_key: "C-_"',
   'next_event: read_key: "F7"',
@@ -167,6 +178,9 @@ required_log_entries = [
 missing_entries = required_log_entries.reject { |entry| log.include?(entry) }
 abort "curses smoke exited #{exit_status.inspect}; missing #{missing_entries.inspect}; files: #{smoke_dir}" unless
   exit_status&.zero? && missing_entries.empty? && !log.include?("Editor runtime failed")
+picker_renders = log.scan("publish_ui_update: picker_render").length
+abort "curses picker navigation did not render each selection change; files: #{smoke_dir}" if picker_renders < 3
 
-puts "curses live smoke passed (M-</M->, C-n, typing, bracketed paste, C-_, C-x u, C-c r d, F7 save, quit cancel); " \
+puts "curses live smoke passed (picker C-n/C-p, M-</M->, C-n, typing, bracketed paste, C-_, C-x u, " \
+     "C-c r d, F7 save, quit cancel); " \
      "output=#{captured.bytesize} bytes; logs=#{smoke_dir}"

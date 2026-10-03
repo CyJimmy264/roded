@@ -15,8 +15,7 @@ module Roded
       end
 
       def draw_layout_windows(snapshot)
-        area_height = [@screen.maxy - 1, 1].max
-        rectangles = layout_rectangles(snapshot[:tree], 0, 0, @screen.maxx, area_height)
+        rectangles = layout_rectangles(snapshot[:tree], 0, 0, @screen.maxx, editor_area_height)
         records = snapshot[:windows].to_h { |item| [item[:id], item] }
         rectangles.each { |rectangle| draw_window(records[rectangle.window_id], rectangle) }
       end

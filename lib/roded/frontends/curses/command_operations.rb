@@ -41,14 +41,24 @@ module Roded
       end
 
       def show_picker(payload)
+        previous_area_height = editor_area_height
         @picker_state = payload
-        render_picker_overlay
+        if @layout_snapshot && previous_area_height != editor_area_height
+          render_layout(@layout_snapshot)
+        else
+          render_picker_overlay
+          @screen.refresh
+        end
       end
 
       def clear_minibuffer(_payload)
         @minibuffer_state = nil
         @picker_state = nil
-        @minibuffer_view.clear
+        if @layout_snapshot
+          render_layout(@layout_snapshot)
+        else
+          @minibuffer_view.clear
+        end
       end
 
       def show_message(payload)
