@@ -867,16 +867,18 @@ File save здесь сохраняет текстовое представле�
 
 - `script/qt_live_smoke.sh` запускает настоящий `bin/roded --frontend qt` на
   отдельном Xvfb (`xcb`, 1280×800×24) и задаёт временный `XDG_CONFIG_HOME` и
-  лог. Скрипт ждёт первоначальный snapshot, кликает редактор и посылает native
-  X11 `C-n`, wheel, `M->` и `C-x C-c`.
+  лог. Скрипт ждёт первоначальный snapshot, кликает редактор, вводит `X`,
+  сохраняет через `C-x C-s`, затем посылает wheel, `M->` и `C-x C-c`.
 - Проверено на Ruby **3.4.2**, gem `qt` **0.1.9**, Qt Widgets **6.11.2**.
-  Сценарий завершился успешно; лог содержит `C-n`, `scroll_by amount: 3`,
-  `M->`, `C-x` и `C-c`. Wheel переместил видимую область к строкам 004–037
+  Сценарий завершился успешно; лог содержит `C-n`, ввод `X`, `C-x C-s`,
+  `scroll_by amount: 3`, `M->`, `C-x` и `C-c`. Файл на диске содержит `Xline
+  002`; снимок после save показывает новый текст, чистый modeline и сообщение
+  `File ... saved.`. Wheel переместил видимую область к строкам 004–037
   (modeline `5:1`); `M->` показал строки 069–100, caret на последней строке и
   modeline `100:9`.
-- Снимки: `/tmp/roded-qt-live-smoke.NfnsCP/after-wheel.png` и
-  `/tmp/roded-qt-live-smoke.NfnsCP/after-meta-end.png`. Проверка не использовала
-  основной DISPLAY; физические клавиши Super этим сценарием не подтверждаются.
+- Снимки: `/tmp/roded-qt-live-smoke.j1QdWn/after-edit-save.png`,
+  `after-wheel.png` и `after-meta-end.png`. Проверка не использовала основной
+  DISPLAY; физические клавиши Super этим сценарием не подтверждаются.
 - `bundle exec rspec`: **227 examples, 0 failures**; RuboCop по изменённым
   Ruby-файлам: **0 offenses**; `bash -n script/qt_live_smoke.sh` и
   `git diff --check` прошли.

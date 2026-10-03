@@ -783,15 +783,17 @@ RSpec.describe Roded::Application do
 
   it "saves the current buffer to disk" do
     Tempfile.create("roded-save") do |file|
-      buffer = Roded::Buffer.new(file.path)
+      application.startup
+      buffer = application.current_buffer
       buffer.lines = %w[saved content]
       buffer.filename = file.path
-      application.add_buffer(buffer)
 
       application.save_file(file.path)
 
       expect(File.read(file.path)).to eq("saved\ncontent")
       expect(buffer.modified?).to be(false)
+      snapshot = frontend.commands.reverse.find { |command| command.type == :render }.payload[:editor_snapshot]
+      expect(snapshot[:windows].first[:modified]).to be(false)
       expect(frontend.messages.last).to eq("File '#{file.path}' saved.")
     end
   end

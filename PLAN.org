@@ -228,6 +228,8 @@ replace обратимы. Provider/history/preview не становятся cur
 
 - [ ] Qt показывает общий window tree/modeline/minibuffer/picker/REPL в dark UI.
 - [ ] Общие commands, file flows, region/undo/search/modes работают как в curses.
+- [X] Qt save refreshes the visible modified marker; isolated live smoke edits,
+  saves, verifies the on-disk text, and observes the clean modeline.
 - [ ] Native text/undo/context menu не образуют вторую editor model.
 - [ ] Mouse focus/caret/selection/wheel и clipboard идут через core contracts.
 - [X] Qt visual caret maps core character columns to grapheme boundaries for

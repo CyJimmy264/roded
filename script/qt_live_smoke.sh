@@ -50,6 +50,22 @@ sleep 0.3
 xdotool key --clearmodifiers ctrl+n
 sleep 1
 import -window "$window_id" "$smoke_dir/after-ctrl-n.png"
+xdotool type --clearmodifiers X
+xdotool key --clearmodifiers ctrl+x
+sleep 0.4
+xdotool key --clearmodifiers ctrl+s
+saved_line=
+for attempt in $(seq 1 50); do
+  saved_line=$(sed -n '2p' "$smoke_dir/lines.txt")
+  [[ "$saved_line" == "Xline 002" ]] && break
+  sleep 0.1
+done
+if [[ "$saved_line" != "Xline 002" ]]; then
+  printf 'Unexpected saved line: %s\n' "$saved_line" >&2
+  exit 1
+fi
+sleep 0.5
+import -window "$window_id" "$smoke_dir/after-edit-save.png"
 xdotool mousemove --window "$window_id" 300 160 click 5
 sleep 1
 import -window "$window_id" "$smoke_dir/after-wheel.png"
