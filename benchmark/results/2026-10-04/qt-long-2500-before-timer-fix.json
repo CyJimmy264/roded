@@ -1,0 +1,3030 @@
+{
+  "schema_version": 1,
+  "workload": "qt_x11_key_to_caret_frame",
+  "config": {
+    "lines": 1500,
+    "profile": "plain",
+    "iterations": 200,
+    "warmup": 4,
+    "workloads": [
+      "word"
+    ],
+    "original": false,
+    "dispatcher_ms": null,
+    "buffers": 6,
+    "start_col": 1200,
+    "start_row": null,
+    "width": 1920,
+    "height": 1080,
+    "extra_files": [],
+    "line_length": 2500
+  },
+  "fixture": {
+    "version": 1,
+    "lines": 1500,
+    "profile": "plain",
+    "bytes": 3764999,
+    "sha256": "02423bc8da34ed9b5c40dabbafa3da9ef4214559fcf23c91ed7d8486bc45b38b",
+    "block_lines": 100
+  },
+  "extra_fixtures": [],
+  "environment": {
+    "recorded_at": "2026-10-04T18:43:52Z",
+    "ruby": "ruby 3.4.2 (2025-02-15 revision d2930f8e7a) +PRISM [x86_64-linux]",
+    "platform": "x86_64-linux",
+    "host": "lunnen",
+    "cpu": "AMD Ryzen 7 5825U with Radeon Graphics",
+    "yjit": false,
+    "gems": {
+      "pathname": "0.4.0",
+      "rake": "13.3.1",
+      "ast": "2.4.3",
+      "bundler": "2.6.6",
+      "curses": "1.5.3",
+      "date": "3.5.0",
+      "diff-lcs": "1.6.2",
+      "erb": "6.0.0",
+      "ffi": "1.17.4",
+      "io-console": "0.8.1",
+      "prettyprint": "0.2.0",
+      "pp": "0.6.3",
+      "stringio": "3.1.9",
+      "psych": "5.2.6",
+      "tsort": "0.2.0",
+      "rdoc": "6.16.1",
+      "reline": "0.6.3",
+      "irb": "1.15.3",
+      "json": "2.17.1",
+      "language_server-protocol": "3.17.0.5",
+      "lint_roller": "1.1.0",
+      "logger": "1.6.5",
+      "parallel": "1.27.0",
+      "racc": "1.8.1",
+      "parser": "3.3.10.0",
+      "prism": "1.6.0",
+      "qt": "0.2.0",
+      "rainbow": "3.1.1",
+      "regexp_parser": "2.11.3",
+      "unicode-emoji": "4.1.0",
+      "unicode-display_width": "3.2.0",
+      "roded": "0.1.0",
+      "rspec-support": "3.13.6",
+      "rspec-core": "3.13.6",
+      "rspec-expectations": "3.13.5",
+      "rspec-mocks": "3.13.7",
+      "rspec": "3.13.2",
+      "rubocop-ast": "1.48.0",
+      "ruby-progressbar": "1.13.0",
+      "rubocop": "1.81.7"
+    },
+    "git_revision": "9e8851cb0ea2af7465c4c1c9b45cc82451d14b83",
+    "git_dirty": false,
+    "harness_sha256": "ec074f7325cde01bea60ed1facfe9f1a86a24d78eb8eb0b7de1226faed42e049",
+    "qt_platform": "xcb",
+    "ruby_options": "-r/home/mveynberg/.rbenv/versions/3.4.2/lib/ruby/gems/3.4.0/gems/bundler-2.6.6/lib/bundler/setup",
+    "gc_environment": {},
+    "qt_gem": "0.2.0"
+  },
+  "latency_harness_sha256": "3b7634fa6f72e815eb31800e3be405f45289dcdf9dac71f0d3e29c1815648d1a",
+  "idle_process_cpu": [
+    {
+      "dispatcher_interval_ms": 0,
+      "dispatcher_single_shot": true,
+      "wall_ms": 1000.300711,
+      "cpu_ms": 0.115126,
+      "one_core_percent": 0.011509139075279534,
+      "qt_style": "fusion",
+      "width": 1920,
+      "height": 1080,
+      "workload": "word"
+    }
+  ],
+  "results": [
+    {
+      "scenario": "cursor.word_forward",
+      "raw_samples": [
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100912493458197,
+          "frame_detected_ns": 100912508424359,
+          "phases_ns": {
+            "input_received": 100912496513606,
+            "core_started": 100912496639368,
+            "snapshot_posted": 100912497017725,
+            "widget_started": 100912497149918,
+            "widget_finished": 100912505619522
+          },
+          "wall_ns": 14966162
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100912524517427,
+          "frame_detected_ns": 100912540862769,
+          "phases_ns": {
+            "input_received": 100912528700603,
+            "core_started": 100912528851171,
+            "snapshot_posted": 100912529245267,
+            "widget_started": 100912529415791,
+            "widget_finished": 100912538032305
+          },
+          "wall_ns": 16345342
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100912557904655,
+          "frame_detected_ns": 100912575222940,
+          "phases_ns": {
+            "input_received": 100912562911920,
+            "core_started": 100912563074730,
+            "snapshot_posted": 100912563495936,
+            "widget_started": 100912563678181,
+            "widget_finished": 100912572410018
+          },
+          "wall_ns": 17318285
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100912593453465,
+          "frame_detected_ns": 100912611878169,
+          "phases_ns": {
+            "input_received": 100912600155993,
+            "core_started": 100912600265555,
+            "snapshot_posted": 100912600623935,
+            "widget_started": 100912600765817,
+            "widget_finished": 100912609182442
+          },
+          "wall_ns": 18424704
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100912633271691,
+          "frame_detected_ns": 100912653535392,
+          "phases_ns": {
+            "input_received": 100912640660273,
+            "core_started": 100912640805811,
+            "snapshot_posted": 100912641154563,
+            "widget_started": 100912641296485,
+            "widget_finished": 100912650786999
+          },
+          "wall_ns": 20263701
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100912674065685,
+          "frame_detected_ns": 100912694849664,
+          "phases_ns": {
+            "input_received": 100912683033926,
+            "core_started": 100912683174375,
+            "snapshot_posted": 100912683514041,
+            "widget_started": 100912683687070,
+            "widget_finished": 100912692052080
+          },
+          "wall_ns": 20783979
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100912716019615,
+          "frame_detected_ns": 100912737585154,
+          "phases_ns": {
+            "input_received": 100912725294291,
+            "core_started": 100912725417719,
+            "snapshot_posted": 100912725823396,
+            "widget_started": 100912725961120,
+            "widget_finished": 100912734794063
+          },
+          "wall_ns": 21565539
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100912759853669,
+          "frame_detected_ns": 100912782561002,
+          "phases_ns": {
+            "input_received": 100912770311265,
+            "core_started": 100912770454098,
+            "snapshot_posted": 100912770815333,
+            "widget_started": 100912770963376,
+            "widget_finished": 100912779514600
+          },
+          "wall_ns": 22707333
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100912806308601,
+          "frame_detected_ns": 100912830385587,
+          "phases_ns": {
+            "input_received": 100912818049020,
+            "core_started": 100912818167949,
+            "snapshot_posted": 100912818562927,
+            "widget_started": 100912818703196,
+            "widget_finished": 100912827588505
+          },
+          "wall_ns": 24076986
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100912855479397,
+          "frame_detected_ns": 100912880551387,
+          "phases_ns": {
+            "input_received": 100912868426860,
+            "core_started": 100912868546110,
+            "snapshot_posted": 100912868887729,
+            "widget_started": 100912869048625,
+            "widget_finished": 100912877560647
+          },
+          "wall_ns": 25071990
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100912947186827,
+          "frame_detected_ns": 100912976379187,
+          "phases_ns": {
+            "input_received": 100912963928129,
+            "core_started": 100912964081842,
+            "snapshot_posted": 100912964539535,
+            "widget_started": 100912964718244,
+            "widget_finished": 100912973514149
+          },
+          "wall_ns": 29192360
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100913005461875,
+          "frame_detected_ns": 100913036215782,
+          "phases_ns": {
+            "input_received": 100913022146352,
+            "core_started": 100913022284156,
+            "snapshot_posted": 100913022655771,
+            "widget_started": 100913022820133,
+            "widget_finished": 100913033365571
+          },
+          "wall_ns": 30753907
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100913067219149,
+          "frame_detected_ns": 100913096177968,
+          "phases_ns": {
+            "input_received": 100913083978173,
+            "core_started": 100913084108413,
+            "snapshot_posted": 100913084453318,
+            "widget_started": 100913084591483,
+            "widget_finished": 100913093276964
+          },
+          "wall_ns": 28958819
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100913127282581,
+          "frame_detected_ns": 100913157941583,
+          "phases_ns": {
+            "input_received": 100913145856660,
+            "core_started": 100913145992430,
+            "snapshot_posted": 100913146433382,
+            "widget_started": 100913146616820,
+            "widget_finished": 100913155214239
+          },
+          "wall_ns": 30659002
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100913188923410,
+          "frame_detected_ns": 100913220927771,
+          "phases_ns": {
+            "input_received": 100913208182711,
+            "core_started": 100913208311478,
+            "snapshot_posted": 100913208706706,
+            "widget_started": 100913208855991,
+            "widget_finished": 100913217896055
+          },
+          "wall_ns": 32004361
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100913252286652,
+          "frame_detected_ns": 100913284334843,
+          "phases_ns": {
+            "input_received": 100913272380100,
+            "core_started": 100913272498237,
+            "snapshot_posted": 100913272825200,
+            "widget_started": 100913272959727,
+            "widget_finished": 100913281525508
+          },
+          "wall_ns": 32048191
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100913316952604,
+          "frame_detected_ns": 100913349939775,
+          "phases_ns": {
+            "input_received": 100913337930401,
+            "core_started": 100913338057325,
+            "snapshot_posted": 100913338368718,
+            "widget_started": 100913338510069,
+            "widget_finished": 100913346995200
+          },
+          "wall_ns": 32987171
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100913384368753,
+          "frame_detected_ns": 100913417739280,
+          "phases_ns": {
+            "input_received": 100913405711141,
+            "core_started": 100913405862660,
+            "snapshot_posted": 100913406267015,
+            "widget_started": 100913406411161,
+            "widget_finished": 100913414851239
+          },
+          "wall_ns": 33370527
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100913453498558,
+          "frame_detected_ns": 100913487214061,
+          "phases_ns": {
+            "input_received": 100913475204617,
+            "core_started": 100913475336039,
+            "snapshot_posted": 100913475681986,
+            "widget_started": 100913475812607,
+            "widget_finished": 100913484349223
+          },
+          "wall_ns": 33715503
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100913522315758,
+          "frame_detected_ns": 100913558883616,
+          "phases_ns": {
+            "input_received": 100913546137915,
+            "core_started": 100913546270118,
+            "snapshot_posted": 100913546672469,
+            "widget_started": 100913546885782,
+            "widget_finished": 100913556068940
+          },
+          "wall_ns": 36567858
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100913600973176,
+          "frame_detected_ns": 100913646102767,
+          "phases_ns": {
+            "input_received": 100913633256731,
+            "core_started": 100913633391880,
+            "snapshot_posted": 100913633805001,
+            "widget_started": 100913633953515,
+            "widget_finished": 100913642965246
+          },
+          "wall_ns": 45129591
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100913691901390,
+          "frame_detected_ns": 100913755260815,
+          "phases_ns": {
+            "input_received": 100913739201660,
+            "core_started": 100913739374608,
+            "snapshot_posted": 100913739886511,
+            "widget_started": 100913740068977,
+            "widget_finished": 100913751277587
+          },
+          "wall_ns": 63359425
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100913822701178,
+          "frame_detected_ns": 100913885445249,
+          "phases_ns": {
+            "input_received": 100913871982517,
+            "core_started": 100913872127464,
+            "snapshot_posted": 100913872538822,
+            "widget_started": 100913872705159,
+            "widget_finished": 100913882136704
+          },
+          "wall_ns": 62744071
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100913939961122,
+          "frame_detected_ns": 100913990607306,
+          "phases_ns": {
+            "input_received": 100913978344525,
+            "core_started": 100913978463764,
+            "snapshot_posted": 100913978821113,
+            "widget_started": 100913978975968,
+            "widget_finished": 100913987598353
+          },
+          "wall_ns": 50646184
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100914033316217,
+          "frame_detected_ns": 100914075789004,
+          "phases_ns": {
+            "input_received": 100914063235777,
+            "core_started": 100914063413444,
+            "snapshot_posted": 100914063957236,
+            "widget_started": 100914064187290,
+            "widget_finished": 100914072814614
+          },
+          "wall_ns": 42472787
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100914118323674,
+          "frame_detected_ns": 100914161836095,
+          "phases_ns": {
+            "input_received": 100914149630850,
+            "core_started": 100914149757313,
+            "snapshot_posted": 100914150152521,
+            "widget_started": 100914150296747,
+            "widget_finished": 100914158865142
+          },
+          "wall_ns": 43512421
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100914206653791,
+          "frame_detected_ns": 100914250855032,
+          "phases_ns": {
+            "input_received": 100914238839085,
+            "core_started": 100914238970608,
+            "snapshot_posted": 100914239357400,
+            "widget_started": 100914239524959,
+            "widget_finished": 100914247963765
+          },
+          "wall_ns": 44201241
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100914296269908,
+          "frame_detected_ns": 100914341764391,
+          "phases_ns": {
+            "input_received": 100914328946037,
+            "core_started": 100914329159239,
+            "snapshot_posted": 100914329588941,
+            "widget_started": 100914329796874,
+            "widget_finished": 100914338909722
+          },
+          "wall_ns": 45494483
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100914388227408,
+          "frame_detected_ns": 100914436336458,
+          "phases_ns": {
+            "input_received": 100914422800531,
+            "core_started": 100914422946540,
+            "snapshot_posted": 100914423393374,
+            "widget_started": 100914423560542,
+            "widget_finished": 100914433226028
+          },
+          "wall_ns": 48109050
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100914482829751,
+          "frame_detected_ns": 100914527820036,
+          "phases_ns": {
+            "input_received": 100914515585707,
+            "core_started": 100914515731595,
+            "snapshot_posted": 100914516171335,
+            "widget_started": 100914516348592,
+            "widget_finished": 100914524820419
+          },
+          "wall_ns": 44990285
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100914573392692,
+          "frame_detected_ns": 100914620096563,
+          "phases_ns": {
+            "input_received": 100914607918839,
+            "core_started": 100914608043028,
+            "snapshot_posted": 100914608424440,
+            "widget_started": 100914608569047,
+            "widget_finished": 100914617317243
+          },
+          "wall_ns": 46703871
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100914667356198,
+          "frame_detected_ns": 100914714042317,
+          "phases_ns": {
+            "input_received": 100914702256795,
+            "core_started": 100914702396402,
+            "snapshot_posted": 100914702756645,
+            "widget_started": 100914702905670,
+            "widget_finished": 100914711291649
+          },
+          "wall_ns": 46686119
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100914762319516,
+          "frame_detected_ns": 100914839827356,
+          "phases_ns": {
+            "input_received": 100914825746446,
+            "core_started": 100914825909536,
+            "snapshot_posted": 100914826304995,
+            "widget_started": 100914826452827,
+            "widget_finished": 100914836939776
+          },
+          "wall_ns": 77507840
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100914894014383,
+          "frame_detected_ns": 100914945753160,
+          "phases_ns": {
+            "input_received": 100914933167484,
+            "core_started": 100914933315536,
+            "snapshot_posted": 100914933670090,
+            "widget_started": 100914933819134,
+            "widget_finished": 100914943029432
+          },
+          "wall_ns": 51738777
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100914998277644,
+          "frame_detected_ns": 100915052119105,
+          "phases_ns": {
+            "input_received": 100915039278419,
+            "core_started": 100915039408107,
+            "snapshot_posted": 100915039765295,
+            "widget_started": 100915039900535,
+            "widget_finished": 100915048522228
+          },
+          "wall_ns": 53841461
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100915106703303,
+          "frame_detected_ns": 100915161315023,
+          "phases_ns": {
+            "input_received": 100915148511475,
+            "core_started": 100915148632187,
+            "snapshot_posted": 100915148976913,
+            "widget_started": 100915149146305,
+            "widget_finished": 100915158357684
+          },
+          "wall_ns": 54611720
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100915218271572,
+          "frame_detected_ns": 100915274759938,
+          "phases_ns": {
+            "input_received": 100915261087811,
+            "core_started": 100915261261130,
+            "snapshot_posted": 100915261991616,
+            "widget_started": 100915262221319,
+            "widget_finished": 100915271796268
+          },
+          "wall_ns": 56488366
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100915328178880,
+          "frame_detected_ns": 100915381438048,
+          "phases_ns": {
+            "input_received": 100915369131737,
+            "core_started": 100915369258510,
+            "snapshot_posted": 100915369601592,
+            "widget_started": 100915369749294,
+            "widget_finished": 100915378526524
+          },
+          "wall_ns": 53259168
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100915435755675,
+          "frame_detected_ns": 100915489339471,
+          "phases_ns": {
+            "input_received": 100915477270056,
+            "core_started": 100915477410505,
+            "snapshot_posted": 100915477896059,
+            "widget_started": 100915478075891,
+            "widget_finished": 100915486527180
+          },
+          "wall_ns": 53583796
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100915544998289,
+          "frame_detected_ns": 100915604111322,
+          "phases_ns": {
+            "input_received": 100915590850121,
+            "core_started": 100915590988907,
+            "snapshot_posted": 100915591320768,
+            "widget_started": 100915591468791,
+            "widget_finished": 100915601277551
+          },
+          "wall_ns": 59113033
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100915664080511,
+          "frame_detected_ns": 100915724127243,
+          "phases_ns": {
+            "input_received": 100915711688577,
+            "core_started": 100915711813277,
+            "snapshot_posted": 100915712206942,
+            "widget_started": 100915712364102,
+            "widget_finished": 100915721076934
+          },
+          "wall_ns": 60046732
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100915785622093,
+          "frame_detected_ns": 100915848995824,
+          "phases_ns": {
+            "input_received": 100915835879460,
+            "core_started": 100915836052910,
+            "snapshot_posted": 100915836475659,
+            "widget_started": 100915836633119,
+            "widget_finished": 100915845994315
+          },
+          "wall_ns": 63373731
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100915911046819,
+          "frame_detected_ns": 100915971523533,
+          "phases_ns": {
+            "input_received": 100915958767423,
+            "core_started": 100915958917078,
+            "snapshot_posted": 100915959369432,
+            "widget_started": 100915959523245,
+            "widget_finished": 100915968655319
+          },
+          "wall_ns": 60476714
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100916055979774,
+          "frame_detected_ns": 100916123672732,
+          "phases_ns": {
+            "input_received": 100916110688582,
+            "core_started": 100916110795008,
+            "snapshot_posted": 100916111111571,
+            "widget_started": 100916111234688,
+            "widget_finished": 100916120119978
+          },
+          "wall_ns": 67692958
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100916195028539,
+          "frame_detected_ns": 100916293776710,
+          "phases_ns": {
+            "input_received": 100916276136351,
+            "core_started": 100916276281028,
+            "snapshot_posted": 100916276666868,
+            "widget_started": 100916276849936,
+            "widget_finished": 100916289571342
+          },
+          "wall_ns": 98748171
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100916363445107,
+          "frame_detected_ns": 100916431723034,
+          "phases_ns": {
+            "input_received": 100916417401940,
+            "core_started": 100916417533202,
+            "snapshot_posted": 100916417926046,
+            "widget_started": 100916418085169,
+            "widget_finished": 100916427620806
+          },
+          "wall_ns": 68277927
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100916498537804,
+          "frame_detected_ns": 100916565881269,
+          "phases_ns": {
+            "input_received": 100916553498496,
+            "core_started": 100916553615993,
+            "snapshot_posted": 100916553927437,
+            "widget_started": 100916554085187,
+            "widget_finished": 100916562993749
+          },
+          "wall_ns": 67343465
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100916634263367,
+          "frame_detected_ns": 100916701623602,
+          "phases_ns": {
+            "input_received": 100916689260246,
+            "core_started": 100916689368064,
+            "snapshot_posted": 100916689685018,
+            "widget_started": 100916689812463,
+            "widget_finished": 100916698607366
+          },
+          "wall_ns": 67360235
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100916768684166,
+          "frame_detected_ns": 100916833760524,
+          "phases_ns": {
+            "input_received": 100916821052432,
+            "core_started": 100916821175860,
+            "snapshot_posted": 100916821530222,
+            "widget_started": 100916821674087,
+            "widget_finished": 100916830811601
+          },
+          "wall_ns": 65076358
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100916900302252,
+          "frame_detected_ns": 100916969851610,
+          "phases_ns": {
+            "input_received": 100916956363682,
+            "core_started": 100916956495615,
+            "snapshot_posted": 100916956803131,
+            "widget_started": 100916956956033,
+            "widget_finished": 100916966994957
+          },
+          "wall_ns": 69549358
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100917040165587,
+          "frame_detected_ns": 100917108788800,
+          "phases_ns": {
+            "input_received": 100917095640938,
+            "core_started": 100917095790032,
+            "snapshot_posted": 100917096284303,
+            "widget_started": 100917096504418,
+            "widget_finished": 100917105960038
+          },
+          "wall_ns": 68623213
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100917178352324,
+          "frame_detected_ns": 100917248389070,
+          "phases_ns": {
+            "input_received": 100917235438522,
+            "core_started": 100917235585553,
+            "snapshot_posted": 100917235914028,
+            "widget_started": 100917236092467,
+            "widget_finished": 100917245469682
+          },
+          "wall_ns": 70036746
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100917317266561,
+          "frame_detected_ns": 100917386493115,
+          "phases_ns": {
+            "input_received": 100917373571440,
+            "core_started": 100917373765057,
+            "snapshot_posted": 100917374155666,
+            "widget_started": 100917374335027,
+            "widget_finished": 100917383590087
+          },
+          "wall_ns": 69226554
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100917456084851,
+          "frame_detected_ns": 100917538247267,
+          "phases_ns": {
+            "input_received": 100917525637336,
+            "core_started": 100917525788835,
+            "snapshot_posted": 100917526194993,
+            "widget_started": 100917526329080,
+            "widget_finished": 100917535313803
+          },
+          "wall_ns": 82162416
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100917616465025,
+          "frame_detected_ns": 100917691779524,
+          "phases_ns": {
+            "input_received": 100917679554062,
+            "core_started": 100917679717282,
+            "snapshot_posted": 100917680157423,
+            "widget_started": 100917680309924,
+            "widget_finished": 100917688948759
+          },
+          "wall_ns": 75314499
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100917768100708,
+          "frame_detected_ns": 100917845507262,
+          "phases_ns": {
+            "input_received": 100917833037349,
+            "core_started": 100917833181765,
+            "snapshot_posted": 100917833557206,
+            "widget_started": 100917833717231,
+            "widget_finished": 100917842712603
+          },
+          "wall_ns": 77406554
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100917921791147,
+          "frame_detected_ns": 100917998583609,
+          "phases_ns": {
+            "input_received": 100917985809366,
+            "core_started": 100917985917986,
+            "snapshot_posted": 100917986218239,
+            "widget_started": 100917986348138,
+            "widget_finished": 100917995505419
+          },
+          "wall_ns": 76792462
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100918079035103,
+          "frame_detected_ns": 100918156227081,
+          "phases_ns": {
+            "input_received": 100918144260034,
+            "core_started": 100918144385906,
+            "snapshot_posted": 100918144743364,
+            "widget_started": 100918144899562,
+            "widget_finished": 100918153422754
+          },
+          "wall_ns": 77191978
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100918262978966,
+          "frame_detected_ns": 100918371751845,
+          "phases_ns": {
+            "input_received": 100918357105062,
+            "core_started": 100918357227607,
+            "snapshot_posted": 100918357577061,
+            "widget_started": 100918357712651,
+            "widget_finished": 100918367992048
+          },
+          "wall_ns": 108772879
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100918480801183,
+          "frame_detected_ns": 100918580255434,
+          "phases_ns": {
+            "input_received": 100918567164728,
+            "core_started": 100918567310757,
+            "snapshot_posted": 100918567691318,
+            "widget_started": 100918567855250,
+            "widget_finished": 100918577501060
+          },
+          "wall_ns": 99454251
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100918672104565,
+          "frame_detected_ns": 100918769470279,
+          "phases_ns": {
+            "input_received": 100918755569069,
+            "core_started": 100918755706512,
+            "snapshot_posted": 100918756103974,
+            "widget_started": 100918756255804,
+            "widget_finished": 100918766469791
+          },
+          "wall_ns": 97365714
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100918853377538,
+          "frame_detected_ns": 100918937252729,
+          "phases_ns": {
+            "input_received": 100918924248982,
+            "core_started": 100918924360027,
+            "snapshot_posted": 100918924651243,
+            "widget_started": 100918924784268,
+            "widget_finished": 100918934413668
+          },
+          "wall_ns": 83875191
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100919020410918,
+          "frame_detected_ns": 100919104438099,
+          "phases_ns": {
+            "input_received": 100919091389360,
+            "core_started": 100919091502648,
+            "snapshot_posted": 100919091803412,
+            "widget_started": 100919091939183,
+            "widget_finished": 100919101594370
+          },
+          "wall_ns": 84027181
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100919188279677,
+          "frame_detected_ns": 100919272646453,
+          "phases_ns": {
+            "input_received": 100919259948510,
+            "core_started": 100919260077378,
+            "snapshot_posted": 100919260387730,
+            "widget_started": 100919260516607,
+            "widget_finished": 100919269827270
+          },
+          "wall_ns": 84366776
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100919359015338,
+          "frame_detected_ns": 100919445149330,
+          "phases_ns": {
+            "input_received": 100919432109818,
+            "core_started": 100919432253102,
+            "snapshot_posted": 100919432697450,
+            "widget_started": 100919432881920,
+            "widget_finished": 100919441645725
+          },
+          "wall_ns": 86133992
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100919531291296,
+          "frame_detected_ns": 100919617569193,
+          "phases_ns": {
+            "input_received": 100919605378374,
+            "core_started": 100919605505198,
+            "snapshot_posted": 100919605857006,
+            "widget_started": 100919606019676,
+            "widget_finished": 100919614701571
+          },
+          "wall_ns": 86277897
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100919699779136,
+          "frame_detected_ns": 100919786685591,
+          "phases_ns": {
+            "input_received": 100919774356798,
+            "core_started": 100919774467923,
+            "snapshot_posted": 100919774766282,
+            "widget_started": 100919774889099,
+            "widget_finished": 100919783685033
+          },
+          "wall_ns": 86906455
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100919876748581,
+          "frame_detected_ns": 100920000932020,
+          "phases_ns": {
+            "input_received": 100919983145833,
+            "core_started": 100919983311568,
+            "snapshot_posted": 100919983787074,
+            "widget_started": 100919983981753,
+            "widget_finished": 100919996560587
+          },
+          "wall_ns": 124183439
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100920091829658,
+          "frame_detected_ns": 100920184434911,
+          "phases_ns": {
+            "input_received": 100920170987998,
+            "core_started": 100920171171176,
+            "snapshot_posted": 100920171488120,
+            "widget_started": 100920171636123,
+            "widget_finished": 100920181469569
+          },
+          "wall_ns": 92605253
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100920270245197,
+          "frame_detected_ns": 100920356403113,
+          "phases_ns": {
+            "input_received": 100920344435776,
+            "core_started": 100920344543665,
+            "snapshot_posted": 100920344832888,
+            "widget_started": 100920344967996,
+            "widget_finished": 100920353579251
+          },
+          "wall_ns": 86157916
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100920455284689,
+          "frame_detected_ns": 100920571784072,
+          "phases_ns": {
+            "input_received": 100920557812032,
+            "core_started": 100920557918939,
+            "snapshot_posted": 100920558267421,
+            "widget_started": 100920558413520,
+            "widget_finished": 100920568862400
+          },
+          "wall_ns": 116499383
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100920675480980,
+          "frame_detected_ns": 100920791223077,
+          "phases_ns": {
+            "input_received": 100920778831639,
+            "core_started": 100920778943646,
+            "snapshot_posted": 100920779343723,
+            "widget_started": 100920779501844,
+            "widget_finished": 100920788372947
+          },
+          "wall_ns": 115742097
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100920896650192,
+          "frame_detected_ns": 100920995973853,
+          "phases_ns": {
+            "input_received": 100920983550896,
+            "core_started": 100920983678221,
+            "snapshot_posted": 100920984064202,
+            "widget_started": 100920984219398,
+            "widget_finished": 100920992904348
+          },
+          "wall_ns": 99323661
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100921093418372,
+          "frame_detected_ns": 100921191724258,
+          "phases_ns": {
+            "input_received": 100921179425190,
+            "core_started": 100921179531535,
+            "snapshot_posted": 100921179900686,
+            "widget_started": 100921180064187,
+            "widget_finished": 100921188863567
+          },
+          "wall_ns": 98305886
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100921294515396,
+          "frame_detected_ns": 100921394470530,
+          "phases_ns": {
+            "input_received": 100921382244236,
+            "core_started": 100921382372002,
+            "snapshot_posted": 100921382746391,
+            "widget_started": 100921382903140,
+            "widget_finished": 100921391713060
+          },
+          "wall_ns": 99955134
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100921495820474,
+          "frame_detected_ns": 100921595658582,
+          "phases_ns": {
+            "input_received": 100921583172490,
+            "core_started": 100921583304994,
+            "snapshot_posted": 100921583704380,
+            "widget_started": 100921583862431,
+            "widget_finished": 100921592700233
+          },
+          "wall_ns": 99838108
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100921694796321,
+          "frame_detected_ns": 100921793963213,
+          "phases_ns": {
+            "input_received": 100921781636704,
+            "core_started": 100921781761824,
+            "snapshot_posted": 100921782163224,
+            "widget_started": 100921782314613,
+            "widget_finished": 100921791197818
+          },
+          "wall_ns": 99166892
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100921892113912,
+          "frame_detected_ns": 100921990413797,
+          "phases_ns": {
+            "input_received": 100921977952250,
+            "core_started": 100921978072421,
+            "snapshot_posted": 100921978360902,
+            "widget_started": 100921978497644,
+            "widget_finished": 100921987588292
+          },
+          "wall_ns": 98299885
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100922091053492,
+          "frame_detected_ns": 100922189860191,
+          "phases_ns": {
+            "input_received": 100922176884476,
+            "core_started": 100922177088332,
+            "snapshot_posted": 100922177413130,
+            "widget_started": 100922177576862,
+            "widget_finished": 100922186743910
+          },
+          "wall_ns": 98806699
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100922290709542,
+          "frame_detected_ns": 100922391632499,
+          "phases_ns": {
+            "input_received": 100922379266939,
+            "core_started": 100922379375489,
+            "snapshot_posted": 100922379690218,
+            "widget_started": 100922379816631,
+            "widget_finished": 100922388849121
+          },
+          "wall_ns": 100922957
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100922493872262,
+          "frame_detected_ns": 100922613631992,
+          "phases_ns": {
+            "input_received": 100922600429659,
+            "core_started": 100922600552265,
+            "snapshot_posted": 100922600919792,
+            "widget_started": 100922601080258,
+            "widget_finished": 100922609902571
+          },
+          "wall_ns": 119759730
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100922724512032,
+          "frame_detected_ns": 100922832764322,
+          "phases_ns": {
+            "input_received": 100922820140626,
+            "core_started": 100922820261939,
+            "snapshot_posted": 100922820612525,
+            "widget_started": 100922820746832,
+            "widget_finished": 100922829667386
+          },
+          "wall_ns": 108252290
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100922945111155,
+          "frame_detected_ns": 100923055716289,
+          "phases_ns": {
+            "input_received": 100923043305615,
+            "core_started": 100923043436837,
+            "snapshot_posted": 100923043756496,
+            "widget_started": 100923043891424,
+            "widget_finished": 100923052800828
+          },
+          "wall_ns": 110605134
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100923166169684,
+          "frame_detected_ns": 100923277477072,
+          "phases_ns": {
+            "input_received": 100923264186286,
+            "core_started": 100923264327647,
+            "snapshot_posted": 100923264757449,
+            "widget_started": 100923264921751,
+            "widget_finished": 100923274714272
+          },
+          "wall_ns": 111307388
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100923388140403,
+          "frame_detected_ns": 100923499762180,
+          "phases_ns": {
+            "input_received": 100923486261398,
+            "core_started": 100923486403340,
+            "snapshot_posted": 100923486726896,
+            "widget_started": 100923486867996,
+            "widget_finished": 100923496491495
+          },
+          "wall_ns": 111621777
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100923613980912,
+          "frame_detected_ns": 100923725188896,
+          "phases_ns": {
+            "input_received": 100923712345666,
+            "core_started": 100923712480384,
+            "snapshot_posted": 100923712878107,
+            "widget_started": 100923713062316,
+            "widget_finished": 100923722222912
+          },
+          "wall_ns": 111207984
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100923832328817,
+          "frame_detected_ns": 100923934552350,
+          "phases_ns": {
+            "input_received": 100923921935977,
+            "core_started": 100923922068451,
+            "snapshot_posted": 100923922434205,
+            "widget_started": 100923922596313,
+            "widget_finished": 100923931586005
+          },
+          "wall_ns": 102223533
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100924038460947,
+          "frame_detected_ns": 100924143744197,
+          "phases_ns": {
+            "input_received": 100924130590084,
+            "core_started": 100924130751341,
+            "snapshot_posted": 100924131326641,
+            "widget_started": 100924131529124,
+            "widget_finished": 100924140748558
+          },
+          "wall_ns": 105283250
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100924252417412,
+          "frame_detected_ns": 100924361841090,
+          "phases_ns": {
+            "input_received": 100924349320253,
+            "core_started": 100924349476381,
+            "snapshot_posted": 100924349848897,
+            "widget_started": 100924350000196,
+            "widget_finished": 100924358762889
+          },
+          "wall_ns": 109423678
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100924473927773,
+          "frame_detected_ns": 100924587385894,
+          "phases_ns": {
+            "input_received": 100924574404078,
+            "core_started": 100924574526483,
+            "snapshot_posted": 100924574944884,
+            "widget_started": 100924575087166,
+            "widget_finished": 100924584248754
+          },
+          "wall_ns": 113458121
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100924700637032,
+          "frame_detected_ns": 100924832389606,
+          "phases_ns": {
+            "input_received": 100924818537787,
+            "core_started": 100924818689296,
+            "snapshot_posted": 100924819035093,
+            "widget_started": 100924819231555,
+            "widget_finished": 100924828075528
+          },
+          "wall_ns": 131752574
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100924953838678,
+          "frame_detected_ns": 100925076267925,
+          "phases_ns": {
+            "input_received": 100925063398095,
+            "core_started": 100925063524518,
+            "snapshot_posted": 100925063925507,
+            "widget_started": 100925064099678,
+            "widget_finished": 100925073469720
+          },
+          "wall_ns": 122429247
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100925199825501,
+          "frame_detected_ns": 100925325381218,
+          "phases_ns": {
+            "input_received": 100925311987804,
+            "core_started": 100925312155984,
+            "snapshot_posted": 100925312519133,
+            "widget_started": 100925312699205,
+            "widget_finished": 100925322556685
+          },
+          "wall_ns": 125555717
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100925448052351,
+          "frame_detected_ns": 100925569913071,
+          "phases_ns": {
+            "input_received": 100925555957111,
+            "core_started": 100925556083654,
+            "snapshot_posted": 100925556395158,
+            "widget_started": 100925556527381,
+            "widget_finished": 100925566726871
+          },
+          "wall_ns": 121860720
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100925691761128,
+          "frame_detected_ns": 100925816052346,
+          "phases_ns": {
+            "input_received": 100925801571298,
+            "core_started": 100925801726003,
+            "snapshot_posted": 100925802261349,
+            "widget_started": 100925802433576,
+            "widget_finished": 100925813113471
+          },
+          "wall_ns": 124291218
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100925940107809,
+          "frame_detected_ns": 100926121820913,
+          "phases_ns": {
+            "input_received": 100926107642402,
+            "core_started": 100926107769697,
+            "snapshot_posted": 100926108206662,
+            "widget_started": 100926108345287,
+            "widget_finished": 100926118357773
+          },
+          "wall_ns": 181713104
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100926275540966,
+          "frame_detected_ns": 100926421293201,
+          "phases_ns": {
+            "input_received": 100926408340859,
+            "core_started": 100926408458787,
+            "snapshot_posted": 100926408812939,
+            "widget_started": 100926408950382,
+            "widget_finished": 100926418310075
+          },
+          "wall_ns": 145752235
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100926555763391,
+          "frame_detected_ns": 100926695506886,
+          "phases_ns": {
+            "input_received": 100926683052141,
+            "core_started": 100926683183162,
+            "snapshot_posted": 100926683570416,
+            "widget_started": 100926683723738,
+            "widget_finished": 100926692610880
+          },
+          "wall_ns": 139743495
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100926825272759,
+          "frame_detected_ns": 100926953410142,
+          "phases_ns": {
+            "input_received": 100926939833641,
+            "core_started": 100926939984719,
+            "snapshot_posted": 100926940417136,
+            "widget_started": 100926940588572,
+            "widget_finished": 100926950628267
+          },
+          "wall_ns": 128137383
+        },
+        {
+          "scenario": "cursor.word_forward",
+          "key": "Alt_L+f",
+          "sent_ns": 100927083474125,
+          "frame_detected_ns": 100927211855818,
+          "phases_ns": {
+            "input_received": 100927198605087,
+            "core_started": 100927198776363,
+            "snapshot_posted": 100927199294407,
+            "widget_started": 100927199512268,
+            "widget_finished": 100927208819735
+          },
+          "wall_ns": 128381693
+        }
+      ],
+      "metrics": {
+        "operations": 100,
+        "median_ms": 69.793052,
+        "p95_ms": 128.137383,
+        "max_ms": 181.713104,
+        "mean_ms": 74.50423397,
+        "operations_per_second": 13.422055992182427
+      },
+      "phase_metrics": {
+        "native_delivery": {
+          "operations": 100,
+          "median_ms": 56.6955385,
+          "p95_ms": 114.560882,
+          "max_ms": 167.534593,
+          "mean_ms": 61.602991880000005,
+          "operations_per_second": 16.232977806466888
+        },
+        "core_queue": {
+          "operations": 100,
+          "median_ms": 0.132068,
+          "p95_ms": 0.17345,
+          "max_ms": 0.213202,
+          "mean_ms": 0.13756731,
+          "operations_per_second": 7269.168816341615
+        },
+        "core_and_snapshot": {
+          "operations": 100,
+          "median_ms": 0.376899,
+          "p95_ms": 0.511903,
+          "max_ms": 0.730486,
+          "mean_ms": 0.38532141,
+          "operations_per_second": 2595.2360134880646
+        },
+        "dispatcher_wait": {
+          "operations": 100,
+          "median_ms": 0.154334,
+          "p95_ms": 0.207933,
+          "max_ms": 0.230054,
+          "mean_ms": 0.15843832,
+          "operations_per_second": 6311.604414891549
+        },
+        "widget_apply": {
+          "operations": 100,
+          "median_ms": 8.992532,
+          "p95_ms": 10.486949,
+          "max_ms": 12.721406,
+          "mean_ms": 9.20342684,
+          "operations_per_second": 108.655180009015
+        },
+        "frame_detection": {
+          "operations": 100,
+          "median_ms": 2.9134925,
+          "p95_ms": 3.759797,
+          "max_ms": 4.371433,
+          "mean_ms": 3.01648821,
+          "operations_per_second": 331.51132389143334
+        }
+      }
+    },
+    {
+      "scenario": "cursor.word_backward",
+      "raw_samples": [
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100912508470324,
+          "frame_detected_ns": 100912524462466,
+          "phases_ns": {
+            "input_received": 100912512089541,
+            "core_started": 100912512255587,
+            "snapshot_posted": 100912512877433,
+            "widget_started": 100912513052004,
+            "widget_finished": 100912521746412
+          },
+          "wall_ns": 15992142
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100912540906239,
+          "frame_detected_ns": 100912557848932,
+          "phases_ns": {
+            "input_received": 100912545635201,
+            "core_started": 100912545786119,
+            "snapshot_posted": 100912546418545,
+            "widget_started": 100912546591734,
+            "widget_finished": 100912555069091
+          },
+          "wall_ns": 16942693
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100912575270548,
+          "frame_detected_ns": 100912593386221,
+          "phases_ns": {
+            "input_received": 100912580918733,
+            "core_started": 100912581051608,
+            "snapshot_posted": 100912581599968,
+            "widget_started": 100912581762097,
+            "widget_finished": 100912590633480
+          },
+          "wall_ns": 18115673
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100912611921849,
+          "frame_detected_ns": 100912633198647,
+          "phases_ns": {
+            "input_received": 100912619594344,
+            "core_started": 100912619729693,
+            "snapshot_posted": 100912620404877,
+            "widget_started": 100912620572606,
+            "widget_finished": 100912629141422
+          },
+          "wall_ns": 21276798
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100912653586386,
+          "frame_detected_ns": 100912673987861,
+          "phases_ns": {
+            "input_received": 100912661358034,
+            "core_started": 100912661464780,
+            "snapshot_posted": 100912662050619,
+            "widget_started": 100912662211616,
+            "widget_finished": 100912671235481
+          },
+          "wall_ns": 20401475
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100912694899436,
+          "frame_detected_ns": 100912715932254,
+          "phases_ns": {
+            "input_received": 100912703640229,
+            "core_started": 100912703750352,
+            "snapshot_posted": 100912704350638,
+            "widget_started": 100912704485747,
+            "widget_finished": 100912712991797
+          },
+          "wall_ns": 21032818
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100912737633884,
+          "frame_detected_ns": 100912759804969,
+          "phases_ns": {
+            "input_received": 100912747471538,
+            "core_started": 100912747663712,
+            "snapshot_posted": 100912748342883,
+            "widget_started": 100912748501405,
+            "widget_finished": 100912757040176
+          },
+          "wall_ns": 22171085
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100912782632584,
+          "frame_detected_ns": 100912806257056,
+          "phases_ns": {
+            "input_received": 100912793436317,
+            "core_started": 100912793542212,
+            "snapshot_posted": 100912794032556,
+            "widget_started": 100912794184656,
+            "widget_finished": 100912803289299
+          },
+          "wall_ns": 23624472
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100912830446951,
+          "frame_detected_ns": 100912855421250,
+          "phases_ns": {
+            "input_received": 100912842620598,
+            "core_started": 100912842729548,
+            "snapshot_posted": 100912843489719,
+            "widget_started": 100912843635457,
+            "widget_finished": 100912852419790
+          },
+          "wall_ns": 24974299
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100912880613431,
+          "frame_detected_ns": 100912947115946,
+          "phases_ns": {
+            "input_received": 100912934240155,
+            "core_started": 100912934375645,
+            "snapshot_posted": 100912934970962,
+            "widget_started": 100912935155562,
+            "widget_finished": 100912944168436
+          },
+          "wall_ns": 66502515
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100912976442223,
+          "frame_detected_ns": 100913005366990,
+          "phases_ns": {
+            "input_received": 100912992370547,
+            "core_started": 100912992504204,
+            "snapshot_posted": 100912993028840,
+            "widget_started": 100912993185909,
+            "widget_finished": 100913002517511
+          },
+          "wall_ns": 28924767
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100913036264441,
+          "frame_detected_ns": 100913067144611,
+          "phases_ns": {
+            "input_received": 100913052822085,
+            "core_started": 100913052975919,
+            "snapshot_posted": 100913053529448,
+            "widget_started": 100913053671290,
+            "widget_finished": 100913062634652
+          },
+          "wall_ns": 30880170
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100913096285286,
+          "frame_detected_ns": 100913127221989,
+          "phases_ns": {
+            "input_received": 100913114692798,
+            "core_started": 100913114828317,
+            "snapshot_posted": 100913115481020,
+            "widget_started": 100913115663486,
+            "widget_finished": 100913124288185
+          },
+          "wall_ns": 30936703
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100913157985484,
+          "frame_detected_ns": 100913188859382,
+          "phases_ns": {
+            "input_received": 100913176519439,
+            "core_started": 100913176642055,
+            "snapshot_posted": 100913177140333,
+            "widget_started": 100913177278277,
+            "widget_finished": 100913186042332
+          },
+          "wall_ns": 30873898
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100913220972142,
+          "frame_detected_ns": 100913252236390,
+          "phases_ns": {
+            "input_received": 100913239958440,
+            "core_started": 100913240120359,
+            "snapshot_posted": 100913240654042,
+            "widget_started": 100913240809909,
+            "widget_finished": 100913249486193
+          },
+          "wall_ns": 31264248
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100913284379916,
+          "frame_detected_ns": 100913316882615,
+          "phases_ns": {
+            "input_received": 100913304658796,
+            "core_started": 100913304784788,
+            "snapshot_posted": 100913305304475,
+            "widget_started": 100913305446447,
+            "widget_finished": 100913313979457
+          },
+          "wall_ns": 32502699
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100913349995117,
+          "frame_detected_ns": 100913384311547,
+          "phases_ns": {
+            "input_received": 100913370873721,
+            "core_started": 100913370993131,
+            "snapshot_posted": 100913371578259,
+            "widget_started": 100913371735409,
+            "widget_finished": 100913381387069
+          },
+          "wall_ns": 34316430
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100913417802376,
+          "frame_detected_ns": 100913453436915,
+          "phases_ns": {
+            "input_received": 100913441033544,
+            "core_started": 100913441149829,
+            "snapshot_posted": 100913441701625,
+            "widget_started": 100913441855218,
+            "widget_finished": 100913450469498
+          },
+          "wall_ns": 35634539
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100913487273330,
+          "frame_detected_ns": 100913522255056,
+          "phases_ns": {
+            "input_received": 100913509738878,
+            "core_started": 100913509844523,
+            "snapshot_posted": 100913510368348,
+            "widget_started": 100913510495131,
+            "widget_finished": 100913519423329
+          },
+          "wall_ns": 34981726
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100913558957572,
+          "frame_detected_ns": 100913600909619,
+          "phases_ns": {
+            "input_received": 100913587788556,
+            "core_started": 100913587909249,
+            "snapshot_posted": 100913588452960,
+            "widget_started": 100913588614848,
+            "widget_finished": 100913597919611
+          },
+          "wall_ns": 41952047
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100913646172315,
+          "frame_detected_ns": 100913691839315,
+          "phases_ns": {
+            "input_received": 100913679176738,
+            "core_started": 100913679314582,
+            "snapshot_posted": 100913679894911,
+            "widget_started": 100913680071176,
+            "widget_finished": 100913688957627
+          },
+          "wall_ns": 45667000
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100913755335503,
+          "frame_detected_ns": 100913822639294,
+          "phases_ns": {
+            "input_received": 100913807140792,
+            "core_started": 100913807250875,
+            "snapshot_posted": 100913807723425,
+            "widget_started": 100913807857071,
+            "widget_finished": 100913819811214
+          },
+          "wall_ns": 67303791
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100913885499139,
+          "frame_detected_ns": 100913939898186,
+          "phases_ns": {
+            "input_received": 100913926129280,
+            "core_started": 100913926235766,
+            "snapshot_posted": 100913926717784,
+            "widget_started": 100913926849096,
+            "widget_finished": 100913936741902
+          },
+          "wall_ns": 54399047
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100913990659843,
+          "frame_detected_ns": 100914033225701,
+          "phases_ns": {
+            "input_received": 100914020966536,
+            "core_started": 100914021098409,
+            "snapshot_posted": 100914021629417,
+            "widget_started": 100914021783321,
+            "widget_finished": 100914030257091
+          },
+          "wall_ns": 42565858
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100914075849946,
+          "frame_detected_ns": 100914118263653,
+          "phases_ns": {
+            "input_received": 100914106104493,
+            "core_started": 100914106234592,
+            "snapshot_posted": 100914106764388,
+            "widget_started": 100914106915066,
+            "widget_finished": 100914115416087
+          },
+          "wall_ns": 42413707
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100914161888382,
+          "frame_detected_ns": 100914206593791,
+          "phases_ns": {
+            "input_received": 100914193021026,
+            "core_started": 100914193129656,
+            "snapshot_posted": 100914193720575,
+            "widget_started": 100914193878386,
+            "widget_finished": 100914203701032
+          },
+          "wall_ns": 44705409
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100914250903882,
+          "frame_detected_ns": 100914296188949,
+          "phases_ns": {
+            "input_received": 100914283256744,
+            "core_started": 100914283389619,
+            "snapshot_posted": 100914283874593,
+            "widget_started": 100914284050647,
+            "widget_finished": 100914293170599
+          },
+          "wall_ns": 45285067
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100914341819783,
+          "frame_detected_ns": 100914388145868,
+          "phases_ns": {
+            "input_received": 100914375975637,
+            "core_started": 100914376112870,
+            "snapshot_posted": 100914376622058,
+            "widget_started": 100914376770101,
+            "widget_finished": 100914385332846
+          },
+          "wall_ns": 46326085
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100914436387723,
+          "frame_detected_ns": 100914482770662,
+          "phases_ns": {
+            "input_received": 100914470440176,
+            "core_started": 100914470579022,
+            "snapshot_posted": 100914471151537,
+            "widget_started": 100914471309728,
+            "widget_finished": 100914479903080
+          },
+          "wall_ns": 46382939
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100914527873815,
+          "frame_detected_ns": 100914573342350,
+          "phases_ns": {
+            "input_received": 100914560935964,
+            "core_started": 100914561126044,
+            "snapshot_posted": 100914561748691,
+            "widget_started": 100914561915508,
+            "widget_finished": 100914570487210
+          },
+          "wall_ns": 45468535
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100914620144732,
+          "frame_detected_ns": 100914667295166,
+          "phases_ns": {
+            "input_received": 100914654359285,
+            "core_started": 100914654505584,
+            "snapshot_posted": 100914655092265,
+            "widget_started": 100914655232163,
+            "widget_finished": 100914664322680
+          },
+          "wall_ns": 47150434
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100914714102818,
+          "frame_detected_ns": 100914762195117,
+          "phases_ns": {
+            "input_received": 100914749653662,
+            "core_started": 100914749783201,
+            "snapshot_posted": 100914750329908,
+            "widget_started": 100914750475196,
+            "widget_finished": 100914758976748
+          },
+          "wall_ns": 48092299
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100914839892156,
+          "frame_detected_ns": 100914893939345,
+          "phases_ns": {
+            "input_received": 100914880638652,
+            "core_started": 100914880802173,
+            "snapshot_posted": 100914881456699,
+            "widget_started": 100914881613648,
+            "widget_finished": 100914889995840
+          },
+          "wall_ns": 54047189
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100914945809193,
+          "frame_detected_ns": 100914998199791,
+          "phases_ns": {
+            "input_received": 100914986032365,
+            "core_started": 100914986154480,
+            "snapshot_posted": 100914986696248,
+            "widget_started": 100914986838951,
+            "widget_finished": 100914995457939
+          },
+          "wall_ns": 52390598
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100915052166342,
+          "frame_detected_ns": 100915106602067,
+          "phases_ns": {
+            "input_received": 100915093646639,
+            "core_started": 100915093782019,
+            "snapshot_posted": 100915094452063,
+            "widget_started": 100915094629560,
+            "widget_finished": 100915103548010
+          },
+          "wall_ns": 54435725
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100915161555916,
+          "frame_detected_ns": 100915218214176,
+          "phases_ns": {
+            "input_received": 100915205979627,
+            "core_started": 100915206114695,
+            "snapshot_posted": 100915206618123,
+            "widget_started": 100915206753081,
+            "widget_finished": 100915215331615
+          },
+          "wall_ns": 56658260
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100915274811964,
+          "frame_detected_ns": 100915328119882,
+          "phases_ns": {
+            "input_received": 100915315750314,
+            "core_started": 100915315890301,
+            "snapshot_posted": 100915316480298,
+            "widget_started": 100915316647406,
+            "widget_finished": 100915325085361
+          },
+          "wall_ns": 53307918
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100915381494061,
+          "frame_detected_ns": 100915435701916,
+          "phases_ns": {
+            "input_received": 100915422952188,
+            "core_started": 100915423096334,
+            "snapshot_posted": 100915423626470,
+            "widget_started": 100915423769013,
+            "widget_finished": 100915432787598
+          },
+          "wall_ns": 54207855
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100915489383532,
+          "frame_detected_ns": 100915544932608,
+          "phases_ns": {
+            "input_received": 100915531835430,
+            "core_started": 100915531997989,
+            "snapshot_posted": 100915532626668,
+            "widget_started": 100915532843667,
+            "widget_finished": 100915542139713
+          },
+          "wall_ns": 55549076
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100915604159671,
+          "frame_detected_ns": 100915663995885,
+          "phases_ns": {
+            "input_received": 100915650980647,
+            "core_started": 100915651139009,
+            "snapshot_posted": 100915651671290,
+            "widget_started": 100915651820264,
+            "widget_finished": 100915661114236
+          },
+          "wall_ns": 59836214
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100915724176444,
+          "frame_detected_ns": 100915785540082,
+          "phases_ns": {
+            "input_received": 100915772788971,
+            "core_started": 100915772925973,
+            "snapshot_posted": 100915773501654,
+            "widget_started": 100915773652742,
+            "widget_finished": 100915782572635
+          },
+          "wall_ns": 61363638
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100915849064631,
+          "frame_detected_ns": 100915910974135,
+          "phases_ns": {
+            "input_received": 100915898060705,
+            "core_started": 100915898221351,
+            "snapshot_posted": 100915898819132,
+            "widget_started": 100915898996148,
+            "widget_finished": 100915907970311
+          },
+          "wall_ns": 61909504
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100915971571922,
+          "frame_detected_ns": 100916055927628,
+          "phases_ns": {
+            "input_received": 100916042369390,
+            "core_started": 100916042521741,
+            "snapshot_posted": 100916043088895,
+            "widget_started": 100916043246526,
+            "widget_finished": 100916053105779
+          },
+          "wall_ns": 84355706
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100916123735288,
+          "frame_detected_ns": 100916194952138,
+          "phases_ns": {
+            "input_received": 100916178842069,
+            "core_started": 100916178992817,
+            "snapshot_posted": 100916179600767,
+            "widget_started": 100916179761072,
+            "widget_finished": 100916190802744
+          },
+          "wall_ns": 71216850
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100916293837582,
+          "frame_detected_ns": 100916363364108,
+          "phases_ns": {
+            "input_received": 100916351114661,
+            "core_started": 100916351235003,
+            "snapshot_posted": 100916351751865,
+            "widget_started": 100916351893626,
+            "widget_finished": 100916360360665
+          },
+          "wall_ns": 69526526
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100916431790077,
+          "frame_detected_ns": 100916498455893,
+          "phases_ns": {
+            "input_received": 100916485857033,
+            "core_started": 100916485972005,
+            "snapshot_posted": 100916486507060,
+            "widget_started": 100916486644964,
+            "widget_finished": 100916495389414
+          },
+          "wall_ns": 66665816
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100916565946769,
+          "frame_detected_ns": 100916634174553,
+          "phases_ns": {
+            "input_received": 100916621151942,
+            "core_started": 100916621283865,
+            "snapshot_posted": 100916621826374,
+            "widget_started": 100916621985367,
+            "widget_finished": 100916630908787
+          },
+          "wall_ns": 68227784
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100916701823891,
+          "frame_detected_ns": 100916768625758,
+          "phases_ns": {
+            "input_received": 100916756016869,
+            "core_started": 100916756131491,
+            "snapshot_posted": 100916756623297,
+            "widget_started": 100916756758255,
+            "widget_finished": 100916765670534
+          },
+          "wall_ns": 66801867
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100916833819813,
+          "frame_detected_ns": 100916900197258,
+          "phases_ns": {
+            "input_received": 100916887424006,
+            "core_started": 100916887545160,
+            "snapshot_posted": 100916888118346,
+            "widget_started": 100916888263994,
+            "widget_finished": 100916896961036
+          },
+          "wall_ns": 66377445
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100916969904037,
+          "frame_detected_ns": 100917040081522,
+          "phases_ns": {
+            "input_received": 100917026506443,
+            "core_started": 100917026665156,
+            "snapshot_posted": 100917027187819,
+            "widget_started": 100917027342644,
+            "widget_finished": 100917037083279
+          },
+          "wall_ns": 70177485
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100917108846496,
+          "frame_detected_ns": 100917178294688,
+          "phases_ns": {
+            "input_received": 100917165059545,
+            "core_started": 100917165235179,
+            "snapshot_posted": 100917166143222,
+            "widget_started": 100917166401918,
+            "widget_finished": 100917175295793
+          },
+          "wall_ns": 69448192
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100917248450604,
+          "frame_detected_ns": 100917317199988,
+          "phases_ns": {
+            "input_received": 100917304737319,
+            "core_started": 100917304881605,
+            "snapshot_posted": 100917305447848,
+            "widget_started": 100917305607612,
+            "widget_finished": 100917314264731
+          },
+          "wall_ns": 68749384
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100917386544319,
+          "frame_detected_ns": 100917456027736,
+          "phases_ns": {
+            "input_received": 100917443773160,
+            "core_started": 100917443894043,
+            "snapshot_posted": 100917444518223,
+            "widget_started": 100917444688627,
+            "widget_finished": 100917453216347
+          },
+          "wall_ns": 69483417
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100917538375283,
+          "frame_detected_ns": 100917616391119,
+          "phases_ns": {
+            "input_received": 100917603228540,
+            "core_started": 100917603356936,
+            "snapshot_posted": 100917603900027,
+            "widget_started": 100917604082012,
+            "widget_finished": 100917613199409
+          },
+          "wall_ns": 78015836
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100917691822654,
+          "frame_detected_ns": 100917767984404,
+          "phases_ns": {
+            "input_received": 100917755447117,
+            "core_started": 100917755603505,
+            "snapshot_posted": 100917756163196,
+            "widget_started": 100917756301311,
+            "widget_finished": 100917765088619
+          },
+          "wall_ns": 76161750
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100917845570979,
+          "frame_detected_ns": 100917921736657,
+          "phases_ns": {
+            "input_received": 100917909490887,
+            "core_started": 100917909609255,
+            "snapshot_posted": 100917910108514,
+            "widget_started": 100917910255295,
+            "widget_finished": 100917918974929
+          },
+          "wall_ns": 76165678
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100917998646325,
+          "frame_detected_ns": 100918078973940,
+          "phases_ns": {
+            "input_received": 100918066201680,
+            "core_started": 100918066343752,
+            "snapshot_posted": 100918067118819,
+            "widget_started": 100918067316614,
+            "widget_finished": 100918076226939
+          },
+          "wall_ns": 80327615
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100918156269890,
+          "frame_detected_ns": 100918262919757,
+          "phases_ns": {
+            "input_received": 100918221216088,
+            "core_started": 100918221337141,
+            "snapshot_posted": 100918221869902,
+            "widget_started": 100918222014218,
+            "widget_finished": 100918259199694
+          },
+          "wall_ns": 106649867
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100918371804362,
+          "frame_detected_ns": 100918480732917,
+          "phases_ns": {
+            "input_received": 100918467925863,
+            "core_started": 100918468070640,
+            "snapshot_posted": 100918468610675,
+            "widget_started": 100918468751875,
+            "widget_finished": 100918477954068
+          },
+          "wall_ns": 108928555
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100918580310746,
+          "frame_detected_ns": 100918672032973,
+          "phases_ns": {
+            "input_received": 100918658233320,
+            "core_started": 100918658355415,
+            "snapshot_posted": 100918658832634,
+            "widget_started": 100918658960981,
+            "widget_finished": 100918668733174
+          },
+          "wall_ns": 91722227
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100918769523086,
+          "frame_detected_ns": 100918853316456,
+          "phases_ns": {
+            "input_received": 100918840985108,
+            "core_started": 100918841125306,
+            "snapshot_posted": 100918841619376,
+            "widget_started": 100918841757361,
+            "widget_finished": 100918850521376
+          },
+          "wall_ns": 83793370
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100918937305145,
+          "frame_detected_ns": 100919020341881,
+          "phases_ns": {
+            "input_received": 100919007889390,
+            "core_started": 100919008016455,
+            "snapshot_posted": 100919008508751,
+            "widget_started": 100919008644391,
+            "widget_finished": 100919017465111
+          },
+          "wall_ns": 83036736
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100919104489914,
+          "frame_detected_ns": 100919188221851,
+          "phases_ns": {
+            "input_received": 100919175088866,
+            "core_started": 100919175204319,
+            "snapshot_posted": 100919175744564,
+            "widget_started": 100919175909618,
+            "widget_finished": 100919185407536
+          },
+          "wall_ns": 83731937
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100919272695784,
+          "frame_detected_ns": 100919358953594,
+          "phases_ns": {
+            "input_received": 100919346500302,
+            "core_started": 100919346643626,
+            "snapshot_posted": 100919347269529,
+            "widget_started": 100919347427791,
+            "widget_finished": 100919355951814
+          },
+          "wall_ns": 86257810
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100919445208158,
+          "frame_detected_ns": 100919531218923,
+          "phases_ns": {
+            "input_received": 100919519052059,
+            "core_started": 100919519179273,
+            "snapshot_posted": 100919519713186,
+            "widget_started": 100919519857202,
+            "widget_finished": 100919528310605
+          },
+          "wall_ns": 86010765
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100919617623123,
+          "frame_detected_ns": 100919699705480,
+          "phases_ns": {
+            "input_received": 100919686967824,
+            "core_started": 100919687107662,
+            "snapshot_posted": 100919687604407,
+            "widget_started": 100919687751628,
+            "widget_finished": 100919696789919
+          },
+          "wall_ns": 82082357
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100919786734852,
+          "frame_detected_ns": 100919876673102,
+          "phases_ns": {
+            "input_received": 100919860659581,
+            "core_started": 100919860785563,
+            "snapshot_posted": 100919861492906,
+            "widget_started": 100919861765518,
+            "widget_finished": 100919872390723
+          },
+          "wall_ns": 89938250
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100920001026304,
+          "frame_detected_ns": 100920091763416,
+          "phases_ns": {
+            "input_received": 100920078982730,
+            "core_started": 100920079136123,
+            "snapshot_posted": 100920079611419,
+            "widget_started": 100920079743642,
+            "widget_finished": 100920088945074
+          },
+          "wall_ns": 90737112
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100920184504419,
+          "frame_detected_ns": 100920270185998,
+          "phases_ns": {
+            "input_received": 100920257067400,
+            "core_started": 100920257177353,
+            "snapshot_posted": 100920257652197,
+            "widget_started": 100920257784030,
+            "widget_finished": 100920267329535
+          },
+          "wall_ns": 85681579
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100920356454988,
+          "frame_detected_ns": 100920455216474,
+          "phases_ns": {
+            "input_received": 100920442273259,
+            "core_started": 100920442394252,
+            "snapshot_posted": 100920442953452,
+            "widget_started": 100920443146477,
+            "widget_finished": 100920452420122
+          },
+          "wall_ns": 98761486
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100920571852117,
+          "frame_detected_ns": 100920675421640,
+          "phases_ns": {
+            "input_received": 100920660482198,
+            "core_started": 100920660609532,
+            "snapshot_posted": 100920661236538,
+            "widget_started": 100920661385021,
+            "widget_finished": 100920672601615
+          },
+          "wall_ns": 103569523
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100920791271617,
+          "frame_detected_ns": 100920896553655,
+          "phases_ns": {
+            "input_received": 100920883817421,
+            "core_started": 100920883943814,
+            "snapshot_posted": 100920884508013,
+            "widget_started": 100920884665634,
+            "widget_finished": 100920893702291
+          },
+          "wall_ns": 105282038
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100920996101568,
+          "frame_detected_ns": 100921093368199,
+          "phases_ns": {
+            "input_received": 100921081151172,
+            "core_started": 100921081289437,
+            "snapshot_posted": 100921081878663,
+            "widget_started": 100921082049988,
+            "widget_finished": 100921090588649
+          },
+          "wall_ns": 97266631
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100921191782555,
+          "frame_detected_ns": 100921294461527,
+          "phases_ns": {
+            "input_received": 100921282034002,
+            "core_started": 100921282178749,
+            "snapshot_posted": 100921282726117,
+            "widget_started": 100921282873559,
+            "widget_finished": 100921291539744
+          },
+          "wall_ns": 102678972
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100921394517387,
+          "frame_detected_ns": 100921495758099,
+          "phases_ns": {
+            "input_received": 100921483142288,
+            "core_started": 100921483274311,
+            "snapshot_posted": 100921483866943,
+            "widget_started": 100921484028801,
+            "widget_finished": 100921492854179
+          },
+          "wall_ns": 101240712
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100921595714956,
+          "frame_detected_ns": 100921694747481,
+          "phases_ns": {
+            "input_received": 100921682193874,
+            "core_started": 100921682332720,
+            "snapshot_posted": 100921682868827,
+            "widget_started": 100921683029994,
+            "widget_finished": 100921691849752
+          },
+          "wall_ns": 99032525
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100921794025157,
+          "frame_detected_ns": 100921892061816,
+          "phases_ns": {
+            "input_received": 100921879218425,
+            "core_started": 100921879355097,
+            "snapshot_posted": 100921880032144,
+            "widget_started": 100921880188853,
+            "widget_finished": 100921889247141
+          },
+          "wall_ns": 98036659
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100921990465372,
+          "frame_detected_ns": 100922090975939,
+          "phases_ns": {
+            "input_received": 100922077804414,
+            "core_started": 100922077935295,
+            "snapshot_posted": 100922078509142,
+            "widget_started": 100922078692941,
+            "widget_finished": 100922088232616
+          },
+          "wall_ns": 100510567
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100922189912757,
+          "frame_detected_ns": 100922290642058,
+          "phases_ns": {
+            "input_received": 100922277354639,
+            "core_started": 100922277464351,
+            "snapshot_posted": 100922277931752,
+            "widget_started": 100922278097678,
+            "widget_finished": 100922287860604
+          },
+          "wall_ns": 100729301
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100922391682101,
+          "frame_detected_ns": 100922493815638,
+          "phases_ns": {
+            "input_received": 100922481095754,
+            "core_started": 100922481245150,
+            "snapshot_posted": 100922481856286,
+            "widget_started": 100922482033021,
+            "widget_finished": 100922490866425
+          },
+          "wall_ns": 102133537
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100922613685220,
+          "frame_detected_ns": 100922724463393,
+          "phases_ns": {
+            "input_received": 100922712034836,
+            "core_started": 100922712190663,
+            "snapshot_posted": 100922712741397,
+            "widget_started": 100922712895301,
+            "widget_finished": 100922721587895
+          },
+          "wall_ns": 110778173
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100922832875437,
+          "frame_detected_ns": 100922944996233,
+          "phases_ns": {
+            "input_received": 100922931988229,
+            "core_started": 100922932154766,
+            "snapshot_posted": 100922932723614,
+            "widget_started": 100922932867779,
+            "widget_finished": 100922941993732
+          },
+          "wall_ns": 112120796
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100923055773765,
+          "frame_detected_ns": 100923165995232,
+          "phases_ns": {
+            "input_received": 100923152331470,
+            "core_started": 100923152478300,
+            "snapshot_posted": 100923153056826,
+            "widget_started": 100923153239122,
+            "widget_finished": 100923162865086
+          },
+          "wall_ns": 110221467
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100923277525671,
+          "frame_detected_ns": 100923388085011,
+          "phases_ns": {
+            "input_received": 100923374257437,
+            "core_started": 100923374390462,
+            "snapshot_posted": 100923376060248,
+            "widget_started": 100923376224100,
+            "widget_finished": 100923385286165
+          },
+          "wall_ns": 110559340
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100923500101936,
+          "frame_detected_ns": 100923613914650,
+          "phases_ns": {
+            "input_received": 100923599329409,
+            "core_started": 100923599485357,
+            "snapshot_posted": 100923600380586,
+            "widget_started": 100923600619055,
+            "widget_finished": 100923611096157
+          },
+          "wall_ns": 113812714
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100923725259747,
+          "frame_detected_ns": 100923832257716,
+          "phases_ns": {
+            "input_received": 100923819514840,
+            "core_started": 100923819635272,
+            "snapshot_posted": 100923820175257,
+            "widget_started": 100923820321055,
+            "widget_finished": 100923829070544
+          },
+          "wall_ns": 106997969
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100923934607101,
+          "frame_detected_ns": 100924038403662,
+          "phases_ns": {
+            "input_received": 100924025580167,
+            "core_started": 100924025693145,
+            "snapshot_posted": 100924026185533,
+            "widget_started": 100924026366516,
+            "widget_finished": 100924035612830
+          },
+          "wall_ns": 103796561
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100924143821740,
+          "frame_detected_ns": 100924252363032,
+          "phases_ns": {
+            "input_received": 100924239653548,
+            "core_started": 100924239780552,
+            "snapshot_posted": 100924240354048,
+            "widget_started": 100924240521627,
+            "widget_finished": 100924249429017
+          },
+          "wall_ns": 108541292
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100924361922760,
+          "frame_detected_ns": 100924473847225,
+          "phases_ns": {
+            "input_received": 100924460685488,
+            "core_started": 100924460801451,
+            "snapshot_posted": 100924461333191,
+            "widget_started": 100924461494939,
+            "widget_finished": 100924470870711
+          },
+          "wall_ns": 111924465
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100924587441706,
+          "frame_detected_ns": 100924700545193,
+          "phases_ns": {
+            "input_received": 100924687520047,
+            "core_started": 100924687640369,
+            "snapshot_posted": 100924688165517,
+            "widget_started": 100924688302619,
+            "widget_finished": 100924697433962
+          },
+          "wall_ns": 113103487
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100924832456960,
+          "frame_detected_ns": 100924953786271,
+          "phases_ns": {
+            "input_received": 100924940358774,
+            "core_started": 100924940483584,
+            "snapshot_posted": 100924941051741,
+            "widget_started": 100924941232423,
+            "widget_finished": 100924950865099
+          },
+          "wall_ns": 121329311
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100925076316865,
+          "frame_detected_ns": 100925199729404,
+          "phases_ns": {
+            "input_received": 100925185801395,
+            "core_started": 100925185939980,
+            "snapshot_posted": 100925186495303,
+            "widget_started": 100925186640300,
+            "widget_finished": 100925196473015
+          },
+          "wall_ns": 123412539
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100925325426211,
+          "frame_detected_ns": 100925447983154,
+          "phases_ns": {
+            "input_received": 100925434644170,
+            "core_started": 100925434776203,
+            "snapshot_posted": 100925435314495,
+            "widget_started": 100925435463980,
+            "widget_finished": 100925445151046
+          },
+          "wall_ns": 122556943
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100925569967842,
+          "frame_detected_ns": 100925691710104,
+          "phases_ns": {
+            "input_received": 100925678194454,
+            "core_started": 100925678314886,
+            "snapshot_posted": 100925678784441,
+            "widget_started": 100925678914862,
+            "widget_finished": 100925688736796
+          },
+          "wall_ns": 121742262
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100925816121112,
+          "frame_detected_ns": 100925940048059,
+          "phases_ns": {
+            "input_received": 100925925605371,
+            "core_started": 100925925714082,
+            "snapshot_posted": 100925926234871,
+            "widget_started": 100925926412408,
+            "widget_finished": 100925937170487
+          },
+          "wall_ns": 123926947
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100926121877127,
+          "frame_detected_ns": 100926275489542,
+          "phases_ns": {
+            "input_received": 100926262165535,
+            "core_started": 100926262303399,
+            "snapshot_posted": 100926262880853,
+            "widget_started": 100926263063069,
+            "widget_finished": 100926272584209
+          },
+          "wall_ns": 153612415
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100926421340819,
+          "frame_detected_ns": 100926555708410,
+          "phases_ns": {
+            "input_received": 100926542869146,
+            "core_started": 100926543021747,
+            "snapshot_posted": 100926543642741,
+            "widget_started": 100926543773142,
+            "widget_finished": 100926552785956
+          },
+          "wall_ns": 134367591
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100926695567467,
+          "frame_detected_ns": 100926825222346,
+          "phases_ns": {
+            "input_received": 100926811887109,
+            "core_started": 100926812046683,
+            "snapshot_posted": 100926812627102,
+            "widget_started": 100926812801824,
+            "widget_finished": 100926822175433
+          },
+          "wall_ns": 129654879
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100926953458472,
+          "frame_detected_ns": 100927083408204,
+          "phases_ns": {
+            "input_received": 100927070641604,
+            "core_started": 100927070760052,
+            "snapshot_posted": 100927071258440,
+            "widget_started": 100927071395994,
+            "widget_finished": 100927080434896
+          },
+          "wall_ns": 129949732
+        },
+        {
+          "scenario": "cursor.word_backward",
+          "key": "Alt_L+b",
+          "sent_ns": 100927211904959,
+          "frame_detected_ns": 100927341463721,
+          "phases_ns": {
+            "input_received": 100927328769865,
+            "core_started": 100927328880860,
+            "snapshot_posted": 100927329451331,
+            "widget_started": 100927329626734,
+            "widget_finished": 100927338666658
+          },
+          "wall_ns": 129558762
+        }
+      ],
+      "metrics": {
+        "operations": 100,
+        "median_ms": 69.8520055,
+        "p95_ms": 123.926947,
+        "max_ms": 153.612415,
+        "mean_ms": 73.84248856999999,
+        "operations_per_second": 13.542338826406647
+      },
+      "phase_metrics": {
+        "native_delivery": {
+          "operations": 100,
+          "median_ms": 56.9156235,
+          "p95_ms": 109.48453,
+          "max_ms": 140.288408,
+          "mean_ms": 60.581702729999996,
+          "operations_per_second": 16.50663409803437
+        },
+        "core_queue": {
+          "operations": 100,
+          "median_ms": 0.132875,
+          "p95_ms": 0.163521,
+          "max_ms": 0.192174,
+          "mean_ms": 0.13434187,
+          "operations_per_second": 7443.695699635565
+        },
+        "core_and_snapshot": {
+          "operations": 100,
+          "median_ms": 0.554426,
+          "p95_ms": 0.707343,
+          "max_ms": 1.669786,
+          "mean_ms": 0.5800389300000001,
+          "operations_per_second": 1724.0222134745334
+        },
+        "dispatcher_wait": {
+          "operations": 100,
+          "median_ms": 0.157009,
+          "p95_ms": 0.193025,
+          "max_ms": 0.272612,
+          "mean_ms": 0.15952678,
+          "operations_per_second": 6268.5399905896675
+        },
+        "widget_apply": {
+          "operations": 100,
+          "median_ms": 8.9687625,
+          "p95_ms": 10.625205,
+          "max_ms": 37.185476,
+          "mean_ms": 9.39697406,
+          "operations_per_second": 106.41723533713787
+        },
+        "frame_detection": {
+          "operations": 100,
+          "median_ms": 2.911318,
+          "p95_ms": 3.720063,
+          "max_ms": 4.509959,
+          "mean_ms": 2.9899042000000002,
+          "operations_per_second": 334.4588766422683
+        }
+      }
+    }
+  ]
+}

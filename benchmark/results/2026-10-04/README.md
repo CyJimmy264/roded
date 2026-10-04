@@ -39,3 +39,25 @@ synchronous Ruby reports; they are not strict before/after comparisons.
 scheduling probes. They record individual ticker gaps rather than editor
 operations; the manifest lists them separately under `probes`. They demonstrate
 Ruby thread progress, not keyboard-to-visible-frame latency.
+
+The final Russian report is
+[optimization-final-report-2026-10-05.md](../../../docs/optimization-final-report-2026-10-05.md).
+The archive directory retains the initial benchmark date; final work crossed local midnight.
+
+The final core/application/curses matrix at clean f019493 has 204 cases, twenty
+observations each. Subsequent changes affect Qt only. The final Qt matrix at clean
+0df1077 has all 34 operations at both sizes, two observations each. Fixture hashes
+match the original baseline; historical ratios do not imply compatible harnesses
+or identical observation counts.
+
+The three qt-long-2500 reports compare the pre-fix reference a570254, the
+character-format/Fusion stage 9e8851c, and the final one-time scroll-timer callback
+0df1077. They share fixture, configuration, latency harness hash and 100 observations
+per direction. The reference bundle retains a570254 with prerequisite f019493;
+it changes only the benchmark harness on top of the old production source.
+
+The remaining final long-line, one-buffer, small-window, Unicode and real-file
+reports cover deeper columns and large windows. The final real-key plain 1500
+and Ruby 10000 reports have 50 observations per paired operation and 100 typing
+observations. Source files in the real-file case were read, not edited; their
+hashes and the actual Qt style/window dimensions are included.

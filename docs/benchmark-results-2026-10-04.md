@@ -1,5 +1,10 @@
 # Long-document benchmark results — 2026-10-04
 
+The final Russian report consolidates the whole optimization effort, original and
+current operation tables, real-key measurements, and the long-line/timer follow-up:
+[optimization-final-report-2026-10-05.md](optimization-final-report-2026-10-05.md).
+The sections below retain their original stage-specific numbers and provenance.
+
 The benchmark system covers 34 editor operations across core, application,
 curses and Qt layers. The measured changes improve cursor movement, scrolling,
 editing, buffer switching and window lifecycle. Common plain-text operations on

@@ -14,6 +14,12 @@ Before choosing a rendering engine for them, define their place in the buffer
 model, cursor navigation, selection, undo, persistence and the curses fallback.
 No engine change or image implementation is scheduled by this decision.
 
+The final long-line follow-up uses native character formats for the old/new caret
+cells when moving within an unchanged row, defaults to Fusion to avoid observed
+Breeze Alt repaint overhead, and fixes repeated scroll-timer callback registration.
+It retains HTML updates for content, structural changes and other overlays. See
+[the final report](optimization-final-report-2026-10-05.md) for measured limits.
+
 The current evidence points to our presentation path as a problem; it does not
 establish that Qt itself cannot meet the input-latency target. QPlainTextEdit is
 already used by Roded. However, our renderer inserts HTML into QTextDocument

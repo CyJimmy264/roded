@@ -328,6 +328,22 @@
       "git_dirty": false,
       "cases": 1,
       "observations": 100
+    },
+    {
+      "file": "final-core-curses.json",
+      "sha256": "961b1902a8979fbb43afb6b7983792833a52ec34911762b3afd026582ea4ded4",
+      "git_revision": "f0194937b8b67f12eee8ce211278850d723c07f5",
+      "git_dirty": false,
+      "cases": 204,
+      "observations": 4080
+    },
+    {
+      "file": "final-qt-all.json",
+      "sha256": "7bcde91d6c36d2a891c148e81b0c10df93fc624b33c97515c012ebd7fb2759a5",
+      "git_revision": "0df1077c3c13e91e0dc0ccf71a442615151c83bf",
+      "git_dirty": false,
+      "cases": 68,
+      "observations": 136
     }
   ],
   "probes": [
@@ -512,6 +528,106 @@
       "dispatcher_single_shot": false,
       "cases": 6,
       "observations": 600
+    },
+    {
+      "file": "qt-long-2500-before.json",
+      "sha256": "b16dc227437b18d5b808d3bb1ceeb00583fb9a085773cd7905b7cdf98760007e",
+      "git_revision": "a570254411a230ec436e31d5a7c9def76856bfe4",
+      "git_dirty": false,
+      "cases": 2,
+      "latency_harness_sha256": "3b7634fa6f72e815eb31800e3be405f45289dcdf9dac71f0d3e29c1815648d1a",
+      "original_binding": false,
+      "observations": 200
+    },
+    {
+      "file": "qt-long-2500-before-timer-fix.json",
+      "sha256": "c924bc6a46c5674a6196deb857e838e084c3ab877e5202cc01e8e122f4bdb91b",
+      "git_revision": "9e8851cb0ea2af7465c4c1c9b45cc82451d14b83",
+      "git_dirty": false,
+      "cases": 2,
+      "latency_harness_sha256": "3b7634fa6f72e815eb31800e3be405f45289dcdf9dac71f0d3e29c1815648d1a",
+      "original_binding": false,
+      "observations": 200
+    },
+    {
+      "file": "qt-long-2500-final.json",
+      "sha256": "775c372e1455ed51983a7678cb7615d384eceaa269c38982627db279daca9a77",
+      "git_revision": "0df1077c3c13e91e0dc0ccf71a442615151c83bf",
+      "git_dirty": false,
+      "cases": 2,
+      "latency_harness_sha256": "3b7634fa6f72e815eb31800e3be405f45289dcdf9dac71f0d3e29c1815648d1a",
+      "original_binding": false,
+      "observations": 200
+    },
+    {
+      "file": "qt-long-2500-one-buffer-final.json",
+      "sha256": "41654f3f7fe62af0cfb867e5339548e5a902235c28be7c4f0b9e89689568aa92",
+      "git_revision": "0df1077c3c13e91e0dc0ccf71a442615151c83bf",
+      "git_dirty": false,
+      "cases": 2,
+      "latency_harness_sha256": "3b7634fa6f72e815eb31800e3be405f45289dcdf9dac71f0d3e29c1815648d1a",
+      "original_binding": false,
+      "observations": 200
+    },
+    {
+      "file": "qt-long-2500-small-window-final.json",
+      "sha256": "7bfb2117beb0c5726b11feae1d4d70eacd52d6eccf106e21169334cd35b7e7ed",
+      "git_revision": "0df1077c3c13e91e0dc0ccf71a442615151c83bf",
+      "git_dirty": false,
+      "cases": 2,
+      "latency_harness_sha256": "3b7634fa6f72e815eb31800e3be405f45289dcdf9dac71f0d3e29c1815648d1a",
+      "original_binding": false,
+      "observations": 200
+    },
+    {
+      "file": "qt-long-10000-final.json",
+      "sha256": "d4404b2c417bdc74535d85bb6f0202030c12857545cd0dc9c155a62944ad56dc",
+      "git_revision": "0df1077c3c13e91e0dc0ccf71a442615151c83bf",
+      "git_dirty": false,
+      "cases": 2,
+      "latency_harness_sha256": "3b7634fa6f72e815eb31800e3be405f45289dcdf9dac71f0d3e29c1815648d1a",
+      "original_binding": false,
+      "observations": 100
+    },
+    {
+      "file": "qt-long-unicode-final.json",
+      "sha256": "248de7fa40e88ddf58ae6e40a1b337f32b0b31e778f3d2a18a5a39cedf9910f8",
+      "git_revision": "0df1077c3c13e91e0dc0ccf71a442615151c83bf",
+      "git_dirty": false,
+      "cases": 2,
+      "latency_harness_sha256": "3b7634fa6f72e815eb31800e3be405f45289dcdf9dac71f0d3e29c1815648d1a",
+      "original_binding": false,
+      "observations": 100
+    },
+    {
+      "file": "qt-real-files-final.json",
+      "sha256": "c372670b52c0f6f06188ebbcc007fb9d35a4f6e67d0108ef1523df4ca55272e2",
+      "git_revision": "0df1077c3c13e91e0dc0ccf71a442615151c83bf",
+      "git_dirty": false,
+      "cases": 2,
+      "latency_harness_sha256": "3b7634fa6f72e815eb31800e3be405f45289dcdf9dac71f0d3e29c1815648d1a",
+      "original_binding": false,
+      "observations": 200
+    },
+    {
+      "file": "qt-key-final-plain-1500.json",
+      "sha256": "e4bcc1beaa4b0a4a97acdc1dc58b8011a5e6ab241d286f264706c55cc62ff771",
+      "git_revision": "0df1077c3c13e91e0dc0ccf71a442615151c83bf",
+      "git_dirty": false,
+      "cases": 11,
+      "latency_harness_sha256": "3b7634fa6f72e815eb31800e3be405f45289dcdf9dac71f0d3e29c1815648d1a",
+      "original_binding": false,
+      "observations": 600
+    },
+    {
+      "file": "qt-key-final-ruby-10000.json",
+      "sha256": "fb6735392761a0a82128c3fd35d0243ed452f85f67f0c0934894e504fb0df7a4",
+      "git_revision": "0df1077c3c13e91e0dc0ccf71a442615151c83bf",
+      "git_dirty": false,
+      "cases": 11,
+      "latency_harness_sha256": "3b7634fa6f72e815eb31800e3be405f45289dcdf9dac71f0d3e29c1815648d1a",
+      "original_binding": false,
+      "observations": 600
     }
   ],
   "diagnostic_frames": [
@@ -534,6 +650,13 @@
       "git_revision": "6e54b2f124243c2225fcc99212d9757f5dd7e3db",
       "prerequisite": "084b7b7a6bfdcdec3ceba80054a5e3eed1e95756",
       "description": "Periodic dispatcher from 084b7b7 with the latency readiness correction from 36d5d36."
+    },
+    {
+      "file": "qt-long-line-reference.bundle",
+      "sha256": "548b94c768c8b5662123bcd587238f5e8d849c7b4ae212af7af9dc831f8ad034",
+      "git_revision": "a570254411a230ec436e31d5a7c9def76856bfe4",
+      "prerequisite": "f0194937b8b67f12eee8ce211278850d723c07f5",
+      "description": "Pre-fix Qt at f019493 with only the deep-column/file/window latency harness from 9e8851c."
     }
   ]
 }
