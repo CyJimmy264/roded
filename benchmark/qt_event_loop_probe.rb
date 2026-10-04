@@ -1,5 +1,13 @@
 #!/usr/bin/env ruby
 
+require "rbconfig"
+
+# Start a private X server before loading Qt, just like the main benchmark CLI.
+if ARGV.include?("--qt-xvfb") && ENV["RODED_EVENT_LOOP_PROBE_XVFB"] != "1"
+  exec({ "RODED_EVENT_LOOP_PROBE_XVFB" => "1" }, "xvfb-run", "-a", "-s", "-screen 0 1280x800x24",
+       RbConfig.ruby, __FILE__, *ARGV)
+end
+
 require_relative "../lib/roded"
 require_relative "../lib/roded/frontends/qt"
 require_relative "roded/isolation"

@@ -1,5 +1,19 @@
 # Qt rendering direction, informed by KWrite sources
 
+## Current decision
+
+After the event-loop fix, the user confirmed a substantial improvement in the
+running editor's responsiveness on 2026-10-04. Keep the current Qt frontend and
+defer a KWrite-style renderer or component migration until a measured bottleneck
+or a concrete feature requires it. The alternatives below are research notes,
+not an approved rewrite plan. The user's observation supports the fix in normal
+use; it does not replace keyboard-to-visible-frame measurements.
+
+Embedded images and other non-text buffer content are possible future features.
+Before choosing a rendering engine for them, define their place in the buffer
+model, cursor navigation, selection, undo, persistence and the curses fallback.
+No engine change or image implementation is scheduled by this decision.
+
 The current evidence points to our presentation path as a problem; it does not
 establish that Qt itself cannot meet the input-latency target. QPlainTextEdit is
 already used by Roded. However, our renderer inserts HTML into QTextDocument
@@ -32,8 +46,8 @@ Roded's QtEventLoop adapter reattaches only this entry point with `blocking: tru
 It retains QApplication's original `exec` wrapper, window showing and disposal;
 widget operations and callbacks still belong to the GUI thread. The installed gem
 is unchanged. Native input/save/undo/quit checks run separately in private Xvfb.
-This specific binding defect should be fixed before deciding whether to replace
-the text engine. The renderer issues below remain independently relevant.
+This specific binding defect is fixed. The renderer issues below remain
+independently relevant and should be prioritized by measurements and actual use.
 
 ## What KWrite actually uses
 
@@ -76,14 +90,15 @@ The other component interfaces are documented by
 [Scintilla](https://www.scintilla.org/ScintillaDoc.html) and
 [Monaco](https://github.com/microsoft/monaco-editor).
 
-## Next evidence needed
+## Evidence to gather before reconsidering the renderer
 
 First compare native cursor movement against our HTML cursor path on the same
 1500/10,000-line fixtures, font, viewport and paint pumping. Trace the normal
 key-to-core, core-to-dispatcher and dispatcher-to-paint phases separately. A
 shared snapshot or changed QTextDocument value is not proof of a visible frame.
 
-Then prototype native decorations and, if necessary, a cached visible-line view.
+If those measurements justify further renderer work, prototype native decorations
+and, if necessary, a cached visible-line view.
 Check Unicode/tabs/EOL caret, selection/search, independent split views, scrolling,
 IME and actual frames before replacing the production frontend. A WebView remains
 an alternative to benchmark, not a performance conclusion based on its name.

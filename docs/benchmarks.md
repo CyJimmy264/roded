@@ -82,7 +82,8 @@ terminal output for further `C-p` presses at the beginning of the document.
 The production Qt event loop needs a separate check: qt 0.2's original FFI binding
 holds Ruby's GVL in `QApplication.exec`, which manual event pumping does not expose.
 The adapter releases it so core/input threads can run between GUI callbacks.
-Run these probes sequentially; they report raw ticker gaps and source metadata:
+Run these probes sequentially; they report raw ticker gaps and source metadata.
+Each `--qt-xvfb` invocation starts its own private X server before loading Qt:
 
 ```sh
 bundle exec ruby benchmark/qt_event_loop_probe.rb --original --qt-xvfb
