@@ -48,8 +48,6 @@ module Roded
     end
 
     def selected
-      return if query.empty? && !@moved
-
       candidates[selected_index]
     end
 

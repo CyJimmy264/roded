@@ -27,10 +27,10 @@ RSpec.describe Roded::Picker do
     expect(picker.candidates).to be_empty
   end
 
-  it "does not implicitly accept the first item for an empty query" do
+  it "selects the highlighted first item for an empty query" do
     picker = described_class.new(%w[quit undo])
 
-    expect(picker.selected).to be_nil
+    expect(picker.selected).to eq("quit")
     picker.move(1)
     expect(picker.selected).to eq("undo")
   end

@@ -94,6 +94,17 @@ RSpec.describe Roded::Application do
     expect(application.command_names).to include("open", "quit")
   end
 
+  it "submits the initially selected M-x command on Enter" do
+    application.startup
+    %w[Esc x Enter].each do |key|
+      application.handle_event(Roded::Event.new(:key, { key: }))
+    end
+
+    expect(application.focus).to eq(:buffer)
+    expect(application.current_buffer.name).to eq("*Bindings*")
+    expect(application.current_buffer.to_s).to include("Roded key bindings")
+  end
+
   it "submits M-x quit through routed key events" do
     %w[Esc x q u i t Enter].each do |key|
       application.handle_event(Roded::Event.new(:key, { key: key }))
