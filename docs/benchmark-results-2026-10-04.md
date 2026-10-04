@@ -335,8 +335,56 @@ keyboard-to-pixel latency, and retain their raw gaps and source metadata.
 
 See the [KWrite source review and alternatives](qt-rendering-alternatives.md) for
 its separate QWidget/QPainter/QTextLayout renderer, damaged-area painting and
-layout reuse. Separating our caret/decorations from HTML edits and measuring the
-normal keyboard-to-frame path remain further work.
+layout reuse. The current frontend is retained following the user's confirmation
+of improved responsiveness; renderer replacement is deferred. Separating
+caret/decorations from HTML edits remains an option if measurements justify it.
+
+## Real Qt keys and server-side frames
+
+`307a0e8` adds a separate-process XTest/pixel benchmark. It runs the actual
+QApplication/core loops and the production 12 ms dispatcher. Each key waits for
+its changed block caret to appear and the preceding caret to disappear in the
+Xvfb frame. Core point/line oracles also run. Snapshot matching distinguishes the
+input's render from unrelated background highlighting. `2c7c82d` records the
+horizontal origin and rejects changes that invalidate this caret-only oracle.
+
+Nine clean reports from `2c7c82d` contain 2840 observed keystrokes. Paired workloads
+use 200 keys per group (100 per direction/action); consecutive typing uses 100
+keys. Both use four warmup keys. The original-binding comparison is exploratory,
+with 20 keys per group (10 per cursor direction). These are serialized input
+latencies, not held-key throughput or physical display latency. Values include
+instrumentation, IPC and a 1 ms polling interval, and are upper bounds on Xvfb
+server-side frame latency. They cannot be equated with published measurements
+from other editors.
+
+| Fixture / lines | Cursor medians | Insert / backspace medians | Consecutive typing median / p95 / max |
+| --- | --- | --- | --- |
+| [plain / 1500](../benchmark/results/2026-10-04/qt-key-plain-1500.json) | 16.35–18.29 | 18.41 / 19.52 | [17.25 / 22.46 / 53.20](../benchmark/results/2026-10-04/qt-key-typing-plain-1500.json) |
+| [plain / 10,000](../benchmark/results/2026-10-04/qt-key-plain-10000.json) | 19.27–21.16 | 30.23 / 31.15 | [27.49 / 38.16 / 111.63](../benchmark/results/2026-10-04/qt-key-typing-plain-10000.json) |
+| [Ruby / 1500](../benchmark/results/2026-10-04/qt-key-ruby-1500.json) | 19.99–20.66 | 22.00 / 22.61 | [19.88 / 30.82 / 45.53](../benchmark/results/2026-10-04/qt-key-typing-ruby-1500.json) |
+| [Ruby / 10,000](../benchmark/results/2026-10-04/qt-key-ruby-10000.json) | 24.33–24.58 | 41.89 / 42.52 | [39.81 / 50.88 / 175.99](../benchmark/results/2026-10-04/qt-key-typing-ruby-10000.json) |
+
+All times are milliseconds. Cursor medians cover `C-f`, `C-b`, `C-n`, `C-p`.
+The [original binding](../benchmark/results/2026-10-04/qt-key-original-1500.json)
+has cursor medians 131.41 / 132.51 ms and typing median 134.71 ms on plain 1500
+rows. This confirms that the event-loop correction affects actual keys/frames,
+not just an independent ticker. The 12–30 ms target is still not met across
+operations, sizes and upper percentiles.
+
+The raw phase timestamps distinguish native delivery, the core queue, core work
+and snapshot creation, dispatcher waiting, widget application and frame detection.
+For Ruby 10,000-row typing, core/snapshot work, Qt application and frame detection
+remain substantial. The final syntax colors are not required by this frame
+oracle; background lexer CPU can compete with foreground work.
+
+A longer plain typing diagnostic fails at the right edge before scrolling starts:
+after key 116, core point is row 750 / column 120 (zero-based), native caret x=942,
+horizontal origin=0. The custom blue block extends outside the viewport. See the
+[captured frame](../benchmark/results/2026-10-04/qt-block-caret-right-edge.png).
+The probe correctly refuses to report a painted caret there. This is a remaining
+frontend clipping bug, separate from the latency measurements above, which remain
+within the viewport. The visibility logic currently allows the cursor's character
+offset up to the full viewport width without reserving document margin/block width.
 
 ## Remaining bottlenecks after the latest changes
 
@@ -354,11 +402,17 @@ normal keyboard-to-frame path remain further work.
 - These runs do not measure sustained real keyboard-to-frame throughput,
   compositor timing, native Qt allocations or terminal-emulator I/O. Boundary
   no-ops are checked separately rather than substituted for real motion timings.
+- The new real-key probe covers seven cursor/edit cases. Page/word motion,
+  scrolling, buffer switches and window lifecycle still need equivalent real-key
+  frame measurements in addition to the main suite's execution/visible checks.
+  The right-edge block-caret clipping described above also remains to fix.
 
 ## Validation and reproduction
 
-`bundle exec rake` passed after the native-loop correction: 447 examples and
-RuboCop across 222 Ruby files.
+`bundle exec rake` passed after the real-key probe: 451 examples and RuboCop
+across 233 Ruby files. Trace regressions cover unrelated/stale background renders,
+latest matching snapshots and reuse of the preceding key's target. Real XTest
+and pixel checks passed on both fixture sizes and profiles.
 Visible Qt checks run under private Xvfb with retained widgets and event pumping;
 they verify editor/caret geometry, one paragraph background at the cursor row,
 modelines, scrolling, buffers, splits and multiline edits. Both plain and Ruby

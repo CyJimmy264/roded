@@ -349,5 +349,110 @@
       "iterations": 358,
       "responsive": true
     }
+  ],
+  "key_latency_reports": [
+    {
+      "file": "qt-key-plain-1500.json",
+      "sha256": "87b627d6c0ea9c87ce40334753c9a84ffc0931a403d2b209354f334bcca4399e",
+      "git_revision": "2c7c82d373cf5d6e3312ce91905003b846d05dfe",
+      "git_dirty": false,
+      "latency_harness_sha256": "bdc68626211f71cc23db551e31e678a5858ec3f070649eddad2624dbf480ca35",
+      "original_binding": false,
+      "cases": 6,
+      "observations": 600
+    },
+    {
+      "file": "qt-key-plain-10000.json",
+      "sha256": "9cf30791538602b7bb76b9311df94ce6b698fc36c8b322e153aef0f7815d80b5",
+      "git_revision": "2c7c82d373cf5d6e3312ce91905003b846d05dfe",
+      "git_dirty": false,
+      "latency_harness_sha256": "bdc68626211f71cc23db551e31e678a5858ec3f070649eddad2624dbf480ca35",
+      "original_binding": false,
+      "cases": 6,
+      "observations": 600
+    },
+    {
+      "file": "qt-key-ruby-1500.json",
+      "sha256": "37d390fb06bf8a11a954be1d829bd289a8eb4e4d5d4c6158e6cda13be03c0776",
+      "git_revision": "2c7c82d373cf5d6e3312ce91905003b846d05dfe",
+      "git_dirty": false,
+      "latency_harness_sha256": "bdc68626211f71cc23db551e31e678a5858ec3f070649eddad2624dbf480ca35",
+      "original_binding": false,
+      "cases": 6,
+      "observations": 600
+    },
+    {
+      "file": "qt-key-ruby-10000.json",
+      "sha256": "72f7cdc35b612010743d33573a84f3b8b2d5d18290d7b09994794ce33bfe7f45",
+      "git_revision": "2c7c82d373cf5d6e3312ce91905003b846d05dfe",
+      "git_dirty": false,
+      "latency_harness_sha256": "bdc68626211f71cc23db551e31e678a5858ec3f070649eddad2624dbf480ca35",
+      "original_binding": false,
+      "cases": 6,
+      "observations": 600
+    },
+    {
+      "file": "qt-key-typing-plain-1500.json",
+      "sha256": "9c57b808b2d60cc49fc2af0873d192ab416134d01a072ef356402fccac173a67",
+      "git_revision": "2c7c82d373cf5d6e3312ce91905003b846d05dfe",
+      "git_dirty": false,
+      "latency_harness_sha256": "bdc68626211f71cc23db551e31e678a5858ec3f070649eddad2624dbf480ca35",
+      "original_binding": false,
+      "cases": 1,
+      "observations": 100
+    },
+    {
+      "file": "qt-key-typing-plain-10000.json",
+      "sha256": "2b8fd50eec16efb98c9883d8460fa9f40ce1e830e277822e4e60678c9565880a",
+      "git_revision": "2c7c82d373cf5d6e3312ce91905003b846d05dfe",
+      "git_dirty": false,
+      "latency_harness_sha256": "bdc68626211f71cc23db551e31e678a5858ec3f070649eddad2624dbf480ca35",
+      "original_binding": false,
+      "cases": 1,
+      "observations": 100
+    },
+    {
+      "file": "qt-key-typing-ruby-1500.json",
+      "sha256": "c2403c8635f386a6663d5be572268d5cabc79943be80a9bb38391a19704f9770",
+      "git_revision": "2c7c82d373cf5d6e3312ce91905003b846d05dfe",
+      "git_dirty": false,
+      "latency_harness_sha256": "bdc68626211f71cc23db551e31e678a5858ec3f070649eddad2624dbf480ca35",
+      "original_binding": false,
+      "cases": 1,
+      "observations": 100
+    },
+    {
+      "file": "qt-key-typing-ruby-10000.json",
+      "sha256": "2a186d3a3a1803b74ebb86fa1d3b31670f31c2e93e037487691fb497187bbdc8",
+      "git_revision": "2c7c82d373cf5d6e3312ce91905003b846d05dfe",
+      "git_dirty": false,
+      "latency_harness_sha256": "bdc68626211f71cc23db551e31e678a5858ec3f070649eddad2624dbf480ca35",
+      "original_binding": false,
+      "cases": 1,
+      "observations": 100
+    },
+    {
+      "file": "qt-key-original-1500.json",
+      "sha256": "4d33fdd9dfdd5124446930ab6da501ead88434062117c59d0de89d1bb65f2df5",
+      "git_revision": "2c7c82d373cf5d6e3312ce91905003b846d05dfe",
+      "git_dirty": false,
+      "latency_harness_sha256": "bdc68626211f71cc23db551e31e678a5858ec3f070649eddad2624dbf480ca35",
+      "original_binding": true,
+      "cases": 3,
+      "observations": 40
+    }
+  ],
+  "diagnostic_frames": [
+    {
+      "file": "qt-block-caret-right-edge.png",
+      "sha256": "8857786e05f8d6ed9e6fc8d4f6343c10ac5a1e135b5767c5ade7103f6bdb6e64",
+      "git_revision": "2c7c82d373cf5d6e3312ce91905003b846d05dfe",
+      "workload": "consecutive typing at viewport right edge",
+      "point": {
+        "row": 750,
+        "col": 120
+      },
+      "key_sequence": 116
+    }
   ]
 }

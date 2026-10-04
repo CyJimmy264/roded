@@ -92,10 +92,12 @@ The other component interfaces are documented by
 
 ## Evidence to gather before reconsidering the renderer
 
-First compare native cursor movement against our HTML cursor path on the same
-1500/10,000-line fixtures, font, viewport and paint pumping. Trace the normal
-key-to-core, core-to-dispatcher and dispatcher-to-paint phases separately. A
-shared snapshot or changed QTextDocument value is not proof of a visible frame.
+The [real-key benchmark](../benchmark/qt_key_latency.rb) now traces the normal
+key-to-core, core-to-dispatcher and widget-to-frame phases on 1500/10,000-line
+fixtures. It observes actual Xvfb caret pixels using a separate controller.
+Before a renderer replacement, compare native cursor movement against our HTML
+cursor path with matching fixtures, font, viewport and frame checks. A shared
+snapshot or changed QTextDocument value is not proof of a visible frame.
 
 If those measurements justify further renderer work, prototype native decorations
 and, if necessary, a cached visible-line view.
