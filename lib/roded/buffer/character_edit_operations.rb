@@ -7,7 +7,8 @@ module Roded
 
       position = normalize_buffer_position(at)
       row, column = position.values_at(:row, :col)
-      record_edit(row, 1, 1, undo_group: :typing) { insert_character(row, column, char) }
+      change = character_insertion_change(position, char)
+      record_edit(row, 1, 1, undo_group: :typing, change:) { insert_character(row, column, char) }
     end
 
     def insert_text(text, at:)
@@ -18,7 +19,7 @@ module Roded
 
       position = normalize_buffer_position(at)
       row, inserted_lines = paste_snapshot(text, position)
-      record_edit(row, 1, inserted_lines.length) do
+      record_edit(row, 1, inserted_lines.length, change: paste_change(position, inserted_lines)) do
         @lines[row, 1] = inserted_lines
       end
     end
@@ -48,7 +49,7 @@ module Roded
     end
 
     def backspace_in_line(row, column)
-      record_edit(row, 1, 1) do
+      record_edit(row, 1, 1, change: character_deletion_change(row, column - 1)) do
         line = @lines[row].dup
         line.slice!(column - 1)
         @lines[row] = line
@@ -57,7 +58,7 @@ module Roded
 
     def join_previous_line(row)
       row -= 1
-      record_edit(row, 2, 1) do
+      record_edit(row, 2, 1, change: line_join_change(row)) do
         previous_line = @lines[row]
         @lines[row] = previous_line + @lines[row + 1]
         @lines.delete_at(row + 1)
@@ -65,7 +66,7 @@ module Roded
     end
 
     def delete_character(row, column)
-      record_edit(row, 1, 1) do
+      record_edit(row, 1, 1, change: character_deletion_change(row, column)) do
         edited_line = @lines[row].dup
         edited_line.slice!(column)
         @lines[row] = edited_line
@@ -73,7 +74,7 @@ module Roded
     end
 
     def join_next_line(row)
-      record_edit(row, 2, 1) do
+      record_edit(row, 2, 1, change: line_join_change(row)) do
         @lines[row] += @lines[row + 1]
         @lines.delete_at(row + 1)
       end

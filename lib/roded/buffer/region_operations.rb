@@ -18,7 +18,8 @@ module Roded
 
       first_row, first_col = start_position.values_at(:row, :col)
       last_row, last_col = end_position.values_at(:row, :col)
-      record_edit(first_row, last_row - first_row + 1, 1) do
+      change = edit_change(start_position, end_position, start_position)
+      record_edit(first_row, last_row - first_row + 1, 1, change:) do
         delete_region_lines(first_row, first_col, last_row, last_col)
       end
       true

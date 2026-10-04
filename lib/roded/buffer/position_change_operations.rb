@@ -11,6 +11,33 @@ module Roded
       { row:, col: }
     end
 
+    def edit_change(start, old_end, new_end)
+      Buffer::PositionChange.new(start: start.dup.freeze, old_end: old_end.dup.freeze, new_end: new_end.dup.freeze)
+    end
+
+    def character_insertion_change(position, char)
+      return if char.include?("\n")
+
+      edit_change(position, position, { row: position[:row], col: position[:col] + char.length })
+    end
+
+    def paste_change(position, inserted_lines)
+      row = position[:row]
+      suffix_length = @lines[row].length - position[:col]
+      finish = { row: row + inserted_lines.length - 1, col: inserted_lines.last.length - suffix_length }
+      edit_change(position, position, finish)
+    end
+
+    def character_deletion_change(row, column)
+      first = { row:, col: column }
+      edit_change(first, { row:, col: column + 1 }, first)
+    end
+
+    def line_join_change(row)
+      first = { row:, col: @lines[row].length }
+      edit_change(first, { row: row + 1, col: 0 }, first)
+    end
+
     def position_change(row, before_lines, after_lines)
       return if before_lines == after_lines
 
