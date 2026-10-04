@@ -401,6 +401,70 @@ allows horizontal-scroll events while settling deferred syntax. These actions
 remain outside foreground timing. Its harness digest changes, so strict
 comparison against earlier reset-suite reports is intentionally rejected.
 
+## Event-driven Qt dispatcher
+
+The frontend now requests one GUI wakeup when an update arrives, rather than
+running a Ruby callback every 12 ms. A GUI-owned, zero-delay single-shot timer
+applies the queue; Qt's reentrant `QTimer.singleShot` queues its `start()` slot
+from the producer thread. Pending snapshots share a wakeup. Updates posted during
+application request a subsequent wakeup; stopping preserves queued actions for
+manual drain or restart. Tests cover these cases and real GUI-thread delivery.
+
+The real-key harness also starts its readiness timer after initial document
+construction and window show. Previously, constructing 10,000 Ruby rows could
+exhaust the 200 ms delay before the native loop began. The initial frame check
+then rejected stale caret coordinates: it expected `(35, 16)`, while the visible
+caret was at `(35, 160)`. No input was sent in that failed run. Moving the start
+fixes this benchmark startup race; no pixel check was relaxed.
+
+Four fresh reports use the same corrected latency harness
+`dc5722e8188239490658574178c0de8b893b610b681b1f6368062e0307fd43aa`.
+Each has 600 observations, 100 per operation, from clean sources. The event-driven
+source is `36d5d36`; the periodic reference `6e54b2f` is `084b7b7` plus only the
+readiness correction. Its exact commit is retained in
+`benchmark/results/2026-10-04/qt-periodic-reference.bundle`, with `084b7b7` as a
+prerequisite. Runs used separate private Xvfb sessions sequentially.
+
+Median real-key-to-caret-frame latency, milliseconds:
+
+| Fixture | Operation | Periodic 12 ms | Event-driven |
+| --- | --- | ---: | ---: |
+| Plain, 1500 rows | Character/line motion, range | 21.90–22.95 | 22.68–23.60 |
+| Plain, 1500 rows | Insert | 24.18 | 24.53 |
+| Plain, 1500 rows | Backspace | 23.98 | 25.21 |
+| Ruby, 10,000 rows | Character/line motion, range | 25.40–26.84 | 27.77–28.60 |
+| Ruby, 10,000 rows | Insert | 46.06 | 46.77 |
+| Ruby, 10,000 rows | Backspace | 48.36 | 47.94 |
+
+This is not an overall input-latency improvement. Motion medians are somewhat
+higher in the event-driven run, with the difference mostly in the XTest-to-Qt
+input-receipt phase. Widget application remains about 5–6 ms on the large Ruby
+fixture. A single pair of runs cannot establish the cause of that delivery change.
+The change is retained for removing idle polling and reducing dispatcher-wait
+tails, rather than claiming a faster complete frame.
+
+For motion, dispatcher-wait p95 falls from 2.86–3.77 to 0.17–0.20 ms on plain
+1500 rows, and from 6.89–7.98 to 0.18–0.20 ms on Ruby 10,000 rows. The median
+dispatch wait rises slightly, from about 0.09–0.11 to 0.14–0.15 ms. Ruby edit
+dispatch remains small: p95 changes from 0.25–0.40 to 0.53–0.59 ms; its main cost
+is elsewhere. Whole-frame p95 still reaches about 67 ms and maxima about 183 ms.
+
+The six one-second idle windows per implementation show 1.42–1.79% of one CPU
+core for periodic polling versus 0.0085–0.0127% for event-driven delivery. These
+are editor-process CPU samples, excluding Xvfb/controller/lexer processes. They
+demonstrate the elimination of idle Ruby wakeups, not battery-life measurements.
+
+Two additional clean `084b7b7` reports retain the interval-only experiment with
+the preceding harness: 12 versus 4 ms polling, 600 observations each. Both show
+about 23–24 ms medians on 1500 plain rows; idle CPU increases from 0.62–0.68% to
+1.30–1.44% of one core. Their harness differs from the four corrected-readiness
+reports, so compare those two interval reports to each other only.
+
+All six reports and the reference bundle have SHA-256 entries in the manifest.
+`bundle exec rake` passes with 458 examples and RuboCop across 235 files. Native
+input/close checks, a 10,000-line/31-buffer check, and sixteen Ruby visible-frame
+checks pass, including caret/current-row/modeline, scrolling, splits and edits.
+
 ## Remaining bottlenecks after the latest changes
 
 - Ruby still lexes the whole document after an uncached edit. Large-document input

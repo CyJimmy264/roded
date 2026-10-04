@@ -440,6 +440,78 @@
       "original_binding": true,
       "cases": 3,
       "observations": 40
+    },
+    {
+      "file": "qt-dispatcher-periodic-plain-1500.json",
+      "sha256": "7d8c9a6431fc030484c8e0334092867c2c7003139c621ccf325c004ae380f70c",
+      "git_revision": "6e54b2f124243c2225fcc99212d9757f5dd7e3db",
+      "git_dirty": false,
+      "latency_harness_sha256": "dc5722e8188239490658574178c0de8b893b610b681b1f6368062e0307fd43aa",
+      "original_binding": false,
+      "dispatcher_interval_ms": 12,
+      "dispatcher_single_shot": false,
+      "cases": 6,
+      "observations": 600
+    },
+    {
+      "file": "qt-dispatcher-periodic-ruby-10000.json",
+      "sha256": "729eff0e8663f599325ce0c3432b10bcd62992b4c1933785cc6b0f9167b3c71c",
+      "git_revision": "6e54b2f124243c2225fcc99212d9757f5dd7e3db",
+      "git_dirty": false,
+      "latency_harness_sha256": "dc5722e8188239490658574178c0de8b893b610b681b1f6368062e0307fd43aa",
+      "original_binding": false,
+      "dispatcher_interval_ms": 12,
+      "dispatcher_single_shot": false,
+      "cases": 6,
+      "observations": 600
+    },
+    {
+      "file": "qt-dispatcher-event-plain-1500.json",
+      "sha256": "9e8c91f72bcd69654866666203e7d1e2554901fd3a24629ca537711efd415521",
+      "git_revision": "36d5d3691e2967f80fe0fc472c43c213e97fce1d",
+      "git_dirty": false,
+      "latency_harness_sha256": "dc5722e8188239490658574178c0de8b893b610b681b1f6368062e0307fd43aa",
+      "original_binding": false,
+      "dispatcher_interval_ms": 0,
+      "dispatcher_single_shot": true,
+      "cases": 6,
+      "observations": 600
+    },
+    {
+      "file": "qt-dispatcher-event-ruby-10000.json",
+      "sha256": "10afe7aca0fdac1a2e4651027b8315728926fba23f5940eb9bb1a6d6699319be",
+      "git_revision": "36d5d3691e2967f80fe0fc472c43c213e97fce1d",
+      "git_dirty": false,
+      "latency_harness_sha256": "dc5722e8188239490658574178c0de8b893b610b681b1f6368062e0307fd43aa",
+      "original_binding": false,
+      "dispatcher_interval_ms": 0,
+      "dispatcher_single_shot": true,
+      "cases": 6,
+      "observations": 600
+    },
+    {
+      "file": "qt-dispatcher-interval-12ms-plain-1500.json",
+      "sha256": "83bb4d6053f9c3b3ee701ab63772660460ca8479b2820c6e7f4fcb0b937ce7cd",
+      "git_revision": "084b7b7a6bfdcdec3ceba80054a5e3eed1e95756",
+      "git_dirty": false,
+      "latency_harness_sha256": "836c3466e08122f832c19cbfe96450adae6d143ea8728a5de2e1ec4ada8bc6c7",
+      "original_binding": false,
+      "dispatcher_interval_ms": 12,
+      "dispatcher_single_shot": false,
+      "cases": 6,
+      "observations": 600
+    },
+    {
+      "file": "qt-dispatcher-interval-4ms-plain-1500.json",
+      "sha256": "6fcfef7839a117e781bc4dbfecb5f5410cfdb412618ca6f07624c0365aa5c06e",
+      "git_revision": "084b7b7a6bfdcdec3ceba80054a5e3eed1e95756",
+      "git_dirty": false,
+      "latency_harness_sha256": "836c3466e08122f832c19cbfe96450adae6d143ea8728a5de2e1ec4ada8bc6c7",
+      "original_binding": false,
+      "dispatcher_interval_ms": 4,
+      "dispatcher_single_shot": false,
+      "cases": 6,
+      "observations": 600
     }
   ],
   "diagnostic_frames": [
@@ -453,6 +525,15 @@
         "col": 120
       },
       "key_sequence": 116
+    }
+  ],
+  "source_bundles": [
+    {
+      "file": "qt-periodic-reference.bundle",
+      "sha256": "75196fbb32a7a993cc1c44e5f3266271d74d27185bb01d63faa2b37a1922bfad",
+      "git_revision": "6e54b2f124243c2225fcc99212d9757f5dd7e3db",
+      "prerequisite": "084b7b7a6bfdcdec3ceba80054a5e3eed1e95756",
+      "description": "Periodic dispatcher from 084b7b7 with the latency readiness correction from 36d5d36."
     }
   ]
 }
