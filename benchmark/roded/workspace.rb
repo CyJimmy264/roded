@@ -30,6 +30,7 @@ module Roded
       def page_size = frontend.page_size
 
       def reset
+        drain_pending_feedback
         discard_extra_windows
         application.current_window = base_windows.first
         restore_buffers

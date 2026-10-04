@@ -314,6 +314,44 @@ RSpec.describe Roded::Frontends::QtEditorWindow, "tab display width" do
   end
 end
 
+RSpec.describe Roded::Frontends::QtEditorWindow, "right-edge block caret" do # rubocop:disable Metrics/BlockLength
+  include_context "Qt editor window lifecycle"
+
+  it "reserves the full block and document margin when revealing an edge position" do
+    view = described_class.new
+    text = "x" * 300
+    render_qt_snapshot(view, text, 0)
+    view.show
+    3.times { QApplication.process_events }
+    editor = view.editor
+    margin = editor.document.property("documentMargin").to_f
+    threshold = editor.viewport.width - margin
+    column = (0..text.length).bsearch do |candidate|
+      Roded::Frontends::QtCursorMapper.line_horizontal_offset(editor, text, candidate) >= threshold
+    end
+    render_qt_snapshot(view, text, column)
+    3.times { QApplication.process_events }
+
+    width = editor.font_metrics.horizontal_advance("x", 1)
+    expect(editor.cursor_rect.x + width + margin).to be <= editor.viewport.width
+    expect(editor.horizontal_scroll_bar.value).to be > 0
+  end
+
+  it "keeps a whole expanded tab cell inside the viewport" do
+    view = described_class.new
+    text = "\t" * 150
+    render_qt_snapshot(view, text, 60)
+    view.show
+    3.times { QApplication.process_events }
+    editor = view.editor
+    width = editor.font_metrics.horizontal_advance("  ", 2)
+    margin = editor.document.property("documentMargin").to_f
+
+    expect(editor.cursor_rect.x + width + margin).to be <= editor.viewport.width
+    expect(editor.horizontal_scroll_bar.value).to be > 0
+  end
+end
+
 RSpec.describe Roded::Frontends::QtEditorWindow, "vertical scrolling" do
   include_context "Qt editor window lifecycle"
 

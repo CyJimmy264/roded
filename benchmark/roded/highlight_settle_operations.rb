@@ -2,6 +2,8 @@ module Roded
   module Benchmarking
     # Separately drains deferred color work; foreground latency excludes this phase.
     module HighlightSettleOperations
+      FEEDBACK_EVENTS = %i[syntax_result resize horizontal_scroll].freeze
+
       def settle_highlighting(timeout: 15)
         return unless application.syntax_highlighting_pending?
 
@@ -16,14 +18,26 @@ module Roded
 
       private
 
+      def drain_pending_feedback
+        return unless frontend
+
+        loop { apply_benchmark_feedback(application.instance_variable_get(:@event_queue).pop(true)) }
+      rescue ThreadError
+        nil
+      end
+
       def drain_highlight_event
         event = application.instance_variable_get(:@event_queue).pop(true)
-        raise "unexpected benchmark event: #{event.type}" unless %i[syntax_result resize].include?(event.type)
+        apply_benchmark_feedback(event)
+      rescue ThreadError
+        sleep 0.001
+      end
+
+      def apply_benchmark_feedback(event)
+        raise "unexpected benchmark event: #{event.type}" unless FEEDBACK_EVENTS.include?(event.type)
 
         application.handle_event(event)
         frontend.finish
-      rescue ThreadError
-        sleep 0.001
       end
     end
   end

@@ -73,6 +73,13 @@ RODED_BENCHMARK_PROFILE=ruby RODED_BENCHMARK_SCREENSHOT_DIR=tmp/benchmarks/qt-ru
   script/benchmark_qt_live_smoke.sh
 ```
 
+The smoke includes movement into the viewport's right edge. It checks that the
+whole block caret fits, including the document margin. Unit regressions also
+cover expanded tab cells. Benchmark resets drain queued viewport feedback before
+restoring the next initial position; syntax settling accepts horizontal-scroll
+feedback as well as resize and lexical results. These steps are outside foreground
+timing and prevent old GUI events from changing a later case's viewport.
+
 The existing `script/curses_live_smoke.rb` and
 `script/curses_scale_live_smoke.rb` cover real terminal behavior separately.
 `script/curses_repeat_live_smoke.rb` verifies held-key scrolling and boundary

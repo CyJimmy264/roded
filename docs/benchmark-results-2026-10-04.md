@@ -381,10 +381,25 @@ A longer plain typing diagnostic fails at the right edge before scrolling starts
 after key 116, core point is row 750 / column 120 (zero-based), native caret x=942,
 horizontal origin=0. The custom blue block extends outside the viewport. See the
 [captured frame](../benchmark/results/2026-10-04/qt-block-caret-right-edge.png).
-The probe correctly refuses to report a painted caret there. This is a remaining
+The probe correctly refuses to report a painted caret there. This exposed a
 frontend clipping bug, separate from the latency measurements above, which remain
-within the viewport. The visibility logic currently allows the cursor's character
+within the viewport. The old visibility logic allowed the cursor's character
 offset up to the full viewport width without reserving document margin/block width.
+
+The fix reserves the expanded caret cell and document margins when deciding
+whether to restore a horizontal origin. Revealing point also scrolls far enough
+to show the whole colored cell, rather than only Qt's two-pixel native cursor.
+Width measurement supplies Qt's required UTF-16 length, including tabs/wide text;
+the document margin is read through QObject's property API because qt 0.2 does
+not expose a `document_margin` accessor. Unit geometry regressions and live
+right-edge pixel checks pass. The long real-key probe now reaches a changed
+horizontal origin and rejects that unsupported measurement instead of timing out
+on an invisible caret.
+
+The main benchmark also drains viewport feedback before resetting a case, and
+allows horizontal-scroll events while settling deferred syntax. These actions
+remain outside foreground timing. Its harness digest changes, so strict
+comparison against earlier reset-suite reports is intentionally rejected.
 
 ## Remaining bottlenecks after the latest changes
 
@@ -405,11 +420,11 @@ offset up to the full viewport width without reserving document margin/block wid
 - The new real-key probe covers seven cursor/edit cases. Page/word motion,
   scrolling, buffer switches and window lifecycle still need equivalent real-key
   frame measurements in addition to the main suite's execution/visible checks.
-  The right-edge block-caret clipping described above also remains to fix.
+  Right-edge block-caret clipping is fixed in the existing frontend.
 
 ## Validation and reproduction
 
-`bundle exec rake` passed after the real-key probe: 451 examples and RuboCop
+`bundle exec rake` passed after the right-edge correction: 454 examples and RuboCop
 across 233 Ruby files. Trace regressions cover unrelated/stale background renders,
 latest matching snapshots and reuse of the preceding key's target. Real XTest
 and pixel checks passed on both fixture sizes and profiles.
@@ -417,8 +432,8 @@ Visible Qt checks run under private Xvfb with retained widgets and event pumping
 they verify editor/caret geometry, one paragraph background at the cursor row,
 modelines, scrolling, buffers, splits and multiline edits. Both plain and Ruby
 fixtures passed. Optional screenshot assertions check the actual row background,
-cleared neighboring rows and block-caret pixels for fourteen operations in each
-profile; the plain and Ruby checks run sequentially under private Xvfb.
+cleared neighboring rows and block-caret pixels for fifteen plain operations and
+sixteen Ruby operations; the checks run sequentially under private Xvfb.
 The Ruby profile additionally checks a quote edit that changes following lexical
 context, compares final spans with the complete lexer and checks native colors.
 Tests cover stale results, mode changes, heredoc/Unicode/history, worker failure

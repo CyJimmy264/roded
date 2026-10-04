@@ -23,10 +23,26 @@ module Roded
         point = snapshot.fetch(:point)
         row = point.fetch(:row)
         line = (snapshot[:lines] || lines_for(text)).fetch(row)
-        point_offset = line_horizontal_offset(editor, line, point.fetch(:col))
-        origin_offset = line_horizontal_offset(editor, line, origin)
-        delta = point_offset - origin_offset
-        delta.between?(0, editor.viewport.width)
+        delta = line_horizontal_offset(editor, line, point.fetch(:col)) - line_horizontal_offset(editor, line, origin)
+        available = available_cursor_width(editor, line, point.fetch(:col))
+        delta.between?(0, available)
+      end
+
+      def available_cursor_width(editor, line, column)
+        editor.viewport.width - (document_margin(editor) * 2) - caret_cell_width(editor, line, column)
+      end
+
+      def document_margin(editor) = editor.document.property("documentMargin").to_f
+
+      def caret_width(editor, text, snapshot)
+        point = snapshot.fetch(:point)
+        line = (snapshot[:lines] || lines_for(text)).fetch(point.fetch(:row))
+        caret_cell_width(editor, line, point.fetch(:col))
+      end
+
+      def caret_cell_width(editor, line, column)
+        cell = column < line.length ? QtTabExpander.expand(line, column, column + 1) : " "
+        [editor.font_metrics.horizontal_advance(cell, utf16_length(cell)), editor.cursor_width].max
       end
 
       def column_at_horizontal_offset(editor, text, row, offset, snapshot = nil)

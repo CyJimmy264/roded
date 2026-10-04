@@ -25,8 +25,19 @@ module Roded
       def reveal_horizontal_cursor
         with_horizontal_scroll_signals_blocked do
           @editor.ensure_cursor_visible
+          reveal_caret_cell
         end
         report_horizontal_scroll
+      end
+
+      def reveal_caret_cell
+        width = QtCursorMapper.caret_width(@editor, @rendered_text, @snapshot)
+        right = @editor.cursor_rect.x + width + QtCursorMapper.document_margin(@editor)
+        overflow = (right - @editor.viewport.width).ceil
+        return unless overflow.positive?
+
+        scroll_bar = @editor.horizontal_scroll_bar
+        scroll_bar.set_value(scroll_bar.value + overflow)
       end
 
       def with_horizontal_scroll_signals_blocked

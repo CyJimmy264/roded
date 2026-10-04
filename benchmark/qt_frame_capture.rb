@@ -58,11 +58,22 @@ module Roded
       end
 
       def assert_caret
-        width = [@editor.font_metrics.horizontal_advance(" "), 4].max
-        pixels = [1, @caret.height / 2, @caret.height - 2].flat_map do |dy|
+        width = [@editor.font_metrics.horizontal_advance(" ", 1), 4].max
+        assert_caret_bounds(width)
+        pixels = caret_colors(width)
+        raise "block caret failed to paint" unless pixels.include?("#61afef")
+      end
+
+      def caret_colors(width)
+        [1, @caret.height / 2, @caret.height - 2].flat_map do |dy|
           (3...width).map { |dx| color_at(@caret.x + dx, @caret.y + dy) }
         end
-        raise "block caret failed to paint" unless pixels.include?("#61afef")
+      end
+
+      def assert_caret_bounds(width)
+        return if @caret.x >= 0 && @caret.x + width <= @editor.viewport.width
+
+        raise "block caret is clipped by the viewport"
       end
 
       def color_at(horizontal, vertical)

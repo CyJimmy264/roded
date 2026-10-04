@@ -36,10 +36,16 @@ end
 
 def assert_caret_geometry(editor)
   rectangle = editor.cursor_rect
-  return if rectangle.y >= 0 && rectangle.y < editor.viewport.height
+  return if caret_geometry_visible?(editor, rectangle)
 
-  raise "caret is outside the viewport: y=#{rectangle.y}, height=#{editor.viewport.height}, " \
+  raise "caret is outside the viewport: x=#{rectangle.x}, y=#{rectangle.y}, height=#{editor.viewport.height}, " \
         "scroll=#{editor.vertical_scroll_bar.value}, step=#{editor.vertical_scroll_bar.single_step}"
+end
+
+def caret_geometry_visible?(editor, rectangle)
+  width = editor.font_metrics.horizontal_advance(" ", 1)
+  horizontal = rectangle.x >= 0 && rectangle.x + width <= editor.viewport.width
+  horizontal && rectangle.y >= 0 && rectangle.y < editor.viewport.height
 end
 
 def capture_frame(scenario, editor)
@@ -55,8 +61,29 @@ def visible_scenarios(profile)
                 edit.paste_block edit.delete_block buffer.next
                 window.split_vertical window.delete]
   scenarios = Roded::Benchmarking::Scenarios.all.select { |scenario| selected.include?(scenario.name) }
+  scenarios << right_edge_scenario
   scenarios << string_context_scenario if profile == "ruby"
   scenarios
+end
+
+def right_edge_scenario
+  Roded::Benchmarking::Scenario.new(
+    "cursor.right_edge", method(:prepare_right_edge), ->(work) { work.dispatch(:move_right) },
+    ->(work) { work.frontend.frontend.view.editor.horizontal_scroll_bar.value.positive? }
+  )
+end
+
+def prepare_right_edge(work)
+  editor = work.frontend.frontend.view.editor
+  line = work.buffer.lines[work.middle]
+  work.position(col: right_edge_column(editor, line) - 1)
+end
+
+def right_edge_column(editor, line)
+  threshold = editor.viewport.width - editor.document.property("documentMargin").to_f
+  (0..line.length).bsearch do |candidate|
+    Roded::Frontends::QtCursorMapper.line_horizontal_offset(editor, line, candidate) >= threshold
+  end
 end
 
 def string_context_scenario
