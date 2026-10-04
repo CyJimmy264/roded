@@ -1,0 +1,662 @@
+{
+  "description": "Original benchmark reports; baselines are exploratory dirty-checkout measurements.",
+  "reports": [
+    {
+      "file": "baseline-core-curses.json",
+      "sha256": "03662e188cab7d7f79d9f77561ea759fa959de4436cca2d416b8c6d862852c2b",
+      "git_revision": "4f5595c50889ec2fdff20e67c874a9947c961ec1",
+      "git_dirty": true,
+      "cases": 204,
+      "observations": 1224
+    },
+    {
+      "file": "baseline-qt.json",
+      "sha256": "181f4cf4388315546e14f2e7561fb5ef9be7fd7093ec37b8b1618b82e2676498",
+      "git_revision": "4f5595c50889ec2fdff20e67c874a9947c961ec1",
+      "git_dirty": true,
+      "cases": 34,
+      "observations": 68
+    },
+    {
+      "file": "core-curses.json",
+      "sha256": "f2d9a34965bbe4a9c76a6a7ca9b1a2409bd8742ccb37cf89971586f0a33b8e60",
+      "git_revision": "692caf91c43cd5e82de80e8f5139a23448c2c5dd",
+      "git_dirty": false,
+      "cases": 204,
+      "observations": 1224
+    },
+    {
+      "file": "qt-full.json",
+      "sha256": "aa023b5e6454b34e49a52e8ac92466dfcec98a9280fd310c79f65ac84d425279",
+      "git_revision": "1da9eeb5e618887cf68d8d97a9fa4fd498d516d3",
+      "git_dirty": false,
+      "cases": 34,
+      "observations": 68
+    },
+    {
+      "file": "qt-large.json",
+      "sha256": "15f9952a2bd7cfccdad3f59e60927001cf409d9238f2587829842e45db8b0f6d",
+      "git_revision": "1da9eeb5e618887cf68d8d97a9fa4fd498d516d3",
+      "git_dirty": false,
+      "cases": 15,
+      "observations": 30
+    },
+    {
+      "file": "qt-hot-before.json",
+      "sha256": "b6c49df15c684c961c92b8b4815e33809c75f6900652fb20473363ef7760d84a",
+      "git_revision": "692caf91c43cd5e82de80e8f5139a23448c2c5dd",
+      "git_dirty": false,
+      "cases": 5,
+      "observations": 200
+    },
+    {
+      "file": "qt-hot.json",
+      "sha256": "31d2cdb9e667947cfd177d4b5c5c4c8b8b5e90730ade45c39d777ebde6b97319",
+      "git_revision": "1da9eeb5e618887cf68d8d97a9fa4fd498d516d3",
+      "git_dirty": false,
+      "cases": 5,
+      "observations": 200
+    },
+    {
+      "file": "qt-typing.json",
+      "sha256": "ae13d7d9ec754bfa9dde47fee1066ff8286206b278a48e923a2ef812f650a19d",
+      "git_revision": "1da9eeb5e618887cf68d8d97a9fa4fd498d516d3",
+      "git_dirty": false,
+      "cases": 1,
+      "observations": 40
+    },
+    {
+      "file": "curses-plain-1500.json",
+      "sha256": "8154acc03b5b1cc3fca48fad7ec077c233ece1e2394eb3cf78f080bc7644cc36",
+      "git_revision": "692caf91c43cd5e82de80e8f5139a23448c2c5dd",
+      "git_dirty": false,
+      "cases": 1,
+      "observations": 40
+    },
+    {
+      "file": "curses-plain-10000.json",
+      "sha256": "1f4d07b811793f9e72decad073f70680d0bd01829a0f210c5f62f731c89634f2",
+      "git_revision": "692caf91c43cd5e82de80e8f5139a23448c2c5dd",
+      "git_dirty": false,
+      "cases": 1,
+      "observations": 40
+    },
+    {
+      "file": "curses-markdown-1500.json",
+      "sha256": "4c8f5138994aa215740a572a234306664d8b17c30ed6ea47a724810057f83b65",
+      "git_revision": "692caf91c43cd5e82de80e8f5139a23448c2c5dd",
+      "git_dirty": false,
+      "cases": 1,
+      "observations": 40
+    },
+    {
+      "file": "curses-markdown-10000.json",
+      "sha256": "c1b828ba1bd25bfdf6d3196388c331328cbd3f3498d9272cec190903224b655b",
+      "git_revision": "692caf91c43cd5e82de80e8f5139a23448c2c5dd",
+      "git_dirty": false,
+      "cases": 1,
+      "observations": 40
+    },
+    {
+      "file": "curses-ruby-before-1500.json",
+      "sha256": "f4ee25d53b37fed21304adf68b48a1486a866f55fc0636bdcffc708ae6dfd5a2",
+      "git_revision": "692caf91c43cd5e82de80e8f5139a23448c2c5dd",
+      "git_dirty": false,
+      "cases": 1,
+      "observations": 10
+    },
+    {
+      "file": "curses-ruby-before-10000.json",
+      "sha256": "38a2f9b7b2a1e15a057a89f48ba63e7a884a5577609d2fcc37c86d49a2641aef",
+      "git_revision": "692caf91c43cd5e82de80e8f5139a23448c2c5dd",
+      "git_dirty": false,
+      "cases": 1,
+      "observations": 3
+    },
+    {
+      "file": "curses-ruby-after-1500.json",
+      "sha256": "887778e2e3d319c5c36d79c32f8ef1a9568d2c406da4a2a9be4427765da9b9cf",
+      "git_revision": "6a80352be8bcf4c8ea951fcbe3a19755bb06f8e8",
+      "git_dirty": false,
+      "cases": 1,
+      "observations": 10
+    },
+    {
+      "file": "curses-ruby-after-10000.json",
+      "sha256": "0cbe00532bbfaffd660137fddfbe813112c11d66212725fb913a7ebe46528dfc",
+      "git_revision": "6a80352be8bcf4c8ea951fcbe3a19755bb06f8e8",
+      "git_dirty": false,
+      "cases": 1,
+      "observations": 3
+    },
+    {
+      "file": "curses-ruby-hot.json",
+      "sha256": "5271f765b1a2a4bce8cdb8440cd720ee41ccc07c2ce1320e6a6ddc7e381a7f0f",
+      "git_revision": "6a80352be8bcf4c8ea951fcbe3a19755bb06f8e8",
+      "git_dirty": false,
+      "cases": 1,
+      "observations": 40
+    },
+    {
+      "file": "qt-plain-layout-full.json",
+      "sha256": "76dc6439ac5c0a3f3f13ddd98f2ae22b23c5e098ab1f8ed5388aa60cc5c5f8ca",
+      "git_revision": "b13a60cd332d5f725b57ab088b394df14c134577",
+      "git_dirty": false,
+      "cases": 34,
+      "observations": 68
+    },
+    {
+      "file": "qt-plain-layout-large.json",
+      "sha256": "928830480d39b92e030b52175787b473057ff92e44448cd4f3e0a085f41e05aa",
+      "git_revision": "b13a60cd332d5f725b57ab088b394df14c134577",
+      "git_dirty": false,
+      "cases": 15,
+      "observations": 30
+    },
+    {
+      "file": "qt-plain-layout-hot.json",
+      "sha256": "3cb6e008c44e1c349a237883fa30d4ab41a100b530fe34cab64e345e8f7dbebe",
+      "git_revision": "b13a60cd332d5f725b57ab088b394df14c134577",
+      "git_dirty": false,
+      "cases": 5,
+      "observations": 200
+    },
+    {
+      "file": "qt-plain-layout-hot-large.json",
+      "sha256": "b71cc119855b958f0e8c2504a6b1f5df941165a5e046330e9ecd8af35224f505",
+      "git_revision": "b13a60cd332d5f725b57ab088b394df14c134577",
+      "git_dirty": false,
+      "cases": 5,
+      "observations": 500
+    },
+    {
+      "file": "qt-plain-layout-typing.json",
+      "sha256": "f2d29c5ee77953fc245062341a2b44ae253f9a14e2d86d156692c55a41f9338c",
+      "git_revision": "b13a60cd332d5f725b57ab088b394df14c134577",
+      "git_dirty": false,
+      "cases": 1,
+      "observations": 40
+    },
+    {
+      "file": "edit-range-before.json",
+      "sha256": "f526f939a7d0832cd7c09fda0f9177934899afc3cdabf1585d340252f1d68f3c",
+      "git_revision": "b4596c27d23de70d647075d7de0f7f82c750a568",
+      "git_dirty": false,
+      "cases": 24,
+      "observations": 960
+    },
+    {
+      "file": "edit-range-after.json",
+      "sha256": "01db20d6bb7c233b241fef27613bb45451d2675bb74e3f38379f657c8d764dcd",
+      "git_revision": "c085675daac21c416f0f7c53767c948e1445579b",
+      "git_dirty": false,
+      "cases": 24,
+      "observations": 960
+    },
+    {
+      "file": "edit-range-qt-hot.json",
+      "sha256": "9a1c84b2da9a5a38c6fab0581d09a6e6d68369a1163fd240ac2caae81deb6e4c",
+      "git_revision": "c085675daac21c416f0f7c53767c948e1445579b",
+      "git_dirty": false,
+      "cases": 2,
+      "observations": 200
+    },
+    {
+      "file": "edit-range-qt-large.json",
+      "sha256": "702f1c7cc486bc2831e308e681c74c246e13f20c8fd9287bcae6a1c86062f7a6",
+      "git_revision": "c085675daac21c416f0f7c53767c948e1445579b",
+      "git_dirty": false,
+      "cases": 4,
+      "observations": 8
+    },
+    {
+      "file": "qt-plain-copy-full.json",
+      "sha256": "26fba351eaa5d2b07843db751bb231ea8a46129bb9e15ac2903df885a4042543",
+      "git_revision": "e348e88b49d55513edc1baf4b8f8ebdafe3d6886",
+      "git_dirty": false,
+      "cases": 34,
+      "observations": 68
+    },
+    {
+      "file": "qt-plain-copy-large.json",
+      "sha256": "3f8966b014e5d8caea524da33b46707c0da5f3a610037b9006c1935fa1a2b897",
+      "git_revision": "e348e88b49d55513edc1baf4b8f8ebdafe3d6886",
+      "git_dirty": false,
+      "cases": 15,
+      "observations": 30
+    },
+    {
+      "file": "qt-damage-before.json",
+      "sha256": "a36d34ac71ea5c6181fdf36a27bdcdee81fa204ba272f085ba40048dddc2408e",
+      "git_revision": "bfdf4cf5236ece1fe97449ca65e7e6931469b57a",
+      "git_dirty": false,
+      "cases": 10,
+      "observations": 400
+    },
+    {
+      "file": "qt-damage-after.json",
+      "sha256": "41f1d3cc3b3e1a74117790b3dceaa8ae35faf760a8e62a9fdedc30f973883b08",
+      "git_revision": "b58976e68b9cd88c8c0a77ba094c17ebeacd4742",
+      "git_dirty": false,
+      "cases": 10,
+      "observations": 400
+    },
+    {
+      "file": "qt-damage-full.json",
+      "sha256": "5307240d0456c24ad45a8a72dc914ee803cbcfb389e9a4a31b1a900827cee3dc",
+      "git_revision": "e4296e6f7932ad4cb9ff6eb75e78deefbcb40bcf",
+      "git_dirty": false,
+      "cases": 34,
+      "observations": 68
+    },
+    {
+      "file": "qt-damage-large.json",
+      "sha256": "44e6a0dbb4b519c6bf4decb17f1b81486fafbb32372138a6560b0cf790ed772a",
+      "git_revision": "e4296e6f7932ad4cb9ff6eb75e78deefbcb40bcf",
+      "git_dirty": false,
+      "cases": 15,
+      "observations": 30
+    },
+    {
+      "file": "qt-damage-hot.json",
+      "sha256": "30bb8da4db8fee952ed5bb05ffe91027e8b4187fc8455c17c93bedce441f5918",
+      "git_revision": "e4296e6f7932ad4cb9ff6eb75e78deefbcb40bcf",
+      "git_dirty": false,
+      "cases": 10,
+      "observations": 1000
+    },
+    {
+      "file": "qt-damage-typing-1500.json",
+      "sha256": "0342561409f298aaf0abaf7b5501b4c0f592304aa2fd013da24bae8c297e94e4",
+      "git_revision": "e4296e6f7932ad4cb9ff6eb75e78deefbcb40bcf",
+      "git_dirty": false,
+      "cases": 1,
+      "observations": 40
+    },
+    {
+      "file": "exact-edit-typing-1500.json",
+      "sha256": "b5d335af074b265b2ca53f592daf0f029816e100644f9118da95d5596e77e735",
+      "git_revision": "08df59a56dbefea42dcabc35c2245502f1e4eb56",
+      "git_dirty": false,
+      "cases": 1,
+      "observations": 40
+    },
+    {
+      "file": "exact-edit-typing-10000.json",
+      "sha256": "04c73a2b9172b690a9b9c9227b68b3eb78f33cb9718b60cc30e01e304045a684",
+      "git_revision": "08df59a56dbefea42dcabc35c2245502f1e4eb56",
+      "git_dirty": false,
+      "cases": 1,
+      "observations": 100
+    },
+    {
+      "file": "exact-edit-qt-hot.json",
+      "sha256": "91afe6d3c0996d164ae8041830ae7033d1cfd6568f34f89feb181b2a98ea5dd0",
+      "git_revision": "08df59a56dbefea42dcabc35c2245502f1e4eb56",
+      "git_dirty": false,
+      "cases": 10,
+      "observations": 1000
+    },
+    {
+      "file": "background-ruby-qt-1500.json",
+      "sha256": "266b25af864767b90e402466901bb4644b0fac1451aaa993a038118e0a245df8",
+      "git_revision": "59e903fdecdc8cf861915f66335fe9e34ead6b9a",
+      "git_dirty": false,
+      "cases": 1,
+      "observations": 100
+    },
+    {
+      "file": "background-ruby-qt-10000.json",
+      "sha256": "1d18d36e5313672591f2cc070df01727d9289e0ab688996749d235b3a82dbada",
+      "git_revision": "59e903fdecdc8cf861915f66335fe9e34ead6b9a",
+      "git_dirty": false,
+      "cases": 1,
+      "observations": 100
+    },
+    {
+      "file": "background-ruby-curses-1500.json",
+      "sha256": "29d560cca0d7b90b392d3ba38473ebc5e716a2d6068ef35a1ea47990791bb331",
+      "git_revision": "59e903fdecdc8cf861915f66335fe9e34ead6b9a",
+      "git_dirty": false,
+      "cases": 1,
+      "observations": 100
+    },
+    {
+      "file": "background-ruby-curses-10000.json",
+      "sha256": "ab804ba43c4ef0e938b0ca71ad984d5a0633f41f0522274dc5d3a5c5b01ca087",
+      "git_revision": "59e903fdecdc8cf861915f66335fe9e34ead6b9a",
+      "git_dirty": false,
+      "cases": 1,
+      "observations": 100
+    },
+    {
+      "file": "final-core-curses.json",
+      "sha256": "961b1902a8979fbb43afb6b7983792833a52ec34911762b3afd026582ea4ded4",
+      "git_revision": "f0194937b8b67f12eee8ce211278850d723c07f5",
+      "git_dirty": false,
+      "cases": 204,
+      "observations": 4080
+    },
+    {
+      "file": "final-qt-all.json",
+      "sha256": "7bcde91d6c36d2a891c148e81b0c10df93fc624b33c97515c012ebd7fb2759a5",
+      "git_revision": "0df1077c3c13e91e0dc0ccf71a442615151c83bf",
+      "git_dirty": false,
+      "cases": 68,
+      "observations": 136
+    }
+  ],
+  "probes": [
+    {
+      "file": "qt-exec-original.json",
+      "sha256": "74a2f054e4b6a7a95123d96835d1a28d227a567d01224e9b88f6fa1f64615fe0",
+      "git_revision": "a1e5a0d9445014739d2868467cd23b87845c02d6",
+      "git_dirty": false,
+      "workload": "qt_exec_ruby_thread_progress",
+      "iterations": 1,
+      "responsive": false
+    },
+    {
+      "file": "qt-exec-released.json",
+      "sha256": "da19ce6c0bc0f418e22fa12d298fd8f70c7bad0c335870a0157216f7032ca045",
+      "git_revision": "a1e5a0d9445014739d2868467cd23b87845c02d6",
+      "git_dirty": false,
+      "workload": "qt_exec_ruby_thread_progress",
+      "iterations": 358,
+      "responsive": true
+    }
+  ],
+  "key_latency_reports": [
+    {
+      "file": "qt-key-plain-1500.json",
+      "sha256": "87b627d6c0ea9c87ce40334753c9a84ffc0931a403d2b209354f334bcca4399e",
+      "git_revision": "2c7c82d373cf5d6e3312ce91905003b846d05dfe",
+      "git_dirty": false,
+      "latency_harness_sha256": "bdc68626211f71cc23db551e31e678a5858ec3f070649eddad2624dbf480ca35",
+      "original_binding": false,
+      "cases": 6,
+      "observations": 600
+    },
+    {
+      "file": "qt-key-plain-10000.json",
+      "sha256": "9cf30791538602b7bb76b9311df94ce6b698fc36c8b322e153aef0f7815d80b5",
+      "git_revision": "2c7c82d373cf5d6e3312ce91905003b846d05dfe",
+      "git_dirty": false,
+      "latency_harness_sha256": "bdc68626211f71cc23db551e31e678a5858ec3f070649eddad2624dbf480ca35",
+      "original_binding": false,
+      "cases": 6,
+      "observations": 600
+    },
+    {
+      "file": "qt-key-ruby-1500.json",
+      "sha256": "37d390fb06bf8a11a954be1d829bd289a8eb4e4d5d4c6158e6cda13be03c0776",
+      "git_revision": "2c7c82d373cf5d6e3312ce91905003b846d05dfe",
+      "git_dirty": false,
+      "latency_harness_sha256": "bdc68626211f71cc23db551e31e678a5858ec3f070649eddad2624dbf480ca35",
+      "original_binding": false,
+      "cases": 6,
+      "observations": 600
+    },
+    {
+      "file": "qt-key-ruby-10000.json",
+      "sha256": "72f7cdc35b612010743d33573a84f3b8b2d5d18290d7b09994794ce33bfe7f45",
+      "git_revision": "2c7c82d373cf5d6e3312ce91905003b846d05dfe",
+      "git_dirty": false,
+      "latency_harness_sha256": "bdc68626211f71cc23db551e31e678a5858ec3f070649eddad2624dbf480ca35",
+      "original_binding": false,
+      "cases": 6,
+      "observations": 600
+    },
+    {
+      "file": "qt-key-typing-plain-1500.json",
+      "sha256": "9c57b808b2d60cc49fc2af0873d192ab416134d01a072ef356402fccac173a67",
+      "git_revision": "2c7c82d373cf5d6e3312ce91905003b846d05dfe",
+      "git_dirty": false,
+      "latency_harness_sha256": "bdc68626211f71cc23db551e31e678a5858ec3f070649eddad2624dbf480ca35",
+      "original_binding": false,
+      "cases": 1,
+      "observations": 100
+    },
+    {
+      "file": "qt-key-typing-plain-10000.json",
+      "sha256": "2b8fd50eec16efb98c9883d8460fa9f40ce1e830e277822e4e60678c9565880a",
+      "git_revision": "2c7c82d373cf5d6e3312ce91905003b846d05dfe",
+      "git_dirty": false,
+      "latency_harness_sha256": "bdc68626211f71cc23db551e31e678a5858ec3f070649eddad2624dbf480ca35",
+      "original_binding": false,
+      "cases": 1,
+      "observations": 100
+    },
+    {
+      "file": "qt-key-typing-ruby-1500.json",
+      "sha256": "c2403c8635f386a6663d5be572268d5cabc79943be80a9bb38391a19704f9770",
+      "git_revision": "2c7c82d373cf5d6e3312ce91905003b846d05dfe",
+      "git_dirty": false,
+      "latency_harness_sha256": "bdc68626211f71cc23db551e31e678a5858ec3f070649eddad2624dbf480ca35",
+      "original_binding": false,
+      "cases": 1,
+      "observations": 100
+    },
+    {
+      "file": "qt-key-typing-ruby-10000.json",
+      "sha256": "2a186d3a3a1803b74ebb86fa1d3b31670f31c2e93e037487691fb497187bbdc8",
+      "git_revision": "2c7c82d373cf5d6e3312ce91905003b846d05dfe",
+      "git_dirty": false,
+      "latency_harness_sha256": "bdc68626211f71cc23db551e31e678a5858ec3f070649eddad2624dbf480ca35",
+      "original_binding": false,
+      "cases": 1,
+      "observations": 100
+    },
+    {
+      "file": "qt-key-original-1500.json",
+      "sha256": "4d33fdd9dfdd5124446930ab6da501ead88434062117c59d0de89d1bb65f2df5",
+      "git_revision": "2c7c82d373cf5d6e3312ce91905003b846d05dfe",
+      "git_dirty": false,
+      "latency_harness_sha256": "bdc68626211f71cc23db551e31e678a5858ec3f070649eddad2624dbf480ca35",
+      "original_binding": true,
+      "cases": 3,
+      "observations": 40
+    },
+    {
+      "file": "qt-dispatcher-periodic-plain-1500.json",
+      "sha256": "7d8c9a6431fc030484c8e0334092867c2c7003139c621ccf325c004ae380f70c",
+      "git_revision": "6e54b2f124243c2225fcc99212d9757f5dd7e3db",
+      "git_dirty": false,
+      "latency_harness_sha256": "dc5722e8188239490658574178c0de8b893b610b681b1f6368062e0307fd43aa",
+      "original_binding": false,
+      "dispatcher_interval_ms": 12,
+      "dispatcher_single_shot": false,
+      "cases": 6,
+      "observations": 600
+    },
+    {
+      "file": "qt-dispatcher-periodic-ruby-10000.json",
+      "sha256": "729eff0e8663f599325ce0c3432b10bcd62992b4c1933785cc6b0f9167b3c71c",
+      "git_revision": "6e54b2f124243c2225fcc99212d9757f5dd7e3db",
+      "git_dirty": false,
+      "latency_harness_sha256": "dc5722e8188239490658574178c0de8b893b610b681b1f6368062e0307fd43aa",
+      "original_binding": false,
+      "dispatcher_interval_ms": 12,
+      "dispatcher_single_shot": false,
+      "cases": 6,
+      "observations": 600
+    },
+    {
+      "file": "qt-dispatcher-event-plain-1500.json",
+      "sha256": "9e8c91f72bcd69654866666203e7d1e2554901fd3a24629ca537711efd415521",
+      "git_revision": "36d5d3691e2967f80fe0fc472c43c213e97fce1d",
+      "git_dirty": false,
+      "latency_harness_sha256": "dc5722e8188239490658574178c0de8b893b610b681b1f6368062e0307fd43aa",
+      "original_binding": false,
+      "dispatcher_interval_ms": 0,
+      "dispatcher_single_shot": true,
+      "cases": 6,
+      "observations": 600
+    },
+    {
+      "file": "qt-dispatcher-event-ruby-10000.json",
+      "sha256": "10afe7aca0fdac1a2e4651027b8315728926fba23f5940eb9bb1a6d6699319be",
+      "git_revision": "36d5d3691e2967f80fe0fc472c43c213e97fce1d",
+      "git_dirty": false,
+      "latency_harness_sha256": "dc5722e8188239490658574178c0de8b893b610b681b1f6368062e0307fd43aa",
+      "original_binding": false,
+      "dispatcher_interval_ms": 0,
+      "dispatcher_single_shot": true,
+      "cases": 6,
+      "observations": 600
+    },
+    {
+      "file": "qt-dispatcher-interval-12ms-plain-1500.json",
+      "sha256": "83bb4d6053f9c3b3ee701ab63772660460ca8479b2820c6e7f4fcb0b937ce7cd",
+      "git_revision": "084b7b7a6bfdcdec3ceba80054a5e3eed1e95756",
+      "git_dirty": false,
+      "latency_harness_sha256": "836c3466e08122f832c19cbfe96450adae6d143ea8728a5de2e1ec4ada8bc6c7",
+      "original_binding": false,
+      "dispatcher_interval_ms": 12,
+      "dispatcher_single_shot": false,
+      "cases": 6,
+      "observations": 600
+    },
+    {
+      "file": "qt-dispatcher-interval-4ms-plain-1500.json",
+      "sha256": "6fcfef7839a117e781bc4dbfecb5f5410cfdb412618ca6f07624c0365aa5c06e",
+      "git_revision": "084b7b7a6bfdcdec3ceba80054a5e3eed1e95756",
+      "git_dirty": false,
+      "latency_harness_sha256": "836c3466e08122f832c19cbfe96450adae6d143ea8728a5de2e1ec4ada8bc6c7",
+      "original_binding": false,
+      "dispatcher_interval_ms": 4,
+      "dispatcher_single_shot": false,
+      "cases": 6,
+      "observations": 600
+    },
+    {
+      "file": "qt-long-2500-before.json",
+      "sha256": "b16dc227437b18d5b808d3bb1ceeb00583fb9a085773cd7905b7cdf98760007e",
+      "git_revision": "a570254411a230ec436e31d5a7c9def76856bfe4",
+      "git_dirty": false,
+      "cases": 2,
+      "latency_harness_sha256": "3b7634fa6f72e815eb31800e3be405f45289dcdf9dac71f0d3e29c1815648d1a",
+      "original_binding": false,
+      "observations": 200
+    },
+    {
+      "file": "qt-long-2500-before-timer-fix.json",
+      "sha256": "c924bc6a46c5674a6196deb857e838e084c3ab877e5202cc01e8e122f4bdb91b",
+      "git_revision": "9e8851cb0ea2af7465c4c1c9b45cc82451d14b83",
+      "git_dirty": false,
+      "cases": 2,
+      "latency_harness_sha256": "3b7634fa6f72e815eb31800e3be405f45289dcdf9dac71f0d3e29c1815648d1a",
+      "original_binding": false,
+      "observations": 200
+    },
+    {
+      "file": "qt-long-2500-final.json",
+      "sha256": "775c372e1455ed51983a7678cb7615d384eceaa269c38982627db279daca9a77",
+      "git_revision": "0df1077c3c13e91e0dc0ccf71a442615151c83bf",
+      "git_dirty": false,
+      "cases": 2,
+      "latency_harness_sha256": "3b7634fa6f72e815eb31800e3be405f45289dcdf9dac71f0d3e29c1815648d1a",
+      "original_binding": false,
+      "observations": 200
+    },
+    {
+      "file": "qt-long-2500-one-buffer-final.json",
+      "sha256": "41654f3f7fe62af0cfb867e5339548e5a902235c28be7c4f0b9e89689568aa92",
+      "git_revision": "0df1077c3c13e91e0dc0ccf71a442615151c83bf",
+      "git_dirty": false,
+      "cases": 2,
+      "latency_harness_sha256": "3b7634fa6f72e815eb31800e3be405f45289dcdf9dac71f0d3e29c1815648d1a",
+      "original_binding": false,
+      "observations": 200
+    },
+    {
+      "file": "qt-long-2500-small-window-final.json",
+      "sha256": "7bfb2117beb0c5726b11feae1d4d70eacd52d6eccf106e21169334cd35b7e7ed",
+      "git_revision": "0df1077c3c13e91e0dc0ccf71a442615151c83bf",
+      "git_dirty": false,
+      "cases": 2,
+      "latency_harness_sha256": "3b7634fa6f72e815eb31800e3be405f45289dcdf9dac71f0d3e29c1815648d1a",
+      "original_binding": false,
+      "observations": 200
+    },
+    {
+      "file": "qt-long-10000-final.json",
+      "sha256": "d4404b2c417bdc74535d85bb6f0202030c12857545cd0dc9c155a62944ad56dc",
+      "git_revision": "0df1077c3c13e91e0dc0ccf71a442615151c83bf",
+      "git_dirty": false,
+      "cases": 2,
+      "latency_harness_sha256": "3b7634fa6f72e815eb31800e3be405f45289dcdf9dac71f0d3e29c1815648d1a",
+      "original_binding": false,
+      "observations": 100
+    },
+    {
+      "file": "qt-long-unicode-final.json",
+      "sha256": "248de7fa40e88ddf58ae6e40a1b337f32b0b31e778f3d2a18a5a39cedf9910f8",
+      "git_revision": "0df1077c3c13e91e0dc0ccf71a442615151c83bf",
+      "git_dirty": false,
+      "cases": 2,
+      "latency_harness_sha256": "3b7634fa6f72e815eb31800e3be405f45289dcdf9dac71f0d3e29c1815648d1a",
+      "original_binding": false,
+      "observations": 100
+    },
+    {
+      "file": "qt-real-files-final.json",
+      "sha256": "c372670b52c0f6f06188ebbcc007fb9d35a4f6e67d0108ef1523df4ca55272e2",
+      "git_revision": "0df1077c3c13e91e0dc0ccf71a442615151c83bf",
+      "git_dirty": false,
+      "cases": 2,
+      "latency_harness_sha256": "3b7634fa6f72e815eb31800e3be405f45289dcdf9dac71f0d3e29c1815648d1a",
+      "original_binding": false,
+      "observations": 200
+    },
+    {
+      "file": "qt-key-final-plain-1500.json",
+      "sha256": "e4bcc1beaa4b0a4a97acdc1dc58b8011a5e6ab241d286f264706c55cc62ff771",
+      "git_revision": "0df1077c3c13e91e0dc0ccf71a442615151c83bf",
+      "git_dirty": false,
+      "cases": 11,
+      "latency_harness_sha256": "3b7634fa6f72e815eb31800e3be405f45289dcdf9dac71f0d3e29c1815648d1a",
+      "original_binding": false,
+      "observations": 600
+    },
+    {
+      "file": "qt-key-final-ruby-10000.json",
+      "sha256": "fb6735392761a0a82128c3fd35d0243ed452f85f67f0c0934894e504fb0df7a4",
+      "git_revision": "0df1077c3c13e91e0dc0ccf71a442615151c83bf",
+      "git_dirty": false,
+      "cases": 11,
+      "latency_harness_sha256": "3b7634fa6f72e815eb31800e3be405f45289dcdf9dac71f0d3e29c1815648d1a",
+      "original_binding": false,
+      "observations": 600
+    }
+  ],
+  "diagnostic_frames": [
+    {
+      "file": "qt-block-caret-right-edge.png",
+      "sha256": "8857786e05f8d6ed9e6fc8d4f6343c10ac5a1e135b5767c5ade7103f6bdb6e64",
+      "git_revision": "2c7c82d373cf5d6e3312ce91905003b846d05dfe",
+      "workload": "consecutive typing at viewport right edge",
+      "point": {
+        "row": 750,
+        "col": 120
+      },
+      "key_sequence": 116
+    }
+  ],
+  "source_bundles": [
+    {
+      "file": "qt-periodic-reference.bundle",
+      "sha256": "75196fbb32a7a993cc1c44e5f3266271d74d27185bb01d63faa2b37a1922bfad",
+      "git_revision": "6e54b2f124243c2225fcc99212d9757f5dd7e3db",
+      "prerequisite": "084b7b7a6bfdcdec3ceba80054a5e3eed1e95756",
+      "description": "Periodic dispatcher from 084b7b7 with the latency readiness correction from 36d5d36."
+    },
+    {
+      "file": "qt-long-line-reference.bundle",
+      "sha256": "548b94c768c8b5662123bcd587238f5e8d849c7b4ae212af7af9dc831f8ad034",
+      "git_revision": "a570254411a230ec436e31d5a7c9def76856bfe4",
+      "prerequisite": "f0194937b8b67f12eee8ce211278850d723c07f5",
+      "description": "Pre-fix Qt at f019493 with only the deep-column/file/window latency harness from 9e8851c."
+    }
+  ]
+}

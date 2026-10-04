@@ -14,10 +14,28 @@ end
 
 require "roded"
 
+frontend_name = "curses"
+if ARGV.first == "--frontend"
+  ARGV.shift
+  frontend_name = ARGV.shift || ""
+elsif ARGV.first&.start_with?("--frontend=")
+  frontend_name = ARGV.shift.split("=", 2).last
+end
+
 app = Roded::Application.new
-
-curses = Roded::Frontends::Curses.new
-app.add_frontend(curses)
-app.welcome
-
-app.run
+case frontend_name
+when "curses"
+  require "roded/frontends/curses"
+  app.add_frontend(Roded::Frontends::Curses.new)
+  app.startup(ARGV)
+  app.run
+when "qt"
+  require "roded/frontends/qt"
+  frontend = Roded::Frontends::Qt.new(app)
+  app.add_frontend(frontend)
+  app.startup(ARGV)
+  frontend.run
+else
+  warn "Unknown frontend '#{frontend_name}'. Choose 'curses' or 'qt'."
+  exit 2
+end

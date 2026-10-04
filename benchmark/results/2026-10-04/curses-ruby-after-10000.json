@@ -1,0 +1,126 @@
+{
+  "fixtures": [
+    {
+      "version": 1,
+      "lines": 10000,
+      "profile": "ruby",
+      "bytes": 3378889,
+      "sha256": "2f629f0d391c545e4f7fdf4cc3f88360ba3401dd33d09505c25cfc403f2115e8",
+      "block_lines": 100
+    }
+  ],
+  "results": [
+    {
+      "layer": "curses",
+      "lines": 10000,
+      "scenario": "edit.typing_stream",
+      "metrics": {
+        "operations": 3,
+        "median_ms": 474.67094,
+        "p95_ms": 555.106261,
+        "max_ms": 555.106261,
+        "mean_ms": 492.47158666666667,
+        "operations_per_second": 2.0305740007633335,
+        "allocated_objects_per_operation": 757480.6666666666,
+        "gc_runs": 5,
+        "gc_ms": 210.019805
+      },
+      "samples": [
+        [
+          {
+            "wall_ns": 447637559,
+            "allocated_objects": 757624,
+            "gc_runs": 1,
+            "gc_ns": 29123555
+          },
+          {
+            "wall_ns": 555106261,
+            "allocated_objects": 757411,
+            "gc_runs": 3,
+            "gc_ns": 133539298
+          },
+          {
+            "wall_ns": 474670940,
+            "allocated_objects": 757407,
+            "gc_runs": 1,
+            "gc_ns": 47356952
+          }
+        ]
+      ]
+    }
+  ],
+  "config": {
+    "lines": [
+      10000
+    ],
+    "layers": [
+      "curses"
+    ],
+    "samples": 1,
+    "iterations": 3,
+    "warmup": 0,
+    "buffers": 4,
+    "windows": 1,
+    "seed": 1,
+    "profile": "ruby",
+    "mode": "ruby",
+    "workload": "consecutive_typing"
+  },
+  "environment": {
+    "recorded_at": "2026-10-04T07:06:04Z",
+    "ruby": "ruby 3.4.2 (2025-02-15 revision d2930f8e7a) +PRISM [x86_64-linux]",
+    "platform": "x86_64-linux",
+    "host": "lunnen",
+    "cpu": "AMD Ryzen 7 5825U with Radeon Graphics",
+    "yjit": false,
+    "gems": {
+      "pathname": "0.4.0",
+      "rake": "13.3.1",
+      "ast": "2.4.3",
+      "bundler": "2.6.6",
+      "curses": "1.5.3",
+      "date": "3.5.0",
+      "diff-lcs": "1.6.2",
+      "erb": "6.0.0",
+      "ffi": "1.17.4",
+      "io-console": "0.8.1",
+      "prettyprint": "0.2.0",
+      "pp": "0.6.3",
+      "stringio": "3.1.9",
+      "psych": "5.2.6",
+      "tsort": "0.2.0",
+      "rdoc": "6.16.1",
+      "reline": "0.6.3",
+      "irb": "1.15.3",
+      "json": "2.17.1",
+      "language_server-protocol": "3.17.0.5",
+      "lint_roller": "1.1.0",
+      "logger": "1.6.5",
+      "parallel": "1.27.0",
+      "racc": "1.8.1",
+      "parser": "3.3.10.0",
+      "prism": "1.6.0",
+      "qt": "0.2.0",
+      "rainbow": "3.1.1",
+      "regexp_parser": "2.11.3",
+      "unicode-emoji": "4.1.0",
+      "unicode-display_width": "3.2.0",
+      "roded": "0.1.0",
+      "rspec-support": "3.13.6",
+      "rspec-core": "3.13.6",
+      "rspec-expectations": "3.13.5",
+      "rspec-mocks": "3.13.7",
+      "rspec": "3.13.2",
+      "rubocop-ast": "1.48.0",
+      "ruby-progressbar": "1.13.0",
+      "rubocop": "1.81.7"
+    },
+    "git_revision": "6a80352be8bcf4c8ea951fcbe3a19755bb06f8e8",
+    "git_dirty": false,
+    "harness_sha256": "2f83a34c57f8f0880fa32e7e8c446084c1e016e36435d74294d88d372c2cd1bd",
+    "qt_platform": "offscreen",
+    "ruby_options": "-r/home/mveynberg/.rbenv/versions/3.4.2/lib/ruby/gems/3.4.0/gems/bundler-2.6.6/lib/bundler/setup",
+    "gc_environment": {},
+    "stream_sha256": "ac7b44db9806a4d2405eac41fbea7260b2af4b6299aca383cf15f215ff84f9de"
+  }
+}

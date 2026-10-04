@@ -1,0 +1,260 @@
+{
+  "schema_version": 1,
+  "config": {
+    "lines": [
+      10000
+    ],
+    "layers": [
+      "qt"
+    ],
+    "profile": "plain",
+    "buffers": 4,
+    "windows": 1,
+    "samples": 1,
+    "iterations": 2,
+    "warmup": 0,
+    "seed": 264
+  },
+  "environment": {
+    "recorded_at": "2026-10-04T10:33:38Z",
+    "ruby": "ruby 3.4.2 (2025-02-15 revision d2930f8e7a) +PRISM [x86_64-linux]",
+    "platform": "x86_64-linux",
+    "host": "lunnen",
+    "cpu": "AMD Ryzen 7 5825U with Radeon Graphics",
+    "yjit": false,
+    "gems": {
+      "pathname": "0.4.0",
+      "rake": "13.3.1",
+      "ast": "2.4.3",
+      "bundler": "2.6.6",
+      "curses": "1.5.3",
+      "date": "3.5.0",
+      "diff-lcs": "1.6.2",
+      "erb": "6.0.0",
+      "ffi": "1.17.4",
+      "io-console": "0.8.1",
+      "prettyprint": "0.2.0",
+      "pp": "0.6.3",
+      "stringio": "3.1.9",
+      "psych": "5.2.6",
+      "tsort": "0.2.0",
+      "rdoc": "6.16.1",
+      "reline": "0.6.3",
+      "irb": "1.15.3",
+      "json": "2.17.1",
+      "language_server-protocol": "3.17.0.5",
+      "lint_roller": "1.1.0",
+      "logger": "1.6.5",
+      "parallel": "1.27.0",
+      "racc": "1.8.1",
+      "parser": "3.3.10.0",
+      "prism": "1.6.0",
+      "qt": "0.2.0",
+      "rainbow": "3.1.1",
+      "regexp_parser": "2.11.3",
+      "unicode-emoji": "4.1.0",
+      "unicode-display_width": "3.2.0",
+      "roded": "0.1.0",
+      "rspec-support": "3.13.6",
+      "rspec-core": "3.13.6",
+      "rspec-expectations": "3.13.5",
+      "rspec-mocks": "3.13.7",
+      "rspec": "3.13.2",
+      "rubocop-ast": "1.48.0",
+      "ruby-progressbar": "1.13.0",
+      "rubocop": "1.81.7"
+    },
+    "git_revision": "c085675daac21c416f0f7c53767c948e1445579b",
+    "git_dirty": false,
+    "harness_sha256": "2f83a34c57f8f0880fa32e7e8c446084c1e016e36435d74294d88d372c2cd1bd",
+    "qt_platform": "offscreen",
+    "ruby_options": "-r/home/mveynberg/.rbenv/versions/3.4.2/lib/ruby/gems/3.4.0/gems/bundler-2.6.6/lib/bundler/setup",
+    "gc_environment": {}
+  },
+  "fixtures": [
+    {
+      "version": 1,
+      "lines": 10000,
+      "profile": "plain",
+      "bytes": 3259999,
+      "sha256": "842b981c44f0a1d3172b4c7797daad5b96b86c46baed8e095c06bc590ebf7a34",
+      "block_lines": 100
+    }
+  ],
+  "results": [
+    {
+      "layer": "qt",
+      "lines": 10000,
+      "scenario": "window.split_vertical",
+      "metrics": {
+        "operations": 2,
+        "median_ms": 106.6906765,
+        "p95_ms": 148.030015,
+        "max_ms": 148.030015,
+        "mean_ms": 106.6906765,
+        "operations_per_second": 9.372890235633664,
+        "allocated_objects_per_operation": 2541.0,
+        "gc_runs": 0,
+        "gc_ms": 0.0
+      },
+      "samples": [
+        [
+          {
+            "wall_ns": 148030015,
+            "allocated_objects": 2982,
+            "gc_runs": 0,
+            "gc_ns": 0
+          },
+          {
+            "wall_ns": 65351338,
+            "allocated_objects": 2100,
+            "gc_runs": 0,
+            "gc_ns": 0
+          }
+        ]
+      ]
+    },
+    {
+      "layer": "qt",
+      "lines": 10000,
+      "scenario": "edit.newline",
+      "metrics": {
+        "operations": 2,
+        "median_ms": 32.356085,
+        "p95_ms": 35.509917,
+        "max_ms": 35.509917,
+        "mean_ms": 32.356085,
+        "operations_per_second": 30.906087680261688,
+        "allocated_objects_per_operation": 1284.0,
+        "gc_runs": 0,
+        "gc_ms": 0.0
+      },
+      "samples": [
+        [
+          {
+            "wall_ns": 35509917,
+            "allocated_objects": 1227,
+            "gc_runs": 0,
+            "gc_ns": 0
+          },
+          {
+            "wall_ns": 29202253,
+            "allocated_objects": 1341,
+            "gc_runs": 0,
+            "gc_ns": 0
+          }
+        ]
+      ]
+    },
+    {
+      "layer": "qt",
+      "lines": 10000,
+      "scenario": "edit.insert_char",
+      "metrics": {
+        "operations": 2,
+        "median_ms": 26.948901,
+        "p95_ms": 27.467156,
+        "max_ms": 27.467156,
+        "mean_ms": 26.948901,
+        "operations_per_second": 37.10726459680118,
+        "allocated_objects_per_operation": 1067.5,
+        "gc_runs": 0,
+        "gc_ms": 0.0
+      },
+      "samples": [
+        [
+          {
+            "wall_ns": 27467156,
+            "allocated_objects": 965,
+            "gc_runs": 0,
+            "gc_ns": 0
+          },
+          {
+            "wall_ns": 26430646,
+            "allocated_objects": 1170,
+            "gc_runs": 0,
+            "gc_ns": 0
+          }
+        ]
+      ]
+    },
+    {
+      "layer": "qt",
+      "lines": 10000,
+      "scenario": "edit.delete_block",
+      "metrics": {
+        "operations": 2,
+        "median_ms": 40.7722845,
+        "p95_ms": 45.229598,
+        "max_ms": 45.229598,
+        "mean_ms": 40.7722845,
+        "operations_per_second": 24.526464785165523,
+        "allocated_objects_per_operation": 1449.5,
+        "gc_runs": 0,
+        "gc_ms": 0.0
+      },
+      "samples": [
+        [
+          {
+            "wall_ns": 45229598,
+            "allocated_objects": 1397,
+            "gc_runs": 0,
+            "gc_ns": 0
+          },
+          {
+            "wall_ns": 36314971,
+            "allocated_objects": 1502,
+            "gc_runs": 0,
+            "gc_ns": 0
+          }
+        ]
+      ]
+    }
+  ],
+  "comparison": [
+    {
+      "layer": "qt",
+      "lines": 10000,
+      "scenario": "window.split_vertical",
+      "baseline_median_ms": 105.1175225,
+      "median_ms": 106.6906765,
+      "change_percent": 1.4965668544937305,
+      "p95_change_percent": 1.8474729290125502,
+      "allocations_change_percent": 2.1302250803858502,
+      "regression": false
+    },
+    {
+      "layer": "qt",
+      "lines": 10000,
+      "scenario": "edit.newline",
+      "baseline_median_ms": 32.2893615,
+      "median_ms": 32.356085,
+      "change_percent": 0.20664236423504345,
+      "p95_change_percent": 0.9642233817197088,
+      "allocations_change_percent": -32.34984193888304,
+      "regression": false
+    },
+    {
+      "layer": "qt",
+      "lines": 10000,
+      "scenario": "edit.insert_char",
+      "baseline_median_ms": 28.1535085,
+      "median_ms": 26.948901,
+      "change_percent": -4.278711834441529,
+      "p95_change_percent": -2.496947167539443,
+      "allocations_change_percent": -38.062082970699166,
+      "regression": false
+    },
+    {
+      "layer": "qt",
+      "lines": 10000,
+      "scenario": "edit.delete_block",
+      "baseline_median_ms": 46.625128,
+      "median_ms": 40.7722845,
+      "change_percent": -12.552981087794546,
+      "p95_change_percent": -10.916002576624395,
+      "allocations_change_percent": -95.83967165121553,
+      "regression": false
+    }
+  ]
+}

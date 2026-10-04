@@ -1,31 +1,63 @@
 # Repository Guidelines
 
-## Project Structure & Module Organization
-- `lib/roded` holds the core editor classes (Application, Buffer, Window, StatusBar, Minibuffer, Event/Command, Logging); frontends live in `lib/roded/frontends` (currently curses).
-- Binaries: `bin/roded` entrypoint, `bin/console` for IRB sandboxing, `bin/setup` for bootstrapping.
-- Tests sit in `spec` with shared config in `spec/spec_helper.rb`; default Rake task runs tests and lint.
-- Packaging/metadata lives in `roded.gemspec`; docs in `docs/`; built gems accumulate in `pkg/`.
+## Structure and contracts
 
-## Build, Test, and Development Commands
-- `bin/setup` installs Bundler dependencies.
-- `bundle exec rake` runs specs and RuboCop (default task).
-- `bundle exec rspec` runs the test suite; `.rspec_status` tracks failures between runs.
-- `bundle exec rubocop` enforces style (TargetRubyVersion 3.4, double-quoted strings).
-- `bundle exec rake install` builds and installs the gem locally; `bin/roded` launches the curses UI (requires terminal curses support).
+- `lib/roded` contains the editor core; `lib/roded/frontends` contains curses and Qt adapters.
+  See [architecture](docs/architecture.md) before changing ownership or message flow.
+- Buffer owns document text and undo history. Window owns point, mark, viewport and remembered buffer positions.
+  Preserve exact edit locations when transforming other views, including edits in repeated text.
+- The core is the single writer of editor state. Route keys, M-x and Ruby API through the shared command contract.
+  Preserve input source/window identities and independent pending key sequences.
+- Frontends consume immutable snapshots; reuse unchanged document data rather than copying it per cursor movement.
+  Rendering must not mutate domain state. Viewport feedback is an explicit input event.
+- Return domain results explicitly. Deferred UI publication can return nil; it must not determine match/edit success.
+  Test interactive workflows through routed keys, including minibuffer submissions, not only direct method calls.
+- Modelines and prompts belong to frontends. Application diagnostics go through Logging, never directly to stdout.
+- QApplication, Qt widgets and callbacks belong to the GUI thread. Cross-thread updates use QtUiDispatcher.
+- `bin/roded` selects one frontend per launch. Specs, live checks and benchmarks live in `spec`, `script`, `benchmark`.
 
-## Coding Style & Naming Conventions
-- Ruby 3.4 syntax; prefer double-quoted strings; omit `# frozen_string_literal: true` headers.
-- One top-level class/module per file under `lib/roded`, matching snake_case filenames.
-- Class/module names PascalCase; methods/variables snake_case; constants SCREAMING_SNAKE_CASE.
-- Keep concurrency interactions thread-safe (Application uses Queue + threads; curses frontend reads input via `IO.select`).
+## Commands and style
 
-## Testing Guidelines
-- Framework: RSpec; place specs alongside features in `spec/*_spec.rb`.
-- Name examples with behavior statements (`it "renders buffer top line"`), avoiding brittle curses-terminal assertions.
-- Cover command routing and buffer mutations when adding features; use test doubles for frontends when possible.
+- `bin/setup` installs dependencies; `bundle exec bin/roded [file ...]` starts curses;
+  `bundle exec bin/roded --frontend qt [file ...]` starts Qt.
+- `bundle exec rake` runs RSpec and RuboCop. Use targeted checks while iterating, then the full gate.
+- Ruby 3.4.2+, double-quoted strings, no new frozen-string-literal headers.
+  One top-level class/module per library file, snake_case paths/methods, PascalCase types.
+- `bundle exec rake build` builds a gem in `pkg`; `bundle exec rake release:check` verifies tests, lint and the package.
+  Release procedure: [docs/releasing.md](docs/releasing.md). Keep version, lockfile and CHANGELOG consistent.
 
-## Commit & Pull Request Guidelines
-- Commit messages short, imperative, and scoped (`Add cursor redraw command`); reserve `--wip-- [skip ci]` only for temporary checkpoints.
-- Rebase or squash noisy WIP commits before review; link issues in the message or PR description when relevant.
-- PRs should describe intent, testing performed (`bundle exec rake`, manual TUI check), and any UI changes (screenshots/recordings welcome).
-- Flag breaking changes (keybindings, file I/O) prominently and update docs/README if behavior shifts.
+## Regression checks
+
+- RSpec examples describe observable behavior. Cover routing, mutations, undo and affected views for editor changes.
+- `spec/spec_helper.rb` must force offscreen Qt and private per-process XDG config, even if desktop settings are exported.
+  Standalone Qt probes also need private XDG paths. Live UI checks use private Xvfb or PTY, not the desktop DISPLAY.
+- Visual Qt changes need a live-widget check: retain QApplication/widgets, change them on the GUI thread and pump events.
+  Verify visible caret/current-line/modeline/scrolling; changed document text alone does not prove a painted frame.
+- For native-loop scheduling use `benchmark/qt_event_loop_probe.rb`; manual process_events can hide GVL starvation.
+- For horizontal paint changes use `benchmark/qt_horizontal_scroll_smoke.rb` in private Xvfb.
+  Neighboring rows must move with the active row. Suppress our feedback, not native scrollbar signals.
+- For terminal keyboard mapping use `script/curses_xvfb_keyboard_smoke.sh` (private Alacritty/Xvfb).
+  Preserve Kitty CSI-u reporting, legacy decoding and a tested fallback binding.
+- Curses styling uses character columns, not screen rows. Check syntax/selection/search at different scroll origins;
+  StyledSegment.first_offset is the character offset, while Struct.first returns its screen-row field.
+- `script/curses_live_smoke.rb` checks real PTY input/quit. The two-file acceptance scripts exercise both frontends
+  through editing, split/shared views, search/replace, save-as, reopen and undo/redo.
+
+## Performance and reusable skill
+
+For editor latency, painting or long-text regressions, read the repository skill
+[roded-frontend-performance](.agents/skills/roded-frontend-performance/SKILL.md).
+It contains the measurement choices and native rendering pitfalls learned during optimization.
+Detailed commands: [benchmarks](docs/benchmarks.md); retained evidence:
+[optimization report](docs/optimization-final-report-2026-10-05.md) and `benchmark/results`.
+
+Run formal benchmarks sequentially on an otherwise idle machine. Preserve fixture/harness/environment metadata;
+report actual observation counts, latency scope and remaining limits. Keep historical JSON unchanged.
+Use long lines/deep columns, multiple buffers and realistic window dimensions when those trigger the complaint.
+
+## Documentation and commits
+
+Maintain current contracts and reproducible commands, not GOAL/PLAN files or per-step work journals.
+Use Git history for completed investigations. Keep useful benchmark provenance and technical limitations.
+Commit finished changes with short imperative messages. PRs explain behavior and relevant verification;
+flag binding/file-I/O changes and update README/CHANGELOG when user behavior changes.

@@ -1,9 +1,12 @@
 PATH
   remote: .
   specs:
-    roded (0.1.0)
-      curses
-      logger
+    roded (0.2.0)
+      curses (~> 1.5)
+      logger (~> 1.6)
+      prism (~> 1.6)
+      qt (~> 0.2.0)
+      unicode-display_width (~> 3.2)
 
 GEM
   remote: https://rubygems.org/
@@ -13,6 +16,8 @@ GEM
     date (3.5.0)
     diff-lcs (1.6.2)
     erb (6.0.0)
+    ffi (1.17.4)
+    ffi (1.17.4-x86_64-linux-gnu)
     io-console (0.8.1)
     irb (1.15.3)
       pp (>= 0.6.0)
@@ -33,6 +38,8 @@ GEM
     psych (5.2.6)
       date
       stringio
+    qt (0.2.0)
+      ffi (~> 1.17)
     racc (1.8.1)
     rainbow (3.1.1)
     rake (13.3.1)

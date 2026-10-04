@@ -1,6 +1,7 @@
 AllCops:
   TargetRubyVersion: 3.4
   NewCops: enable
+  CacheRootDirectory: tmp/rubocop-cache
 
 Style/StringLiterals:
   EnforcedStyle: double_quotes

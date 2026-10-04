@@ -1,0 +1,319 @@
+# Long-document performance benchmarks
+
+Run from the checkout with Ruby 3.4.2 and the locked Bundler dependencies. No
+additional gems are needed. Benchmarks are separate from `bundle exec rake` so
+normal correctness checks have no machine-dependent latency thresholds.
+
+```sh
+bundle exec rake benchmark
+# Equivalent, with explicit report location:
+bundle exec ruby benchmark/run.rb --output tmp/benchmarks/baseline.json
+# A smaller first run:
+bundle exec rake benchmark BENCH_ARGS='--lines 1500 --samples 2 --iterations 3'
+bundle exec ruby benchmark/run.rb --list
+bundle exec ruby benchmark/run.rb --help
+```
+
+Defaults: 1500, 5000 and 10,000 logical lines, four equally large buffers, one
+window, five independent samples with ten measured operations each, and two
+warmup operations per sample. All fixture lines exceed 250 characters so the
+same documents exercise both long files and horizontal scrolling. Fixtures have
+fixed contents and a recorded version/SHA-256; there is no file download or disk
+I/O in the timed operation. Use `--profile ruby` for syntax highlighting or
+`--profile unicode` for Cyrillic, wide characters, emoji, combining marks and tabs.
+
+The complete suite can take several minutes on the current editor. Qt is
+particularly expensive and is selected explicitly. Filter a suspected bottleneck
+before increasing repetition counts.
+
+## Measurement layers
+
+| `--layers` value | Timed work |
+| --- | --- |
+| `core` | The production command path and document/view mutations; `publish_ui_update` is suppressed in a benchmark subclass. |
+| `application` | The same path, including immutable snapshots, syntax spans and update delivery to a sink that retains nothing. |
+| `curses` | Application plus the production curses renderer on a 120×40 in-memory monochrome screen. Includes clipping, geometry, modelines and incremental redraw; excludes ncurses calls and terminal/emulator I/O. |
+| `qt` | Application plus the real Qt frontend, coalescing dispatcher, widgets, layout, repaint and three `QApplication.process_events` passes per operation. Uses a 960×640 window. |
+
+All operations run synchronously. The normal application event queue, OS keyboard
+delivery and Qt's 12 ms dispatcher timer wait are outside these measurements.
+For Qt, the timer is stopped and the production dispatcher is explicitly drained
+on the GUI thread once per operation; updates posted by one operation can still
+coalesce. This measures execution/painting cost, not key-to-photon latency or
+sustained input throughput. Offscreen paint timings also differ from X11.
+
+Qt defaults to `offscreen` even if the caller exported `xcb` or a desktop display.
+To measure visible X11 widgets, use `--qt-xvfb`: the launcher creates its own Xvfb
+and selects `xcb`. Both modes use temporary XDG configuration/cache directories
+and silent benchmark logging, without reading the user's keymap or Qt settings.
+
+```sh
+bundle exec ruby benchmark/run.rb --lines 1500 --layers curses \
+  --scenarios 'cursor.line_|scroll.' --output tmp/benchmarks/curses.json
+bundle exec ruby benchmark/run.rb --lines 1500 --layers qt --qt-xvfb \
+  --samples 2 --iterations 3 --scenarios 'cursor.line_down|scroll.page_down|edit.insert_char' \
+  --output tmp/benchmarks/qt-x11.json
+script/benchmark_qt_live_smoke.sh
+```
+
+The live Qt smoke check retains the application/widgets, changes them on the GUI
+thread and pumps events. It checks visible editor geometry, caret styling and
+position, old/new paragraph backgrounds, multiline edits, modeline updates,
+vertical/horizontal scrollbars, buffer switching and split creation/removal.
+Use `RODED_BENCHMARK_PROFILE=ruby script/benchmark_qt_live_smoke.sh` to exercise
+syntax-colored native documents. Set `RODED_BENCHMARK_SCREENSHOT_DIR` to capture
+each frame and assert its pixels: the current row must have its background,
+neighboring rows must be clear, and the block caret must appear at its position.
+This optional check uses ImageMagick `import`; the default smoke does not require it.
+Run screenshot checks sequentially so their private X servers cannot collide:
+
+```sh
+RODED_BENCHMARK_SCREENSHOT_DIR=tmp/benchmarks/qt-visible script/benchmark_qt_live_smoke.sh
+RODED_BENCHMARK_PROFILE=ruby RODED_BENCHMARK_SCREENSHOT_DIR=tmp/benchmarks/qt-ruby-visible \
+  script/benchmark_qt_live_smoke.sh
+```
+
+The smoke includes movement into the viewport's right edge. It checks that the
+whole block caret fits, including the document margin. Unit regressions also
+cover expanded tab cells. Benchmark resets drain queued viewport feedback before
+restoring the next initial position; syntax settling accepts horizontal-scroll
+feedback as well as resize and lexical results. These steps are outside foreground
+timing and prevent old GUI events from changing a later case's viewport.
+
+The horizontal painting regression checks unchanged neighboring rows on a
+1500-line document with 2500+ characters per line. Character and word movement
+scroll in both directions. Captured X11 pixels must move and match a fresh
+viewport repaint; scrollbar values alone cannot detect stale rows. It uses
+ImageMagick `import` and `compare` and private XDG paths:
+
+```sh
+xvfb-run -a -s '-screen 0 1280x800x24' bundle exec ruby benchmark/qt_horizontal_scroll_smoke.rb
+```
+
+The existing `script/curses_live_smoke.rb` and
+`script/curses_scale_live_smoke.rb` cover real terminal behavior separately.
+`script/curses_repeat_live_smoke.rb` verifies held-key scrolling and boundary
+no-ops in a private PTY: no terminal clear during movement and no rendering or
+terminal output for further `C-p` presses at the beginning of the document.
+
+The production Qt event loop needs a separate check: qt 0.2's original FFI binding
+holds Ruby's GVL in `QApplication.exec`, which manual event pumping does not expose.
+The adapter releases it so core/input threads can run between GUI callbacks.
+Run these probes sequentially; they report raw ticker gaps and source metadata.
+Each `--qt-xvfb` invocation starts its own private X server before loading Qt:
+
+```sh
+bundle exec ruby benchmark/qt_event_loop_probe.rb --original --qt-xvfb
+bundle exec ruby benchmark/qt_event_loop_probe.rb --qt-xvfb
+script/qt_live_smoke.sh
+script/qt_scale_live_smoke.sh
+```
+
+The ticker probe proves Ruby thread progress in the native loop. It does not
+include real keystrokes or painted editor frames and is not an input-latency score.
+
+## Real Qt keystroke-to-frame measurement
+
+`benchmark/qt_key_latency.rb` starts a private Xvfb and separate editor/controller
+processes. The editor runs the production `QApplication.exec`, core thread and
+event-driven UI dispatcher. XTest sends real X11 key events. The controller reads X11
+pixels until the block caret appears at the new position and disappears from the
+old position, and independently checks the expected core point and edited line.
+It never drains the dispatcher or calls `process_events`.
+
+The dispatcher requests the GUI-owned timer's `start()` slot through Qt's queued
+`QTimer.singleShot` API when data arrives. The timer fires once with zero delay;
+pending snapshots share one wakeup, and an empty queue has no periodic timer.
+Starting/stopping that receiver directly remains restricted to the GUI thread.
+
+```sh
+bundle exec ruby benchmark/qt_key_latency.rb --lines 1500 --profile plain \
+  --iterations 40 --output tmp/benchmarks/qt-key-plain-1500.json
+bundle exec ruby benchmark/qt_key_latency.rb --lines 10000 --profile ruby \
+  --iterations 40 --output tmp/benchmarks/qt-key-ruby-10000.json
+```
+
+Run these sequentially and without other CPU-heavy work. Dependencies are Xvfb,
+xdotool, libX11, libXtst and the existing Ruby FFI/Qt dependencies. A fresh child
+is used for each workload: alternating `C-f`/`C-b`, `C-n`/`C-p`, `M-f`/`M-b`,
+`C-v`/`M-v`, insertion/backspace, and consecutive insertion. `--workloads
+char,line,word,page,edit,typing` selects the groups; `--warmup` defaults to four keystrokes
+per group. Each next key is sent after detection of the preceding frame. This
+measures serialized input latency, not held-key throughput. Startup, first syntax
+highlighting and shutdown are outside the measured intervals. Ruby color settling
+can occur concurrently; the reported frame requires the new text/caret, not final
+syntax colors.
+
+The readiness timer starts after initial document construction and window show.
+Starting it before construction lets a large Ruby document exhaust the delay and
+report caret coordinates before deferred viewport restoration. The initial pixel
+check rejects that stale geometry; startup remains outside input measurements.
+
+Consecutive typing must remain within the viewport: a horizontal scroll can leave
+the caret at the same screen position and needs a different frame oracle. The
+runner rejects a changed horizontal origin rather than accepting an unchanged
+caret as a frame. Use separate runs for large paired-workload counts and shorter
+typing counts, for example `--iterations 200 --workloads char,line,edit` and
+`--iterations 100 --workloads typing` with the default font/window. Words alternate
+between the end and start of the fixture's first identifier. Pages use the actual
+live window page size, and the oracle checks the resulting core viewport origin.
+Snapshot matching includes viewport origins, preventing stale scroll states from
+acknowledging input. Scrolling, buffers and windows remain covered by the main
+suite; this real-key probe does not yet cover those operations.
+
+Reports have a separate workload/schema and harness digest. They retain individual
+monotonic timestamps for send, Qt key receipt, core start, snapshot posting, widget
+application and frame detection, plus summaries for these intervals. Snapshot
+matching prevents an unrelated background render from acknowledging a key.
+`--original` deliberately uses the original GVL-holding Qt binding for comparison.
+
+The result is an upper bound on Xvfb server-side frame latency: it includes small
+instrumentation/IPC costs and a 1 ms pixel poll. Widget completion precedes paint;
+only the controller's pixel check establishes the frame. There is no desktop
+compositor, physical keyboard or display scanout here. These numbers cannot be
+treated as directly comparable to published measurements from other editors.
+
+`--dispatcher-ms N` overrides the native UI timer interval in the benchmark child
+only. Reports record the actual interval and whether the timer is single-shot.
+Before each key group, a separate control thread supplies the editor's process CPU
+clock on either side of a one-second idle window. `idle_process_cpu` stores elapsed
+wall/CPU time and usage as a percentage of one CPU core. This excludes the separate
+controller and lexer processes and is measured before foreground timing. The probe
+uses the production dispatcher by default; changing a timer interval is a controlled
+experiment, not a production setting.
+
+## Scenarios and state
+
+The catalog in `benchmark/roded/scenarios.rb` contains 34 scenarios:
+
+- Cursor: character, line, word and page in both directions; line/document boundaries.
+- Viewport: line/page vertical scrolling in both directions; horizontal origin change plus render.
+- Editing: insert, backspace, forward delete, newline, paste a 100-line block,
+  delete a 100-line region, undo and redo.
+- Buffers: next/previous buffer in the same window.
+- Windows: split horizontally/vertically, delete, activate another window, delete other windows.
+- Diagnostics: full render and a `C-n` key routed through the actual keymap.
+
+Roded currently has no paragraph/block cursor command. Word and page movement
+measure its available larger navigation steps; block edits measure multiline
+operations. Additional commands can be added to the scenario catalog when implemented.
+
+Before every invocation, the harness restores the original text/history, active
+buffer, window tree, point, mark and viewport. The initial point is in the middle
+of the document. Cursor and scrolling operations therefore always move instead
+of eventually measuring a boundary no-op. A page operation is explicitly 38
+logical lines across all layers, independent of split geometry. Setup, initial
+render and behavioral verification are outside timing and allocation counters.
+
+Resetting each invocation can reuse syntax cached for an identical edited
+document. Also measure consecutive typing to expose uncached highlighting:
+
+For Ruby documents with at least 1500 rows, edits publish text/caret immediately
+and defer full lexical coloring to a child interpreter. Samples measure this
+foreground frame. Each result also records `background_highlight_settle_ms`,
+one value per sample: the additional wait and frontend painting needed for final
+coloring after the last operation (`null` if no work remained). This phase is
+outside foreground latency; a small foreground median does not prove that syntax
+colors are immediate. The harness drains queued syntax/resize events and waits
+for the latest result before closing the sample. Initial Ruby coloring is still
+synchronous. The changed harness hash prevents strict comparisons with old reports.
+
+```sh
+bundle exec ruby benchmark/typing_stream.rb --mode plain --lines 1500 \
+  --layer curses --samples 5 --iterations 20 --output tmp/benchmarks/typing-plain.json
+bundle exec ruby benchmark/typing_stream.rb --mode ruby --lines 10000 \
+  --layer qt --samples 5 --iterations 20 --output tmp/benchmarks/typing-ruby.json
+```
+
+The stream prepares/renders once per sample, then inserts successive characters
+without resetting or warming the edited-text cache. It supports plain, Ruby,
+JSON, YAML and Markdown modes. Ruby uses the Ruby fixture; the other modes use
+the long plain fixture with that highlighting mode enabled. Markdown timings
+therefore do not represent a Markdown-heavy real document. The standalone stream
+report records its own script hash and workload/configuration; it is not a main
+suite report and cannot be passed to `benchmark/run.rb --baseline`. Compare
+streams with matching mode, fixture, machine, script/harness hashes and counts.
+
+Each sample owns a new application. Temporary split views are detached from
+buffer edit observers during reset, including views already removed by a delete
+operation; benchmark repetitions do not accumulate stale observers. This reset
+is benchmark infrastructure, not a change to production window lifecycle behavior.
+Buffers/windows can be varied to expose fan-out costs:
+
+```sh
+bundle exec ruby benchmark/run.rb --lines 1500,10000 --buffers 30 --windows 4 \
+  --scenarios 'edit.insert_char|buffer.|window.' --output tmp/benchmarks/multi-view.json
+```
+
+## Reports and regression checks
+
+The table shows median/p95/maximum latency in milliseconds and allocated Ruby
+objects per operation. JSON additionally stores mean, reciprocal mean execution
+rate, GC runs/time, every individual operation measurement grouped by sample,
+fixture metadata, Ruby/YJIT/gem versions, CPU/host, benchmark implementation hash,
+Git revision and whether the checkout was dirty. Allocations do not include
+native Qt memory. GC remains enabled; a full collection runs once after warmup,
+before each sample. Measured GC counts/time include only collections inside
+timed operations. Reset/setup allocations can influence subsequent GC scheduling.
+
+Median and p95 use all individual measured operations, not averages of batches.
+The median averages the middle pair for even counts; p95 uses nearest rank.
+Small runs are smoke/diagnostic measurements: with fewer than twenty operations,
+p95 is the maximum. For a focused optimization use at least 100 observations:
+
+```sh
+bundle exec ruby benchmark/run.rb --lines 1500,10000 --layers core,application \
+  --samples 5 --iterations 20 --scenarios 'cursor.line_down|edit.insert_char' \
+  --output tmp/benchmarks/before.json
+
+# Make the production optimization, then repeat the same workload/options:
+bundle exec ruby benchmark/run.rb --lines 1500,10000 --layers core,application \
+  --samples 5 --iterations 20 --scenarios 'cursor.line_down|edit.insert_char' \
+  --baseline tmp/benchmarks/before.json --output tmp/benchmarks/after.json \
+  --max-regression 20 --fail-on-regression
+```
+
+Positive percentages mean slower/more allocations. A median increase greater
+than the threshold is marked `REGRESSION`. p95 and allocation changes are reported
+alongside it, but do not independently trigger failure. Exit codes: 0 success,
+1 measured regression with `--fail-on-regression`, 2 invalid options or incompatible
+reports. Verification/runtime failures also exit nonzero. A measured regression
+still writes the candidate JSON report.
+
+Comparison rejects changed fixtures, harness, Ruby/gem versions, machine,
+Qt platform, YJIT/GC options and workload/repetition parameters. The production
+Git revision may change: that is what an optimization comparison needs. Baseline
+results may be a superset of candidate scenarios/line counts, provided the
+environment and measurement options match; missing matching rows are errors.
+The `--seed` option fixes the shuffle of scenario/layer/size tasks (default 264).
+Keep the machine otherwise idle, run comparisons sequentially, and repeat noisy
+differences before treating them as a regression. Thresholds are opt-in for CI
+on controlled hardware; there is no universal speed limit in normal specs.
+
+To extend the system, add a `Scenario` with preparation, one logical action, and
+a verification predicate. Preparation and verification are untimed. Add a
+behavioral harness spec, run the relevant frontend smoke check, and regenerate
+both reports after changing the harness because its implementation hash changes.
+
+Recorded runs, their limitations and remaining bottlenecks are in
+[the optimization report](optimization-final-report-2026-10-05.md).
+
+### Deep columns, large windows and actual files
+
+The real-key Qt harness accepts --line-length 2500 --start-col 1200 --buffers 6
+and --width 1920 --height 1080. Length is a minimum in Ruby characters, not bytes;
+the report stores the generated text hash. Default fixture v1 content is unchanged.
+The independent word oracle checks arbitrary word boundaries, including Unicode
+and crossings between rows. The caret must appear in the actual X11 frame.
+
+Use --file PATH --start-row ROW --start-col COLUMN to measure an actual file,
+plus repeated --extra-file README.md / --extra-file lib/roded/application.rb
+arguments for previously visited buffers. Choose a valid position in the current
+file; historical AGENTS/GOAL fixtures in the archive predate documentation cleanup. Row and column are zero-based. Source
+files are only read; the child edits its in-memory copies. Reports include content
+hashes for every source, actual Qt style and window geometry. The visited buffers
+are prepared before the timed key sequence. --buffers repeats the main fixture;
+extra files are added to that count. Real-file lengths may be less than 1500 rows.
+
+Qt defaults to Fusion to avoid Breeze's Alt mnemonic repaint overhead. An explicit
+QT_STYLE_OVERRIDE still selects the requested style, including Breeze for controls.

@@ -2,6 +2,7 @@ require "logger"
 require "fileutils"
 
 module Roded
+  # Provides the application logger and scoped log-level configuration.
   module Logging
     DEFAULT_LOG_PATH = File.join(Dir.home, ".cache", "roded", "roded.log")
 

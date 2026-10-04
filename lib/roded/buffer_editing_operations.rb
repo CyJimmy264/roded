@@ -1,0 +1,127 @@
+module Roded
+  # Implements undo, region, kill-ring, and clipboard-like editor commands.
+  module BufferEditingOperations
+    def indent
+      return unless editable_buffer_and_window?
+
+      indent_rows(indented_rows)
+      publish_ui_update(UIUpdate.new(:render, {}))
+    end
+
+    def undo
+      changed = current_buffer&.undo
+      publish_ui_update(UIUpdate.new(:render, {})) if changed
+      changed
+    end
+
+    def redo
+      changed = current_buffer&.redo
+      publish_ui_update(UIUpdate.new(:render, {})) if changed
+      changed
+    end
+
+    def set_mark
+      return unless current_window
+
+      current_window.mark = current_window.point
+      publish_ui_update(UIUpdate.new(:render, {}))
+    end
+
+    def copy_region
+      region = active_region
+      return display_message("No active region.") unless region
+
+      text = current_buffer.region_text(*region)
+      kill_ring.break_sequence
+      kill_ring.push(text)
+      kill_ring.break_sequence
+      publish_clipboard_text(text)
+      display_message("Region copied.")
+    end
+
+    def kill_region
+      region = active_region
+      return display_message("No active region.") unless region
+
+      text = current_buffer.region_text(*region)
+      return unless current_buffer.delete_region(*region)
+
+      kill_ring.push(text)
+      publish_clipboard_text(text)
+      current_window.mark = nil
+      publish_ui_update(UIUpdate.new(:render, {}))
+    end
+
+    def yank
+      text = kill_ring.last
+      return display_message("Kill ring is empty.") unless text
+
+      start = current_window.point.dup
+      current_buffer.insert_text(text, at: start)
+      @last_yank = { buffer: current_buffer, start:, finish: current_window.point, index: 0 }
+      current_window.mark = nil
+      publish_ui_update(UIUpdate.new(:render, {}))
+    end
+
+    def yank_pop
+      return display_message("No previous yank to replace.") unless previous_yank_for_current_buffer?
+      return display_message("Kill ring has no other entries.") if kill_ring.items.length < 2
+
+      replace_last_yank
+      current_window.mark = nil
+      publish_ui_update(UIUpdate.new(:render, {}))
+    end
+
+    private
+
+    def active_region
+      return unless current_window&.mark
+
+      [current_window.mark, current_window.point]
+    end
+
+    def indented_rows
+      mark = current_window.mark
+      return [current_window.point.fetch(:row)] unless mark
+
+      [mark.fetch(:row), current_window.point.fetch(:row)].min..
+        [mark.fetch(:row), current_window.point.fetch(:row)].max
+    end
+
+    def editable_buffer_and_window?
+      current_buffer && current_window && !current_buffer.readonly
+    end
+
+    def indent_rows(rows)
+      current_buffer.with_undo_group do
+        rows.reverse_each do |row|
+          current_buffer.insert_text("  ", at: { row:, col: 0 })
+        end
+      end
+    end
+
+    def publish_clipboard_text(text)
+      publish_ui_update(UIUpdate.new(:clipboard_write, { text: text.dup.freeze }))
+    end
+
+    def previous_yank_for_current_buffer?
+      @last_yank&.fetch(:buffer).equal?(current_buffer)
+    end
+
+    def replace_last_yank
+      ring_index, text = next_yank
+      current_buffer.with_undo_group do
+        start = @last_yank.fetch(:start)
+        current_buffer.delete_region(start, @last_yank.fetch(:finish))
+        current_buffer.insert_text(text, at: start)
+      end
+      @last_yank[:finish] = current_window.point
+      @last_yank[:index] = ring_index
+    end
+
+    def next_yank
+      ring_index = (@last_yank.fetch(:index) + 1) % kill_ring.items.length
+      [ring_index, kill_ring.items.fetch(ring_index)]
+    end
+  end
+end
