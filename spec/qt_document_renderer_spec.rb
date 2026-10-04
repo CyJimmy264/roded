@@ -165,3 +165,47 @@ RSpec.describe Roded::Frontends::QtDocumentRenderer, "plain-layout split copies"
     target&.close
   end
 end
+
+RSpec.describe Roded::Frontends::QtDocumentRenderer, "unformatted split copies" do
+  include_context "Qt native document rendering"
+
+  it "restores the caret at EOL and on an empty line while retaining expanded tabs and Unicode" do
+    state = snapshot(["\t🙂<&", "", "last"], { row: 0, col: 4 }, tokens: [[], [], []])
+    expect_native_frame(state)
+    target = Roded::Frontends::QtTextEditor.new
+    copy = described_class.new(target)
+    copy.copy_from(@renderer)
+    expect(target.to_plain_text).to eq(@editor.to_plain_text)
+    expect(target.to_html.scan("background-color:#61afef").length).to eq(1)
+    changed = state.merge(point: { row: 1, col: 0 })
+    copy.render(changed, changed[:text])
+    @reference.set_html(Roded::Frontends::QtEditorHtmlRenderer.new(changed[:text], changed).render)
+    expect(target.to_plain_text).to eq(@reference.to_plain_text)
+    expect(target.to_html.scan("background-color:#61afef").length).to eq(1)
+    expect(target.to_html.scan(/<(?:p|pre) [^>]*>/).map { |tag| tag.include?("background-color:#343a46") })
+      .to eq([false, true, false])
+  ensure
+    target&.close
+  end
+end
+
+RSpec.describe Roded::Frontends::QtDocumentRenderer, "formatted split copies" do
+  include_context "Qt native document rendering"
+
+  it "retains syntax colors and selections when copying a formatted source document" do
+    state = snapshot(["def first", "\t# comment", "end"], { row: 1, col: 3 }, mark: { row: 0, col: 1 })
+    expect_native_frame(state)
+    target = Roded::Frontends::QtTextEditor.new
+    copy = described_class.new(target)
+    copy.copy_from(@renderer)
+    expect(target.to_plain_text).to eq(@editor.to_plain_text)
+    expect(target.to_html).to include("#c678dd", "#5b6268")
+    %w[#c678dd #5b6268 #3e4451 #61afef #343a46].each do |color|
+      expect(target.to_html.scan(color).length).to eq(@editor.to_html.scan(color).length)
+    end
+    expect(target.document.handle).not_to eq(@editor.document.handle)
+    expect(target.font.family).to eq(@editor.font.family)
+  ensure
+    target&.close
+  end
+end

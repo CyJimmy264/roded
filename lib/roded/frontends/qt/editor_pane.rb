@@ -20,7 +20,6 @@ module Roded
         @container = QWidget.new(parent)
         @layout = QVBoxLayout.new(@container)
         initialize_editor(template)
-        configure_editor
         @modeline = QLabel.new(@container)
         QtLayoutSpacing.configure_pane(@container, @layout, @editor, @modeline)
         @layout.add_widget(@editor)
@@ -29,9 +28,6 @@ module Roded
       end
 
       def configure_editor
-        font = @editor.font
-        font.set_family("monospace")
-        @editor.set_font(font)
         @editor.set_read_only(true)
         @editor.set_undo_redo_enabled(false)
         @editor.set_context_menu_policy(::Qt::NoContextMenu)
@@ -78,6 +74,7 @@ module Roded
 
       def initialize_editor(template)
         @editor = QtTextEditor.new(@container)
+        configure_editor
         @document_renderer = QtDocumentRenderer.new(@editor)
         @document_renderer.copy_from(template.document_renderer) if template
         @mouse_input = QtMouseInputAdapter.new(@editor)

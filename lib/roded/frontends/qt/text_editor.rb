@@ -4,6 +4,9 @@ module Roded
     class QtTextEditor < ::Qt::QPlainTextEdit
       def initialize(parent = nil)
         super
+        editor_font = font
+        editor_font.set_family("monospace")
+        set_font(editor_font)
         set_undo_redo_enabled(false)
       end
 
