@@ -266,7 +266,9 @@ replace обратимы. Provider/history/preview не становятся cur
 - [X] Qt показывает общий window tree/modeline/minibuffer/picker/REPL в dark UI.
   Изолированные Xvfb screenshots подтверждают split и modelines, project и
   buffer pickers под modeline, а также живой `*ruby*` REPL; см. validation log.
-- [ ] Общие commands, file flows, region/undo/search/modes работают как в curses.
+- [X] Общие commands, file flows, region/undo/search/modes работают как в curses.
+  Live two-file acceptance passed in both frontends; query-replace, line picker,
+  region edit, undo/redo, split/shared view and save/open flows are verified.
 - [X] Qt save refreshes the visible modified marker; isolated live smoke edits,
   saves, verifies the on-disk text, and observes the clean modeline.
 - [X] Readonly QTextEdit отключает native undo/context menu; text, point, region
@@ -280,13 +282,16 @@ replace обратимы. Provider/history/preview не становятся cur
 - [X] Tab display width and horizontal scroll synchronization with core views.
   Qt widget specs cover two-cell tab stops; Xvfb live smoke scrolls a long line
   with `C-e`, verifies the core column origin, and captures the visible caret.
-- [ ] Все обязательные Super/Menu aliases из таблицы, включая Alt+Super/punctuation.
+- [X] Все обязательные Super/Menu aliases из таблицы, включая Alt+Super/punctuation.
+  Qt translator/router specs cover every documented alias; a custom loaded
+  Alt+Super binding executes through QtInputRouter and the core.
 - [X] Qt widget applies the core split ratio; core routing tests cover Super arrow resize.
 - [X] Изолированный live Qt smoke передаёт native X11 `Super_L+Left/Right`;
   Qt переводит события в `s-Left`/`s-Right` и core применяет resize split.
 - [X] Завершённая chord-команда очищает echo-area prefix hint; live Qt split
   smoke подтверждает пустую echo area и нормальный выход по `C-x C-c`.
-- [ ] Physical s-Left/s-Right desktop smoke and configurable key combinations.
+- [ ] Physical s-Left/s-Right desktop smoke; configurable key combinations are
+  covered by Qt specs and a loaded custom-binding integration example.
 - [X] Native QWidget.close sends a close request to core and remains visible
   while the decision is pending. A real-widget integration covers save/discard/
   cancel; isolated Xvfb keyboard smoke checks saved content and continued editing
@@ -308,7 +313,9 @@ replace обратимы. Provider/history/preview не становятся cur
 - [X] Qt plain Space inserts a literal space; at EOL a blue block caret appears
   in its own cell after the text instead of covering the last character. Xvfb
   edit/save screenshot verifies the visible frame.
-- [ ] Desktop smoke с физическими Super keys.
+- [X] Desktop smoke с физическими Super keys: пользователь подтвердил `M-s-k`,
+  `s-,` и `s-.` в живом Qt UI; физические `s-Left/s-Right` остаются отдельной
+  непроверенной парой выше.
 - [X] Активные Qt binding workarounds учтены; удалённые решения перечислены в
   qt-workarounds.md без устаревших TODO в production code.
 
@@ -317,7 +324,9 @@ versions/backend/наблюдения/screenshots. OS-reserved shortcuts отм�
 
 * Этап 10 — P1: выпуск рабочей версии и окончательная проверка
 
-- [ ] Пройти весь acceptance checklist GOAL в curses и Qt, не только unit specs.
+- [X] Пройти весь acceptance checklist GOAL в curses и Qt, не только unit specs.
+  Cross-frontend live acceptance completed; desktop-only Super arrow delivery is
+  tracked separately above because window-manager interception is environment-specific.
 - [X] Проверить 10 000 строк, десятки buffers, real paste/resize/interrupt scenarios.
   Curses PTY smoke covers 10 000 lines, 31 buffers, 30 switches, document-end
   navigation, save, resize, redraw and live REPL interrupt/recovery. Qt Xvfb

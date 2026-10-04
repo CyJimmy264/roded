@@ -1504,3 +1504,39 @@ File save здесь сохраняет текстовое представле�
   two-file, shared-view, search/replace and save-as acceptance scenario also
   remains open across both frontends; existing unit/integration coverage does
   not substitute for that live workflow.
+
+## 2026-10-04 — two-file acceptance in curses and Qt
+
+- `bundle exec ruby script/curses_two_file_acceptance_smoke.rb` passed in a
+  private PTY: Ruby **3.4.2**, curses **1.5.3**, `TERM=xterm-256color`, 24×80,
+  temporary `XDG_CONFIG_HOME`/cache. The real curses process edited both
+  command-line files, split and edited a shared Ruby buffer through two views,
+  used `C-s` line search and `M-%` replace-all, saved copies with `C-x C-w`,
+  killed and reopened the text copy, and verified region cut/yank plus undo/redo
+  by saving and comparing each exact file state. It exited cleanly with all
+  four files matching the expected contents. PTY capture and log:
+  `/tmp/roded-curses-two-file.20261004-3-9abrnf/`.
+- `script/qt_two_file_acceptance_smoke.sh` passed with Qt Widgets **6.11.2**,
+  gem `qt` **0.2.0**, XCB on private Xvfb **1280×800×24** and a private
+  `XDG_CONFIG_HOME`. The same two-file workflow passed through the live Qt
+  frontend, including line picker, query-replace, save-as, close/reopen, region,
+  undo and redo; every saved file matched its expected bytes. Visually inspected
+  screenshots show both Ruby panes sharing edits with independent points
+  (`shared-view.png`), the replacement rendered in both panes
+  (`query-replace-save.png`), and the reopened `notes-copy.txt` in the left pane
+  next to the Ruby copy (`reopened-text.png`). Artifacts and log:
+  `/tmp/roded-two-file-qt.68OseO/`. Neither run used the desktop display.
+- Qt keymap coverage now routes every required Super/Menu table alias through
+  the real Qt key translator and core router, including all Alt+Super text
+  actions, `s-l`, `C-<`/`C->`, `s-,`/`s-.`, Super arrows and both Menu keys.
+  A loaded `M-s-q` user binding also passes through `QtInputRouter` and executes
+  `insert-binding-irb` in the core. This exposed and fixed YAML payload keys
+  remaining strings while the command handler reads `:name`. `bundle exec
+  rspec spec/keymap_spec.rb spec/qt_shortcut_routing_spec.rb`: **17 examples,
+  0 failures**; targeted RuboCop: **4 files, 0 offenses**.
+- Final gate after adding the acceptance scripts and keymap regression:
+  `bundle exec rake` — **308 examples, 0 failures; 158 files, 0 offenses**.
+  Both smoke scripts pass their syntax checks and `git diff --check` is clean.
+- Desktop physical `s-Left`/`s-Right` is still awaiting user confirmation;
+  Xvfb input and key-shaped specs do not establish whether the desktop window
+  manager intercepts those physical keys.
