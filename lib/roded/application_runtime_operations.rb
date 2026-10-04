@@ -8,6 +8,7 @@ module Roded
     ensure
       restore_signals if manage_signals
       @stop_requested = true
+      shutdown_syntax_highlighting
       shutdown_frontends
       shutdown_ruby_repl
     end

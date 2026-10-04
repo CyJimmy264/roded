@@ -70,6 +70,11 @@ Markdown, with plain text as the fallback. The mode can also be changed through
 the command picker. Highlighting is presentation only and does not alter the
 buffer contents or undo history.
 
+After edits in Ruby documents of 1500 or more rows, coloring runs in a separate
+process. Text and the caret update immediately; changed rows regain their colors
+when the current revision finishes. Initial coloring still runs synchronously.
+See [Qt rendering alternatives and the KWrite source review](docs/qt-rendering-alternatives.md).
+
 Open the in-process Ruby REPL with `C-c r r` or `M-x ruby-repl`. Enter Ruby in
 `*ruby*`, run it with `C-c C-c`, and interrupt a running expression with
 `C-c C-k`. `C-c C-p` and `C-c C-n` navigate REPL history. Results, output,

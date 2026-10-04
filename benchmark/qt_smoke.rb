@@ -49,19 +49,48 @@ def capture_frame(scenario, editor)
   Roded::Benchmarking::QtFrameCapture.new(directory).capture(scenario.name, editor)
 end
 
-def visible_scenarios
+def visible_scenarios(profile)
   selected = %w[cursor.char_left cursor.char_right cursor.line_down scroll.page_down scroll.horizontal
                 edit.backspace edit.insert_char edit.newline render.full
                 edit.paste_block edit.delete_block buffer.next
                 window.split_vertical window.delete]
-  Roded::Benchmarking::Scenarios.all.select { |scenario| selected.include?(scenario.name) }
+  scenarios = Roded::Benchmarking::Scenarios.all.select { |scenario| selected.include?(scenario.name) }
+  scenarios << string_context_scenario if profile == "ruby"
+  scenarios
+end
+
+def string_context_scenario
+  Roded::Benchmarking::Scenario.new(
+    "edit.string_context", method(:prepare_string_context),
+    ->(work) { work.dispatch(:delete) },
+    ->(work) { work.buffer.lines[work.middle].count('"') == 1 }
+  )
+end
+
+def prepare_string_context(work)
+  column = work.buffer.lines[work.middle].index('"')
+  work.position(row: work.middle, col: column)
+end
+
+def assert_syntax_snapshot(work)
+  snapshot = work.application.editor_snapshot[:windows].find { |item| item[:id] == work.window.object_id }
+  expected = Roded::SyntaxHighlighter.new.spans(:ruby, work.buffer.lines)
+  raise "deferred syntax differs from the complete lexer" unless snapshot[:tokens] == expected
+
+  assert_ruby_number_color(work)
+end
+
+def assert_ruby_number_color(work)
+  return if work.frontend.frontend.view.editor.to_html.include?("color:#d19a66")
+
+  raise "Ruby number colors did not reach the visible editor"
 end
 
 Roded::Benchmarking::Isolation.run(xvfb: true) do
   profile = ENV.fetch("RODED_BENCHMARK_PROFILE", "plain")
   fixture = Roded::Benchmarking::Fixture.new(line_count: 1500, profile:)
   work = Roded::Benchmarking::Workspace.new(layer: "qt", fixture:, buffer_count: 4, window_count: 1)
-  visible_scenarios.each do |scenario|
+  visible_scenarios(profile).each do |scenario|
     work.reset
     scenario.prepare.call(work)
     work.render
@@ -70,6 +99,9 @@ Roded::Benchmarking::Isolation.run(xvfb: true) do
     raise "operation failed: #{scenario.name}" unless scenario.verify.call(work)
 
     assert_visible_frame(work)
+    work.settle_highlighting
+    assert_visible_frame(work)
+    assert_syntax_snapshot(work) if profile == "ruby"
     editor = work.frontend.frontend.view.editor
     capture_frame(scenario, editor)
     if scenario.name == "scroll.page_down"

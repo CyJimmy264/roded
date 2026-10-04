@@ -105,6 +105,16 @@ render and behavioral verification are outside timing and allocation counters.
 Resetting each invocation can reuse syntax cached for an identical edited
 document. Also measure consecutive typing to expose uncached highlighting:
 
+For Ruby documents with at least 1500 rows, edits publish text/caret immediately
+and defer full lexical coloring to a child interpreter. Samples measure this
+foreground frame. Each result also records `background_highlight_settle_ms`,
+one value per sample: the additional wait and frontend painting needed for final
+coloring after the last operation (`null` if no work remained). This phase is
+outside foreground latency; a small foreground median does not prove that syntax
+colors are immediate. The harness drains queued syntax/resize events and waits
+for the latest result before closing the sample. Initial Ruby coloring is still
+synchronous. The changed harness hash prevents strict comparisons with old reports.
+
 ```sh
 bundle exec ruby benchmark/typing_stream.rb --mode plain --lines 1500 \
   --layer curses --samples 5 --iterations 20 --output tmp/benchmarks/typing-plain.json

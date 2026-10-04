@@ -2,7 +2,7 @@ module Roded
   # Handles frontend and lifecycle events outside the normal command router.
   module ApplicationSpecialEventOperations
     SPECIAL_INPUT_EVENT_TYPES = %i[
-      repl_api_call repl_result mouse_selection horizontal_scroll resize
+      repl_api_call repl_result syntax_result mouse_selection horizontal_scroll resize
     ].freeze
 
     private
@@ -15,6 +15,7 @@ module Roded
       case event.type
       when :repl_api_call then handle_repl_api_event(event)
       when :repl_result then append_ruby_repl_result(event.payload)
+      when :syntax_result then handle_syntax_result(event.payload)
       when :mouse_selection then handle_mouse_selection(event)
       when :horizontal_scroll then handle_horizontal_scroll(event)
       when :resize then handle_resize_event

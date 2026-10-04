@@ -28,9 +28,11 @@ module Roded
       end
 
       def measure_scenario(layer, fixture, scenario)
+        @highlight_settles = []
         samples = Array.new(@config.fetch(:samples)) { measure_sample(layer, fixture, scenario) }
         { layer:, lines: fixture.line_count, scenario: scenario.name,
-          metrics: Statistics.summarize(samples), samples: }
+          metrics: Statistics.summarize(samples), samples:,
+          background_highlight_settle_ms: @highlight_settles.freeze }
       end
 
       def measure_sample(layer, fixture, scenario)
@@ -38,7 +40,9 @@ module Roded
                              window_count: @config.fetch(:windows))
         @config.fetch(:warmup).times { exercise(work, scenario, timed: false) }
         GC.start
-        Array.new(@config.fetch(:iterations)) { exercise(work, scenario, timed: true) }
+        samples = Array.new(@config.fetch(:iterations)) { exercise(work, scenario, timed: true) }
+        @highlight_settles << work.settle_highlighting
+        samples
       ensure
         work&.close
       end

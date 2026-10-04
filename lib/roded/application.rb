@@ -24,6 +24,7 @@ module Roded
     include WindowLayoutOperations
     include BufferNavigationOperations
     include EditorSnapshotOperations
+    include ApplicationRubyHighlightOperations
     include ApplicationSpecialEventOperations
     include ApplicationInputEventOperations
     include FrontendOperations

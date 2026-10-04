@@ -34,7 +34,7 @@ module Roded
 
       lines = buffer.lines
       content = { buffer_id: buffer.object_id, text: buffer.text_snapshot, lines:, mode:,
-                  tokens: @syntax_highlighter.spans(mode, lines) }.freeze
+                  tokens: document_tokens(buffer, mode, lines) }.freeze
       @document_snapshots[buffer] = { revision: buffer.revision, mode:, content: }
       content
     end

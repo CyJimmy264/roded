@@ -1,10 +1,13 @@
 require_relative "core_application"
 require_relative "null_frontend"
+require_relative "highlight_settle_operations"
 
 module Roded
   module Benchmarking
     # Owns fresh editor state for each sample; resets are outside the timed interval.
     class Workspace
+      include HighlightSettleOperations
+
       attr_reader :application, :fixture, :frontend, :base_windows, :documents
 
       def initialize(layer:, fixture:, buffer_count:, window_count:)
@@ -53,7 +56,10 @@ module Roded
         frontend.finish
       end
 
-      def close = frontend&.close
+      def close
+        application.shutdown_syntax_highlighting
+        frontend&.close
+      end
 
       private
 
