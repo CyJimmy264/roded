@@ -22,6 +22,20 @@ RSpec.describe Roded::Keymap do
     end
   end
 
+  it "symbolizes configured command payload keys for event dispatch" do
+    Dir.mktmpdir("roded-keymap") do |directory|
+      path = File.join(directory, "keymap.yml")
+      File.write(path, "M-s-q:\n  type: custom_command\n  payload:\n    name: insert-binding-irb\n")
+
+      keymap = described_class.load(path)
+
+      expect(keymap.resolve("M-s-q")).to eq(
+        type: :custom_command,
+        payload: { name: "insert-binding-irb" }
+      )
+    end
+  end
+
   it "falls back to defaults and reports malformed configuration" do
     Dir.mktmpdir("roded-keymap") do |directory|
       path = File.join(directory, "keymap.yml")

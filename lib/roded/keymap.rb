@@ -65,7 +65,7 @@ module Roded
     def self.symbolize_entry(value)
       type = config_value(value, "type")
       payload = config_value(value, "payload")
-      { type: type.to_sym, payload: payload || {} }
+      { type: type.to_sym, payload: (payload || {}).transform_keys(&:to_sym) }
     end
 
     def self.config_value(value, key)

@@ -33,6 +33,28 @@ RSpec.describe "Qt shortcut routing" do
     end
   end
 
+  it "routes all documented Alt+Super editor actions" do
+    modifiers = Qt::AltModifier | Qt::MetaModifier
+    aliases = [
+      [{ key: Qt::Key_B, modifiers:, text: "b" }, "insert-binding-irb"],
+      [{ key: Qt::Key_D, modifiers:, text: "d" }, "insert-current-date-time"],
+      [{ key: Qt::Key_T, modifiers:, text: "t" }, "insert-current-time"],
+      [{ key: Qt::Key_U, modifiers:, text: "u" }, "untabify"],
+      [{ key: Qt::Key_Tab, modifiers:, text: "\t" }, "tabify"]
+    ]
+
+    aliases.each do |payload, command_name|
+      key = translator.translate(payload)
+
+      expect(router.route(key)).to eq(editor_command(:custom_command, { name: command_name }))
+    end
+
+    select_line = translator.translate(key: "l".ord, modifiers: Qt::MetaModifier, text: "l")
+    expect(router.route(select_line)).to eq(
+      editor_command(:custom_command, { name: "select-current-line" })
+    )
+  end
+
   it "keeps Alt and Super distinct and preserves Ctrl+Shift punctuation" do
     alt = translator.translate(key: Qt::Key_J, modifiers: Qt::AltModifier, text: "j")
     super_key = translator.translate(key: Qt::Key_J, modifiers: Qt::MetaModifier, text: "j")
@@ -44,6 +66,51 @@ RSpec.describe "Qt shortcut routing" do
 
     expect([alt, super_key, combined]).to eq(["M-j", "s-j", "C-<"])
     expect(router.route(combined)).to eq(editor_command(:previous_buffer))
+  end
+
+  it "routes the configured next-buffer Ctrl+greater alias" do
+    key = translator.translate(
+      key: Qt::Key_Greater,
+      modifiers: Qt::ControlModifier | Qt::ShiftModifier,
+      text: ">"
+    )
+
+    expect(key).to eq("C->")
+    expect(router.route(key)).to eq(editor_command(:next_buffer))
+  end
+
+  it "routes user-configured mixed-modifier key combinations" do
+    original_config_home = ENV.fetch("XDG_CONFIG_HOME", nil)
+    Dir.mktmpdir("roded-qt-keymap") do |directory|
+      config_directory = File.join(directory, "roded")
+      FileUtils.mkdir_p(config_directory)
+      File.write(
+        File.join(config_directory, "keymap.yml"),
+        "M-s-q:\n  type: custom_command\n  payload:\n    name: insert-binding-irb\n"
+      )
+      ENV["XDG_CONFIG_HOME"] = directory
+      application = Roded::Application.new
+      application.startup
+      frontend_router = Roded::Frontends::QtInputRouter.new(
+        application,
+        translator,
+        Roded::Frontends::QtClipboardBridge.new,
+        :qt
+      )
+      payload = {
+        key: Qt::Key_Q,
+        modifiers: Qt::AltModifier | Qt::MetaModifier,
+        text: "q",
+        window_id: application.current_window.object_id
+      }
+
+      frontend_router.enqueue_key(payload)
+      application.handle_event(application.instance_variable_get(:@event_queue).pop)
+
+      expect(application.current_buffer.to_s).to eq("\nbinding.irb")
+    end
+  ensure
+    original_config_home ? ENV["XDG_CONFIG_HOME"] = original_config_home : ENV.delete("XDG_CONFIG_HOME")
   end
 
   it "routes Qt Menu and Alt+Menu to the project and buffer pickers" do
