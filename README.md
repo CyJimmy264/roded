@@ -137,6 +137,16 @@ Run the automated checks with:
 bundle exec rake
 ```
 
+Long-document performance benchmarks (1500, 5000 and 10,000 lines) run separately:
+
+```sh
+bundle exec rake benchmark
+```
+
+They record operation latency, allocations and GC statistics in JSON, and can
+compare an optimization against a saved baseline. See
+[benchmark workloads, frontend measurements and comparison commands](docs/benchmarks.md).
+
 The test suite uses offscreen Qt widgets for integration tests. Live frontend
 smoke checks use a private PTY or Xvfb with private Qt config directories; they
 do not need the user's desktop session. Current versions, commands, observations,
