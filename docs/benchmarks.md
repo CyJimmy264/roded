@@ -106,10 +106,15 @@ include real keystrokes or painted editor frames and is not an input-latency sco
 
 `benchmark/qt_key_latency.rb` starts a private Xvfb and separate editor/controller
 processes. The editor runs the production `QApplication.exec`, core thread and
-12 ms UI dispatcher. XTest sends real X11 key events. The controller reads X11
+event-driven UI dispatcher. XTest sends real X11 key events. The controller reads X11
 pixels until the block caret appears at the new position and disappears from the
 old position, and independently checks the expected core point and edited line.
 It never drains the dispatcher or calls `process_events`.
+
+The dispatcher requests the GUI-owned timer's `start()` slot through Qt's queued
+`QTimer.singleShot` API when data arrives. The timer fires once with zero delay;
+pending snapshots share one wakeup, and an empty queue has no periodic timer.
+Starting/stopping that receiver directly remains restricted to the GUI thread.
 
 ```sh
 bundle exec ruby benchmark/qt_key_latency.rb --lines 1500 --profile plain \
