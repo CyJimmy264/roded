@@ -3,6 +3,17 @@ require "spec_helper"
 require_relative "../lib/roded/frontends/qt"
 
 module QtInputIntegrationSpecHelpers
+  def editor_state(application)
+    buffer = application.current_buffer
+    window = application.current_window
+    [
+      application.editor_snapshot, buffer.to_s, buffer.modified?, buffer.line_ending,
+      buffer.final_newline, window.point, window.mark, window.top_line, window.left_column,
+      buffer.instance_variable_get(:@undo_stack).length,
+      buffer.instance_variable_get(:@redo_stack).length
+    ]
+  end
+
   def build_qt_editor(lines)
     application = build_application(lines)
     frontend = attach_qt_frontend(application)
@@ -104,6 +115,31 @@ RSpec.describe "Qt snapshot feedback" do
 
     expect(application.current_buffer.to_s).to eq("!before\nafter")
     expect(frontend.view.editor.to_plain_text).to eq("!before\nafter")
+    expect(frontend.instance_variable_get(:@input_queue)).to be_empty
+  end
+end
+
+RSpec.describe "Qt rendering immutability" do
+  include_context "Qt input integration lifecycle"
+  include QtInputIntegrationSpecHelpers
+
+  it "leaves buffer and view state unchanged during repeated widget renders" do
+    application, frontend = build_qt_editor(%w[before after])
+    @frontends << frontend
+    window = application.current_window
+    window.point = { row: 1, col: 2 }
+    window.mark = { row: 0, col: 3 }
+    window.top_line = 1
+    window.left_column = 0
+    before = editor_state(application)
+
+    3.times do
+      frontend.render
+      frontend.instance_variable_get(:@ui_dispatcher).send(:drain)
+      3.times { QApplication.process_events }
+    end
+
+    expect(editor_state(application)).to eq(before)
     expect(frontend.instance_variable_get(:@input_queue)).to be_empty
   end
 end

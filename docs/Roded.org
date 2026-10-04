@@ -1,25 +1,30 @@
-* Roded Overview
+* Roded
 
-Roded — Ruby Object-oriented Development Environment eDitor. Is a Ruby-based
-application designed to provide an interactive extensible live programmable
-development environment and editor.
+Roded is a programmable editor and Ruby development environment. The core
+owns document text, edit history, buffers, editor windows, and cursor positions.
+The curses and Qt frontends present and route input to that shared core.
 
-* Usage Perspective
+* Implemented in the first working version
 
-- **Platform and UI independent:** Roded supports a variety of frontends,
-  from terminal-based interface to modern editors like Monaco in a WebView. This
-  makes it usable on any platform and in any environment.
-- **Extensibility:** Roded is highly customizable and extendable through scripts
-  and have a rich base configuration. Users can adapt the environment to their
-  workflows and preferences.
-- **More than just an editor:** Roded is a full-featured development environment
-  that offers a wide range of features. It allows users to use plugins, automate
-  tasks, and integrate with various external services. With Roded, users can
-  browse the internet, access file system, read emails, interact with social
-  media, and many much more.
-- **Collaboration:** Enables collaborative editing and sharing of sessions
-  between users.
-- **Interactive programming:** Provides REPL support, live code execution, and
-  instant feedback.
-- **Integration with external tools:** Easily connects to version control
-  systems, build tools, test frameworks, and other developer utilities.
+- Curses terminal UI and Qt desktop UI on Linux.
+- Multiple file buffers, independent editor windows, and horizontal or vertical
+  splits. Two windows can show one document with independent cursor positions.
+- Text editing, undo/redo, region operations, line and text search, query replace,
+  safe file save flows, and configurable key bindings.
+- File, buffer, command, line, project-file, and kill-ring pickers.
+- Ruby, JSON, YAML, and Markdown syntax highlighting, with plain text fallback.
+- An in-process Ruby REPL that can inspect and change editor state through the
+  core event loop.
+- Mouse selection, wheel scrolling, and system clipboard support in Qt.
+
+See `../README.md` for startup and common commands, `keybindings.md` for the
+binding reference, `qt-frontend.md` for Qt development notes, and
+`working-editor-validation.md` for tested versions, commands, and observations.
+
+* Roadmap and exclusions
+
+The longer-term direction is a Ruby-scriptable development environment with
+additional tools and integrations. Those goals are not claims about the current
+release. LSP, collaboration, debugging, Magit, web frontends, Vim/Evil modes,
+structural editing, folding, external formatting, and a general plugin framework
+are outside the first working version.

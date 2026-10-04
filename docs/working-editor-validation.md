@@ -1426,3 +1426,23 @@ File save здесь сохраняет текстовое представле�
   `/tmp/roded-curses-smoke.20261004-575560-u0zpn0`.
 - `bundle exec rake`: **300 examples, 0 failures**; RuboCop: **155 files, 0
   offenses**. `bash -n script/qt_live_smoke.sh` and `git diff --check` pass.
+
+## 2026-10-04 — rendering immutability and user guide
+
+- Updated `README.md` with install/start instructions for curses and Qt, core
+  editing and window keys, picker/search/modes/REPL, keymap configuration,
+  clipboard behavior, Qt Super/Menu notes, and links to current validation and
+  Qt setup docs. `docs/Roded.org` now separates implemented behavior from the
+  longer-term roadmap and removes claims about features outside this version.
+- Added a curses snapshot render spec and a real-Qt integration spec that repeat
+  widget rendering while asserting buffer text, modification/undo state, point,
+  mark, and viewport fields stay unchanged. Both specs also assert that renders
+  do not enqueue input events.
+- `bundle exec rspec spec/qt_input_integration_spec.rb
+  spec/curses_incremental_redraw_spec.rb`: **15 examples, 0 failures**. Qt specs
+  used their private offscreen platform/config setup; the curses spec used a
+  screen double. The separate Xvfb and PTY live UI results remain documented
+  above.
+- `bundle exec rake`: **302 examples, 0 failures**; RuboCop inspected **155
+  files** with **0 offenses** after extracting the new spec helpers. `git diff
+  --check` also passes.
