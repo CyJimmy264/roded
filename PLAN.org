@@ -172,9 +172,9 @@ undo и modified state согласованы. FileService и edit history — �
 * Этап 5 — P1: окна и usable curses frontend
 
 - [X] Writable *scratch* startup, startup file arguments and initial window.
-- [ ] Emacs-подобный dark UI, modeline and echo/minibuffer.
+- [X] Emacs-подобный dark UI, modeline and echo/minibuffer.
 - [X] Next/previous buffer, exact-name/path switch and kill clean buffer.
-- [ ] Picker/completion, dirty-buffer save/discard/cancel, basename disambiguation.
+- [X] Picker/completion, dirty-buffer save/discard/cancel, basename disambiguation.
 - [X] Horizontal/vertical split, other/delete/only window; последний view сохраняется.
 - [X] Один buffer в двух окнах: общий текст, независимые point/mark/positions.
 - [X] Curses tabs expand at two-cell stops in rendered text, caret columns and
@@ -187,7 +187,7 @@ undo и modified state согласованы. FileService и edit history — �
   point together to preserve screen row within document bounds; page geometry
   comes from the input source and active view. `docs/keybindings.md` documents
   the distinction from ordinary cursor/page movement.
-- [ ] Resize/small screen, prompts/picker overlays, сохранение active view.
+- [X] Resize/small screen, prompts/picker overlays, сохранение active view.
 - [X] Robust input decoding covers terminal navigation/function sequences,
   Meta and control keys, multibyte UTF-8, command prefixes, bracketed paste and
   EOF propagation. `F7` is checked as the terminal Save binding in a private PTY.
@@ -273,7 +273,9 @@ replace обратимы. Provider/history/preview не становятся cur
   offsets, including astral emoji, combining text, ZWJ sequences, tabs and rows.
 - [X] Long lines stay unwrapped; a real Qt widget horizontally scrolls to its
   caret and retains horizontal scrolling after resize.
-- [ ] Tab display width and horizontal scroll synchronization with core views.
+- [X] Tab display width and horizontal scroll synchronization with core views.
+  Qt widget specs cover two-cell tab stops; Xvfb live smoke scrolls a long line
+  with `C-e`, verifies the core column origin, and captures the visible caret.
 - [ ] Все обязательные Super/Menu aliases из таблицы, включая Alt+Super/punctuation.
 - [X] Qt widget applies the core split ratio; core routing tests cover Super arrow resize.
 - [X] Изолированный live Qt smoke передаёт native X11 `Super_L+Left/Right`;

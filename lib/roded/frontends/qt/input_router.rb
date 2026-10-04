@@ -18,6 +18,7 @@ module Roded
         view.on_resize { |_payload| @application.push_event(Event.new(:resize, {})) }
         view.on_wheel { |payload| enqueue_wheel(payload) }
         view.on_mouse { |payload| enqueue_mouse(payload) }
+        view.on_horizontal_scroll { |payload| enqueue_horizontal_scroll(payload) }
       end
 
       def enqueue_key(payload)
@@ -34,6 +35,16 @@ module Roded
             Event.new(:scroll_by, { amount:, source_id: @source_id, window_id: payload[:window_id] })
           )
         end
+        :consume
+      end
+
+      def enqueue_horizontal_scroll(payload)
+        @application.push_event(
+          Event.new(
+            :horizontal_scroll,
+            { left_column: payload.fetch(:left_column), source_id: @source_id, window_id: payload[:window_id] }
+          )
+        )
         :consume
       end
 

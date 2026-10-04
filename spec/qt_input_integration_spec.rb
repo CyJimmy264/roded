@@ -12,6 +12,35 @@ module QtInputIntegrationSpecHelpers
     [application, frontend]
   end
 
+  def build_horizontal_scroll_editor
+    application, frontend = build_qt_editor(["0123456789" * 30])
+    @frontends << frontend
+    frontend.view.window.resize(320, 180)
+    QApplication.process_events
+    [application, frontend]
+  end
+
+  def observe_horizontal_scroll(frontend)
+    router = frontend.instance_variable_get(:@input_router)
+    events = []
+    original = router.method(:enqueue_horizontal_scroll)
+    router.define_singleton_method(:enqueue_horizontal_scroll) do |payload|
+      events << payload.fetch(:left_column)
+      original.call(payload)
+    end
+    events
+  end
+
+  def move_qt_cursor_to_end(application, frontend)
+    deliver_qt_payload(application, frontend, key: Qt::Key_E, modifiers: Qt::ControlModifier, text: "\u0005")
+    3.times { drain_core_events(application, frontend) }
+  end
+
+  def move_qt_cursor_to_start(application, frontend)
+    deliver_qt_payload(application, frontend, key: Qt::Key_A, modifiers: Qt::ControlModifier, text: "\u0001")
+    3.times { drain_core_events(application, frontend) }
+  end
+
   def build_application(lines)
     application = Roded::Application.new
     application.startup
@@ -235,5 +264,45 @@ RSpec.describe "Qt fractional wheel input through editor session" do
     expect(application.current_window.top_line).to eq(3)
     scroll_bar = frontend.view.editor.vertical_scroll_bar
     expect(scroll_bar.value).to eq(3 * scroll_bar.single_step)
+  end
+end
+
+RSpec.describe "Qt horizontal scroll through editor session" do
+  include_context "Qt input integration lifecycle"
+  include QtInputIntegrationSpecHelpers
+
+  it "keeps the Qt scrollbar origin synchronized with the active core view" do
+    application, frontend = build_horizontal_scroll_editor
+    horizontal_events = observe_horizontal_scroll(frontend)
+    move_qt_cursor_to_end(application, frontend)
+
+    scroll_bar = frontend.view.editor.horizontal_scroll_bar
+    visible_column = Roded::Frontends::QtCursorMapper.left_column_at_viewport(
+      frontend.view.editor, application.current_buffer.to_s, { point: application.current_window.point }
+    )
+    expect(application.current_window.point).to eq(row: 0, col: 300)
+    expect(frontend.view.editor.text_cursor.position).to eq(300)
+    expect(scroll_bar.maximum).to be > 0
+    expect(scroll_bar.value).to be > 0
+    expect(application.current_window.left_column).to be > 0
+    expect(visible_column).to be > 50
+    expect(horizontal_events.length).to eq(1)
+    expect(application.current_window.left_column).to eq(visible_column)
+  end
+end
+
+RSpec.describe "Qt horizontal scroll reset through editor session" do
+  include_context "Qt input integration lifecycle"
+  include QtInputIntegrationSpecHelpers
+
+  it "returns the core origin and Qt scrollbar to the start of the line" do
+    application, frontend = build_horizontal_scroll_editor
+    move_qt_cursor_to_end(application, frontend)
+    move_qt_cursor_to_start(application, frontend)
+    scroll_bar = frontend.view.editor.horizontal_scroll_bar
+
+    expect(application.current_window.point).to eq(row: 0, col: 0)
+    expect(application.current_window.left_column).to eq(0)
+    expect(scroll_bar.value).to eq(0)
   end
 end

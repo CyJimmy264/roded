@@ -19,6 +19,11 @@ export RODED_LOG_PATH="$smoke_dir/roded.log"
 export RODED_LOG_LEVEL=DEBUG
 mkdir -p "$XDG_CONFIG_HOME"
 seq -f 'line %03g' 1 100 | awk 'NR == 3 { print "" } { print }' > "$smoke_dir/lines.txt"
+long_line="line 002$(printf '%*s' 320 '' | tr ' ' x)"
+awk -v long_line="$long_line" 'NR == 2 { print long_line; next } { print }' \
+  "$smoke_dir/lines.txt" > "$smoke_dir/long-lines.txt"
+mv "$smoke_dir/long-lines.txt" "$smoke_dir/lines.txt"
+edited_long_line="X$long_line"
 
 app_pid=
 cleanup() {
@@ -139,11 +144,22 @@ xdotool key --clearmodifiers ctrl+s
 saved_line=
 for attempt in $(seq 1 50); do
   saved_line=$(sed -n '2p' "$smoke_dir/lines.txt")
-  [[ "$saved_line" == "Xline 002" ]] && break
+  [[ "$saved_line" == "$edited_long_line" ]] && break
   sleep 0.1
 done
-if [[ "$saved_line" != "Xline 002" ]]; then
+if [[ "$saved_line" != "$edited_long_line" ]]; then
   printf 'Unexpected saved line: %s\n' "$saved_line" >&2
+  exit 1
+fi
+xdotool windowfocus --sync "$window_id"
+xdotool key --clearmodifiers ctrl+e
+for attempt in $(seq 1 50); do
+  rg -q 'event received: horizontal_scroll \{left_column: [1-9]' "$RODED_LOG_PATH" && break
+  sleep 0.1
+done
+import -window "$window_id" "$smoke_dir/after-horizontal-scroll.png"
+if ! rg -q 'event received: horizontal_scroll \{left_column: [1-9]' "$RODED_LOG_PATH"; then
+  printf 'Qt long-line movement did not synchronize horizontal scroll to core\n' >&2
   exit 1
 fi
 xdotool windowfocus --sync "$window_id"
@@ -155,10 +171,10 @@ xdotool key --clearmodifiers ctrl+s
 saved_line=
 for attempt in $(seq 1 50); do
   saved_line=$(sed -n '2p' "$smoke_dir/lines.txt")
-  [[ "$saved_line" == "line 002" ]] && break
+  [[ "$saved_line" == "$long_line" ]] && break
   sleep 0.1
 done
-if [[ "$saved_line" != "line 002" ]]; then
+if [[ "$saved_line" != "$long_line" ]]; then
   printf 'Unexpected line after Qt undo: %s\n' "$saved_line" >&2
   exit 1
 fi
@@ -173,10 +189,10 @@ xdotool key --clearmodifiers ctrl+s
 saved_line=
 for attempt in $(seq 1 50); do
   saved_line=$(sed -n '2p' "$smoke_dir/lines.txt")
-  [[ "$saved_line" == "Xline 002" ]] && break
+  [[ "$saved_line" == "$edited_long_line" ]] && break
   sleep 0.1
 done
-if [[ "$saved_line" != "Xline 002" ]]; then
+if [[ "$saved_line" != "$edited_long_line" ]]; then
   printf 'Unexpected line after Qt Ctrl+? redo: %s\n' "$saved_line" >&2
   exit 1
 fi
@@ -193,10 +209,10 @@ xdotool key --clearmodifiers ctrl+s
 saved_line=
 for attempt in $(seq 1 50); do
   saved_line=$(sed -n '2p' "$smoke_dir/lines.txt")
-  [[ "$saved_line" == "line 002" ]] && break
+  [[ "$saved_line" == "$long_line" ]] && break
   sleep 0.1
 done
-if [[ "$saved_line" != "line 002" ]]; then
+if [[ "$saved_line" != "$long_line" ]]; then
   printf 'Unexpected line after Qt undo before fallback redo: %s\n' "$saved_line" >&2
   exit 1
 fi
@@ -212,10 +228,10 @@ xdotool key --clearmodifiers ctrl+s
 saved_line=
 for attempt in $(seq 1 50); do
   saved_line=$(sed -n '2p' "$smoke_dir/lines.txt")
-  [[ "$saved_line" == "Xline 002" ]] && break
+  [[ "$saved_line" == "$edited_long_line" ]] && break
   sleep 0.1
 done
-if [[ "$saved_line" != "Xline 002" ]]; then
+if [[ "$saved_line" != "$edited_long_line" ]]; then
   printf 'Unexpected line after Qt C-c r d redo: %s\n' "$saved_line" >&2
   exit 1
 fi

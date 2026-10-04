@@ -9,12 +9,7 @@ module Roded
 
     def handle_event(event)
       validate_input_event(event)
-      return handle_repl_api_event(event) if event.type == :repl_api_call
-      return append_ruby_repl_result(event.payload) if event.type == :repl_result
-      return handle_mouse_selection(event) if event.type == :mouse_selection
-      return handle_resize_event if event.type == :resize
-
-      return handle_system_event(event) if system_event?(event)
+      return dispatch_special_input_event(event) if special_input_event?(event)
 
       process_frontend_input(event)
     ensure
@@ -56,12 +51,17 @@ module Roded
       publish_ui_update(UIUpdate.new(:render, {}))
     end
 
-    def system_event?(event)
-      Application::SYSTEM_EVENTS.include?(event.type) || event.type == :close_request
+    def handle_horizontal_scroll(event)
+      window = windows.find { |candidate| candidate.object_id == event.payload[:window_id] }
+      return unless window
+
+      update_horizontal_origin(window, event.payload)
+      activate_window(window) unless window.equal?(current_window)
     end
 
-    def handle_system_event(event)
-      event.type == :close_request ? request_quit : request_quit(force: true)
+    def update_horizontal_origin(window, payload)
+      maximum = window.buffer.lines.map(&:length).max.to_i
+      window.left_column = payload.fetch(:left_column).to_i.clamp(0, maximum)
     end
 
     def process_frontend_input(event)

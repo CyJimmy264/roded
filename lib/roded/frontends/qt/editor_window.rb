@@ -34,6 +34,8 @@ module Roded
 
       def on_mouse(&callback) = bind_callback(:mouse_callback, callback)
 
+      def on_horizontal_scroll(&callback) = bind_callback(:horizontal_scroll_callback, callback)
+
       def on_close(&) = @window.on(:close, &)
 
       def on_resize(&) = @window.on(:resize, &)
@@ -105,7 +107,7 @@ module Roded
       end
 
       def bind_pane(id, pane)
-        pane.bind(id, @key_callback, @wheel_callback, @mouse_callback)
+        pane.bind(id, @key_callback, @wheel_callback, @mouse_callback, @horizontal_scroll_callback)
       end
 
       def bind_callback(name, callback)

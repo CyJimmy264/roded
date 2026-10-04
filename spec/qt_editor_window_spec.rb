@@ -297,6 +297,23 @@ RSpec.describe Roded::Frontends::QtEditorWindow, "horizontal scrolling" do
   end
 end
 
+RSpec.describe Roded::Frontends::QtEditorWindow, "tab display width" do
+  include_context "Qt editor window lifecycle"
+
+  it "expands tabs to two-cell display stops in the real Qt text widget" do
+    view = described_class.new
+    @views << view
+    view.render_layout(
+      tree: { window_id: 101 }, active_window_id: 101,
+      windows: [{ id: 101, text: "a\tb\tc", point: { row: 0, col: 5 }, name: "tabs", active: true }]
+    )
+    view.show
+    QApplication.process_events
+
+    expect(view.editor.to_plain_text).to eq("a b c ")
+  end
+end
+
 RSpec.describe Roded::Frontends::QtEditorWindow, "vertical scrolling" do
   include_context "Qt editor window lifecycle"
 

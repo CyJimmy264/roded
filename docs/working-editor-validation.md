@@ -1399,3 +1399,30 @@ File save здесь сохраняет текстовое представле�
   `XDG_CONFIG_HOME`: `/tmp/roded-qt-live-smoke.hrLx4b`. It also passed edit/save,
   undo/redo, Super/Menu, mouse/wheel, and native close save/discard/cancel
   scenarios. The check ran on its own Xvfb display, not the desktop display.
+
+## 2026-10-04 — Qt tab rendering and horizontal viewport synchronization
+
+- Qt maps the scrollbar's pixel offset back to the core's character column using
+  the active line's font metrics. HTML replacement can reset the native bar, so
+  the pane restores caret visibility after Qt lays out the document, blocks its
+  own programmatic scrollbar signals, and reports one stable origin to core.
+  Repeated delayed Qt signals are coalesced per rendered snapshot to prevent
+  feedback from flooding the core event queue.
+- `spec/qt_input_integration_spec.rb` verifies horizontal movement to column
+  300, real Qt scrollbar movement, core origin agreement, and reset at the line
+  start. `spec/qt_editor_window_spec.rb` verifies two-cell tab expansion in the
+  real `QTextEdit`; its existing caret case also checks tabs and core columns.
+- `script/qt_live_smoke.sh` passed under isolated Xvfb with Qt Widgets **6.11.2**,
+  gem `qt` **0.2.0**, XCB and 1280×800×24. It creates a 320-character line,
+  sends `C-e`, observes core `horizontal_scroll` at column 210, and captures
+  `/tmp/roded-qt-live-smoke.UPF9Jm/after-horizontal-scroll.png`, which shows the
+  end-of-line caret and scrolled text. The same run covers scratch startup,
+  edit/save/undo/redo, Menu pickers, mouse/wheel, Super resize and close
+  save/discard/cancel. It uses private Xvfb and `XDG_CONFIG_HOME`, not desktop
+  `DISPLAY`.
+- `bundle exec ruby script/curses_live_smoke.rb` passed after the core event
+  dispatch extraction: picker `C-n/C-p`, document movement, typing, bracketed
+  paste, undo/redo, F7 save and dirty-quit cancel; log:
+  `/tmp/roded-curses-smoke.20261004-575560-u0zpn0`.
+- `bundle exec rake`: **300 examples, 0 failures**; RuboCop: **155 files, 0
+  offenses**. `bash -n script/qt_live_smoke.sh` and `git diff --check` pass.
