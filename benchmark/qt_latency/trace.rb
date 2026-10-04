@@ -60,7 +60,8 @@ module Roded
       private
 
       def view_state(editor, type)
-        { horizontal_scroll: editor.horizontal_scroll_bar.value }.merge(ready_metadata(type))
+        { horizontal_scroll: editor.horizontal_scroll_bar.value,
+          vertical_scroll: editor.vertical_scroll_bar.value }.merge(ready_metadata(type))
       end
 
       def ready_metadata(type)
@@ -68,16 +69,18 @@ module Roded
 
         dispatcher = @frontend.instance_variable_get(:@ui_dispatcher)
         timer = dispatcher.instance_variable_get(:@timer)
-        { dispatcher_interval_ms: timer.interval, dispatcher_single_shot: timer.is_single_shot }
+        { dispatcher_interval_ms: timer.interval, dispatcher_single_shot: timer.is_single_shot,
+          page_size: @frontend.page_size }
       end
 
       def target(snapshot)
         active = snapshot.fetch(:windows).find { |item| item[:id] == snapshot[:active_window_id] }
-        [active[:id], active[:point], active[:text].object_id]
+        [active[:id], active[:point], active[:text].object_id, active.values_at(:top_line, :left_column)]
       end
 
       def content(active)
-        { point: active.fetch(:point), line: active.fetch(:lines)[active[:point][:row]] }
+        { point: active.fetch(:point), line: active.fetch(:lines)[active[:point][:row]],
+          top_line: active.fetch(:top_line) }
       end
 
       def caret_geometry(editor)

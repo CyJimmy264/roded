@@ -9,7 +9,7 @@ module Roded
         focus
         wait_frame(@previous.fetch("caret"))
         measure_idle_cpu(@previous.fetch("dispatcher_interval_ms"), @previous.fetch("dispatcher_single_shot"))
-        oracle = LatencyWorkload.new(name, @fixture)
+        oracle = LatencyWorkload.new(name, @fixture, page_size: @previous.fetch("page_size"))
         Array.new(@warmup + @count) do |index|
           scenario, key = oracle.action(index)
           sample = measure_key(scenario, key, index, oracle)

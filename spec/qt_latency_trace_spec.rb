@@ -56,4 +56,18 @@ RSpec.describe Roded::Benchmarking::LatencyTrace do # rubocop:disable Metrics/Bl
     trace.widget_started(target)
     trace.rendered(target)
   end
+
+  it "rejects a stale viewport even when the cursor and immutable text match" do
+    trace = described_class.new(nil)
+    text = "unchanged text".freeze
+    target = snapshot(point: { row: 5, col: 4 }, text:)
+    target[:windows].first.merge!(top_line: 5, left_column: 0)
+    stale = snapshot(point: { row: 5, col: 4 }, text:)
+    stale[:windows].first.merge!(top_line: 4, left_column: 0)
+    trace.key_received("C-v")
+    trace.snapshot_posted(target)
+    trace.widget_started(stale)
+    expect(trace).not_to receive(:emit)
+    trace.rendered(stale)
+  end
 end

@@ -8,8 +8,8 @@ for every mode, operation or document size. The remaining costs are recorded
 below rather than hidden by a warm syntax cache.
 
 These numbers measure synchronous execution and frontend flush/painting, not
-keyboard-to-visible-frame latency. The normal input queues, Qt's 12 ms dispatcher
-timer wait and desktop compositor are excluded; curses uses an in-memory screen.
+keyboard-to-visible-frame latency. The normal input queues, Qt's dispatcher
+scheduling and desktop compositor are excluded; curses uses an in-memory screen.
 They therefore cannot directly establish parity with published input-latency
 figures for other editors. Real terminal and visible Qt correctness checks run
 separately.
@@ -481,8 +481,9 @@ checks pass, including caret/current-row/modeline, scrolling, splits and edits.
 - These runs do not measure sustained real keyboard-to-frame throughput,
   compositor timing, native Qt allocations or terminal-emulator I/O. Boundary
   no-ops are checked separately rather than substituted for real motion timings.
-- The new real-key probe covers seven cursor/edit cases. Page/word motion,
-  scrolling, buffer switches and window lifecycle still need equivalent real-key
+- The real-key probe now covers eleven cursor/edit cases, including word and page
+  motion with the live page size and checked viewport origins. Scrolling, buffer
+  switches and window lifecycle still need equivalent real-key
   frame measurements in addition to the main suite's execution/visible checks.
   Right-edge block-caret clipping is fixed in the existing frontend.
 

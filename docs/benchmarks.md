@@ -125,9 +125,9 @@ bundle exec ruby benchmark/qt_key_latency.rb --lines 10000 --profile ruby \
 
 Run these sequentially and without other CPU-heavy work. Dependencies are Xvfb,
 xdotool, libX11, libXtst and the existing Ruby FFI/Qt dependencies. A fresh child
-is used for each workload: alternating `C-f`/`C-b`, alternating `C-n`/`C-p`,
-alternating insertion/backspace, and consecutive insertion. `--workloads
-char,line,edit,typing` selects the groups; `--warmup` defaults to four keystrokes
+is used for each workload: alternating `C-f`/`C-b`, `C-n`/`C-p`, `M-f`/`M-b`,
+`C-v`/`M-v`, insertion/backspace, and consecutive insertion. `--workloads
+char,line,word,page,edit,typing` selects the groups; `--warmup` defaults to four keystrokes
 per group. Each next key is sent after detection of the preceding frame. This
 measures serialized input latency, not held-key throughput. Startup, first syntax
 highlighting and shutdown are outside the measured intervals. Ruby color settling
@@ -144,9 +144,12 @@ the caret at the same screen position and needs a different frame oracle. The
 runner rejects a changed horizontal origin rather than accepting an unchanged
 caret as a frame. Use separate runs for large paired-workload counts and shorter
 typing counts, for example `--iterations 200 --workloads char,line,edit` and
-`--iterations 100 --workloads typing` with the default font/window. Page, word,
-horizontal scroll, buffers and windows remain covered by the main suite; this
-real-key probe does not yet cover those operations.
+`--iterations 100 --workloads typing` with the default font/window. Words alternate
+between the end and start of the fixture's first identifier. Pages use the actual
+live window page size, and the oracle checks the resulting core viewport origin.
+Snapshot matching includes viewport origins, preventing stale scroll states from
+acknowledging input. Scrolling, buffers and windows remain covered by the main
+suite; this real-key probe does not yet cover those operations.
 
 Reports have a separate workload/schema and harness digest. They retain individual
 monotonic timestamps for send, Qt key receipt, core start, snapshot posting, widget
