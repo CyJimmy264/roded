@@ -51,7 +51,8 @@ def capture_frame(scenario)
 end
 
 Roded::Benchmarking::Isolation.run(xvfb: true) do
-  fixture = Roded::Benchmarking::Fixture.new(line_count: 1500, profile: "plain")
+  profile = ENV.fetch("RODED_BENCHMARK_PROFILE", "plain")
+  fixture = Roded::Benchmarking::Fixture.new(line_count: 1500, profile:)
   work = Roded::Benchmarking::Workspace.new(layer: "qt", fixture:, buffer_count: 4, window_count: 1)
   selected = %w[cursor.line_down scroll.page_down scroll.horizontal edit.insert_char edit.newline
                 edit.paste_block edit.delete_block buffer.next

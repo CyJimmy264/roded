@@ -18,6 +18,7 @@ module Roded
     def initialize
       @cache = {}
       @ruby_tokenizer = RubySyntaxTokenizer.new
+      @ruby_rows = ObjectSpace::WeakMap.new
       @line_tokenizer = LineSyntaxTokenizer.new
     end
 
@@ -61,7 +62,14 @@ module Roded
     def generate_ruby_spans(lines)
       rows = lines.map { [] }
       ruby_spans(lines, rows)
-      rows.map { |spans| spans.map(&:freeze).freeze }.freeze
+      rows.each_with_index.map { |spans, row| immutable_ruby_row(lines[row], spans) }.freeze
+    end
+
+    def immutable_ruby_row(line, spans)
+      cached = @ruby_rows[line]
+      return cached if cached == spans
+
+      @ruby_rows[line] = spans.each(&:freeze).freeze
     end
 
     def immutable_lines(lines)
