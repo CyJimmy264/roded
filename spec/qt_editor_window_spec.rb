@@ -111,7 +111,7 @@ RSpec.describe Roded::Frontends::QtEditorWindow, "region rendering" do
     )
 
     editor = view.editor
-    expect(editor).to be_a(QTextEdit)
+    expect(editor).to be_a(Qt::QPlainTextEdit)
     expect(editor.property("contextMenuPolicy")).to eq("NoContextMenu")
     expect(editor.to_plain_text).to eq("a<b \nc")
     expect(editor.to_html).to include("#3e4451")

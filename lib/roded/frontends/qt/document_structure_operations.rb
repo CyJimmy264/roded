@@ -9,6 +9,8 @@ module Roded
         html = (first..new_last).map { |row| renderer.block_html(row) }
         replace_span(first, old_last, html.join, snapshot)
         @blocks[first..old_last] = html
+        lengths = (first..new_last).map { |row| QtDocumentIndex.block_length(lines[row], row, snapshot) }
+        @index.replace_rows(first, old_last, lengths)
         refresh_shifted_overlays(first, old_last, snapshot, lines, renderer)
       end
 
@@ -54,9 +56,8 @@ module Roded
       def replace_span(first, last, html, snapshot)
         cursor = @editor.text_cursor
         cursor.begin_edit_block
-        QtCursorMapper.move_to_row(cursor, first)
-        cursor.move_position(::Qt::QTextCursor::NextBlock, ::Qt::QTextCursor::KeepAnchor, last - first) if last > first
-        cursor.move_position(::Qt::QTextCursor::EndOfBlock, ::Qt::QTextCursor::KeepAnchor, 1)
+        cursor.set_position(@index.position(first))
+        cursor.set_position(@index.position(last + 1) - 1, ::Qt::QTextCursor::KeepAnchor)
         cursor.insert_html(html)
         set_row_format(cursor, first, snapshot)
       ensure

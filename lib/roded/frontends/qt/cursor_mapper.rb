@@ -26,11 +26,13 @@ module Roded
         point.set_x(horizontal.to_i)
         point.set_y(vertical.to_i)
         cursor = editor.cursor_for_position(point)
-        core_position(text, cursor.position, snapshot)
+        lines = snapshot&.[](:lines) || lines_for(text)
+        row = cursor.block_number.clamp(0, lines.length - 1)
+        { row:, col: core_column(lines.fetch(row), cursor.position_in_block) }
       end
 
       def self.core_position(text, offset, snapshot = nil)
-        lines = lines_for(text)
+        lines = snapshot&.[](:lines) || lines_for(text)
         row, line_offset = position_in_lines(lines, offset, snapshot)
         { row:, col: core_column(lines.fetch(row), line_offset) }
       end

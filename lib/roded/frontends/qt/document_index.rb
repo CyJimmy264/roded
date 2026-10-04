@@ -40,6 +40,12 @@ module Roded
         end
       end
 
+      def replace_rows(first, last, lengths)
+        @lengths[first..last] = lengths
+        @tree = [0, *@lengths]
+        build_tree
+      end
+
       private
 
       def build_tree

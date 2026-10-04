@@ -8,8 +8,8 @@ module Roded
         column_at_line_offset(editor, line, editor.horizontal_scroll_bar.value)
       end
 
-      def horizontal_offset(editor, text, row, column)
-        lines = lines_for(text)
+      def horizontal_offset(editor, text, row, column, snapshot = nil)
+        lines = snapshot&.[](:lines) || lines_for(text)
         line = lines.fetch(row.to_i.clamp(0, lines.length - 1))
         line_horizontal_offset(editor, line, column)
       end
@@ -29,8 +29,8 @@ module Roded
         delta.between?(0, editor.viewport.width)
       end
 
-      def column_at_horizontal_offset(editor, text, row, offset)
-        lines = lines_for(text)
+      def column_at_horizontal_offset(editor, text, row, offset, snapshot = nil)
+        lines = snapshot&.[](:lines) || lines_for(text)
         line = lines.fetch(row.to_i.clamp(0, lines.length - 1))
         column_at_line_offset(editor, line, offset)
       end

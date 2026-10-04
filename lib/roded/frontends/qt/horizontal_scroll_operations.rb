@@ -43,7 +43,7 @@ module Roded
         origin = snapshot.fetch(:left_column, 0).to_i
         return unless QtCursorMapper.horizontal_origin_visible?(@editor, text, snapshot, origin)
 
-        offset = QtCursorMapper.horizontal_offset(@editor, text, snapshot.fetch(:point).fetch(:row), origin)
+        offset = QtCursorMapper.horizontal_offset(@editor, text, snapshot.fetch(:point).fetch(:row), origin, snapshot)
         @editor.horizontal_scroll_bar.set_value(offset)
       end
     end

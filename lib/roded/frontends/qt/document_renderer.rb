@@ -2,25 +2,17 @@ require_relative "editor_html_renderer"
 require_relative "document_structure_operations"
 require_relative "document_index"
 require_relative "current_line_format"
+require_relative "document_copy_operations"
 
 module Roded
   module Frontends
     # Replaces only changed rich-text blocks, retaining the native document and layout.
     class QtDocumentRenderer
       include QtDocumentStructureOperations
+      include QtDocumentCopyOperations
 
       def initialize(editor)
         @editor = editor
-      end
-
-      def copy_from(other)
-        @document = other.editor.document.clone
-        @document.set_parent(@editor)
-        @editor.set_document(@document)
-        @snapshot = other.snapshot
-        @lines = other.lines
-        @blocks = other.blocks.dup
-        @index = other.index.dup
       end
 
       def render(snapshot, text)
@@ -38,7 +30,6 @@ module Roded
 
       def render_document(snapshot, lines, renderer)
         if @snapshot && @lines.length != lines.length
-          @index = nil
           update_structure(snapshot, lines, renderer)
         elsif @snapshot
           update_rows(changed_rows(snapshot, lines), renderer)

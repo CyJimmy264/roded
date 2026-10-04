@@ -5,6 +5,7 @@ require_relative "layout_spacing"
 require_relative "horizontal_scroll_operations"
 require_relative "vertical_scroll_operations"
 require_relative "document_renderer"
+require_relative "text_editor"
 
 module Roded
   module Frontends
@@ -36,7 +37,7 @@ module Roded
         @editor.set_context_menu_policy(::Qt::NoContextMenu)
         @editor.set_cursor_width(2)
         @editor.set_mouse_tracking(true)
-        @editor.set_line_wrap_mode(::Qt::QTextEdit::NoWrap)
+        @editor.set_line_wrap_mode(::Qt::QPlainTextEdit::NoWrap)
       end
 
       def bind(window_id, callback, wheel_callback = nil, mouse_callback = nil, horizontal_scroll_callback = nil)
@@ -57,7 +58,7 @@ module Roded
 
       def render_snapshot(snapshot)
         @snapshot = snapshot
-        text = snapshot.fetch(:text).gsub("\r\n", "\n")
+        text = normalized_text(snapshot)
         @rendered_text = text
         @mouse_input.update(text:, snapshot:)
         render_text(snapshot, text)
@@ -70,8 +71,13 @@ module Roded
 
       private
 
+      def normalized_text(snapshot)
+        text = snapshot.fetch(:text)
+        text.include?("\r\n") ? text.gsub("\r\n", "\n") : text
+      end
+
       def initialize_editor(template)
-        @editor = QTextEdit.new(@container)
+        @editor = QtTextEditor.new(@container)
         @document_renderer = QtDocumentRenderer.new(@editor)
         @document_renderer.copy_from(template.document_renderer) if template
         @mouse_input = QtMouseInputAdapter.new(@editor)

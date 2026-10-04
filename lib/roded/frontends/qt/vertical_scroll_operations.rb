@@ -1,6 +1,6 @@
 module Roded
   module Frontends
-    # Keeps the Qt pixel scrollbar aligned with the core's line-based viewport.
+    # Plain-text layout scrolls in logical lines, matching the core viewport.
     module QtVerticalScrollOperations
       private
 
@@ -13,16 +13,9 @@ module Roded
 
       def restore_scroll(snapshot)
         scroll_bar = @editor.vertical_scroll_bar
-        rectangle = @editor.cursor_rect
-        scroll_bar.set_single_step([rectangle.height, 1].max)
-        scroll_bar.set_value(vertical_scroll_offset(snapshot, rectangle, scroll_bar))
+        scroll_bar.set_single_step(1)
+        scroll_bar.set_value(visible_origin(snapshot))
         @editor.viewport.update
-      end
-
-      def vertical_scroll_offset(snapshot, rectangle, scroll_bar)
-        caret_y = scroll_bar.value + rectangle.y - @editor.document.property("documentMargin").round
-        row_delta = snapshot.fetch(:point).fetch(:row) - visible_origin(snapshot)
-        caret_y - (row_delta * scroll_bar.single_step)
       end
 
       def visible_origin(snapshot)

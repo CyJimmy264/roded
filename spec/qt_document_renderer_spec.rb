@@ -42,7 +42,7 @@ RSpec.shared_context "Qt native document rendering" do
 
   before(:context) { @qt_application = QApplication.new(0, ["roded-document-spec"]) }
   before do
-    @editor = QTextEdit.new
+    @editor = Roded::Frontends::QtTextEditor.new
     @reference = QTextEdit.new
     @editor.set_undo_redo_enabled(false)
     @renderer = Roded::Frontends::QtDocumentRenderer.new(@editor)
@@ -81,6 +81,35 @@ RSpec.describe Roded::Frontends::QtDocumentRenderer, "incremental content" do
   end
 end
 
+RSpec.describe Roded::Frontends::QtDocumentRenderer, "structural indexes" do
+  include_context "Qt native document rendering"
+
+  it "keeps native offsets correct when an EOL marker changes before a structural edit" do
+    expect_native_frame(snapshot(["prefix", "", "change", "last"], { row: 0, col: 6 }))
+    expect_native_frame(snapshot(["prefix", "", "cha", "nge", "last"], { row: 1, col: 0 }))
+    expect_native_frame(snapshot(["prefix", "", "new", "cha", "nge", "last"], { row: 0, col: 6 }))
+  end
+end
+
+RSpec.describe Roded::Frontends::QtCursorMapper, "cached snapshot geometry" do
+  include_context "Qt native document rendering"
+
+  it "uses native block coordinates and cached Unicode lines without splitting the text" do
+    state = snapshot(["one", "\t🙂界", "last"], { row: 1, col: 2 })
+    expect_native_frame(state)
+    @editor.resize(320, 160)
+    @editor.show
+    described_class.place(@editor, state, state[:text], row_position: @renderer.row_position(1))
+    QApplication.process_events
+    rectangle = @editor.cursor_rect
+    opaque_text = Object.new
+    point = described_class.position_at(@editor, rectangle.x, rectangle.y + 1, opaque_text, state)
+    expect(point).to eq(state[:point])
+    expected = @editor.font_metrics.horizontal_advance("  🙂", 4)
+    expect(described_class.horizontal_offset(@editor, opaque_text, 1, 2, state)).to eq(expected)
+  end
+end
+
 RSpec.describe Roded::Frontends::QtDocumentRenderer, "overlays and copies" do
   include_context "Qt native document rendering"
 
@@ -107,5 +136,32 @@ RSpec.describe Roded::Frontends::QtDocumentRenderer, "overlays and copies" do
     expect(@reference.to_plain_text).to eq(copied_text)
     expect(copy.row_position(1)).to eq(4)
     expect(@renderer.row_position(1)).to eq(20)
+  end
+end
+
+RSpec.describe Roded::Frontends::QtDocumentRenderer, "plain-layout split copies" do
+  include_context "Qt native document rendering"
+
+  it "copies rich fragments into independent plain-layout documents with different caret rows" do
+    state = snapshot(["🙂first", "", "last"], { row: 0, col: 1 })
+    expect_native_frame(state)
+    original_text = @editor.to_plain_text
+    target = Roded::Frontends::QtTextEditor.new
+    copy = described_class.new(target)
+    copy.copy_from(@renderer)
+    changed = snapshot(state[:lines], { row: 2, col: 4 })
+    copy.render(changed, changed[:text])
+    @reference.set_html(Roded::Frontends::QtEditorHtmlRenderer.new(changed[:text], changed).render)
+    expect(target.to_plain_text).to eq(@reference.to_plain_text)
+    expect(target.document.handle).not_to eq(@editor.document.handle)
+    expect(target.to_html.scan(/<(?:p|pre) [^>]*>/).map { |tag| tag.include?("background-color:#343a46") })
+      .to eq([false, false, true])
+    copied_text = target.to_plain_text
+    expect(@editor.to_plain_text).to eq(original_text)
+    expect_current_line_background(0)
+    expect_native_frame(snapshot(["longer first", "", "last"], { row: 0, col: 0 }))
+    expect(target.to_plain_text).to eq(copied_text)
+  ensure
+    target&.close
   end
 end
