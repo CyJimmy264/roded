@@ -15,7 +15,6 @@ module Roded
         scroll_bar = @editor.vertical_scroll_bar
         scroll_bar.set_single_step(1)
         scroll_bar.set_value(visible_origin(snapshot))
-        @editor.viewport.update
       end
 
       def visible_origin(snapshot)

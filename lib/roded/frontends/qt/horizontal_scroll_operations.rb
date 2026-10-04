@@ -25,7 +25,6 @@ module Roded
       def reveal_horizontal_cursor
         with_horizontal_scroll_signals_blocked do
           @editor.ensure_cursor_visible
-          @editor.viewport.update
         end
         report_horizontal_scroll
       end

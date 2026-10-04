@@ -2,6 +2,7 @@
 
 require_relative "../lib/roded"
 require_relative "roded/cli"
+require_relative "qt_frame_capture"
 
 def assert_visible_frame(work)
   view = work.frontend.frontend.view
@@ -41,20 +42,19 @@ def assert_caret_geometry(editor)
         "scroll=#{editor.vertical_scroll_bar.value}, step=#{editor.vertical_scroll_bar.single_step}"
 end
 
-def capture_frame(scenario)
+def capture_frame(scenario, editor)
   directory = ENV.fetch("RODED_BENCHMARK_SCREENSHOT_DIR", nil)
   return unless directory
 
-  FileUtils.mkdir_p(directory)
-  path = File.join(directory, "#{scenario.name.tr(".", "_")}.png")
-  raise "could not capture visible Xvfb frame" unless system("import", "-window", "root", path)
+  Roded::Benchmarking::QtFrameCapture.new(directory).capture(scenario.name, editor)
 end
 
 Roded::Benchmarking::Isolation.run(xvfb: true) do
   profile = ENV.fetch("RODED_BENCHMARK_PROFILE", "plain")
   fixture = Roded::Benchmarking::Fixture.new(line_count: 1500, profile:)
   work = Roded::Benchmarking::Workspace.new(layer: "qt", fixture:, buffer_count: 4, window_count: 1)
-  selected = %w[cursor.line_down scroll.page_down scroll.horizontal edit.insert_char edit.newline
+  selected = %w[cursor.char_left cursor.char_right cursor.line_down scroll.page_down scroll.horizontal
+                edit.backspace edit.insert_char edit.newline render.full
                 edit.paste_block edit.delete_block buffer.next
                 window.split_vertical window.delete]
   Roded::Benchmarking::Scenarios.all.select { |scenario| selected.include?(scenario.name) }.each do |scenario|
@@ -66,8 +66,8 @@ Roded::Benchmarking::Isolation.run(xvfb: true) do
     raise "operation failed: #{scenario.name}" unless scenario.verify.call(work)
 
     assert_visible_frame(work)
-    capture_frame(scenario)
     editor = work.frontend.frontend.view.editor
+    capture_frame(scenario, editor)
     if scenario.name == "scroll.page_down"
       raise "vertical viewport did not scroll" unless editor.vertical_scroll_bar.value.positive?
     elsif scenario.name == "scroll.horizontal"

@@ -4,12 +4,14 @@ module Roded
     class QtUiDispatcher
       COALESCED_ACTION_GROUPS = [
         %i[render layout],
+        %i[refresh],
         %i[picker],
         %i[minibuffer minibuffer_clear]
       ].freeze
       ACTION_ROUTES = {
         render: %i[view render],
         layout: %i[view render_layout],
+        refresh: %i[view refresh],
         message: %i[view display_message],
         minibuffer: %i[view render_minibuffer],
         picker: %i[view render_picker],

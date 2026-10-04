@@ -72,6 +72,7 @@ module Roded
       def clear_minibuffer = @echo_area.clear
       def display_message(message) = @echo_area.display(message)
       def close = @window.hide
+      def refresh(_payload = nil) = @window.update
 
       private
 

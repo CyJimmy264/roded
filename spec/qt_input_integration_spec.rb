@@ -144,6 +144,28 @@ RSpec.describe "Qt rendering immutability" do
   end
 end
 
+RSpec.describe "Qt explicit redraw" do
+  include_context "Qt input integration lifecycle"
+  include QtInputIntegrationSpecHelpers
+
+  it "preserves one requested full refresh when subsequent content updates are coalesced" do
+    application, frontend = build_qt_editor(%w[before after])
+    @frontends << frontend
+    allow(frontend.view.window).to receive(:update).and_call_original
+    2.times { application.handle_event(Roded::Event.new(:render, {})) }
+    application.handle_event(Roded::Event.new(:insert_char, { char: "!" }))
+    frontend.instance_variable_get(:@ui_dispatcher).send(:drain)
+    QApplication.process_events
+    expect(frontend.view.window).to have_received(:update).once
+    expect(frontend.view.editor.to_plain_text).to eq("!before\nafter")
+    application.handle_event(Roded::Event.new(:insert_char, { char: "?" }))
+    frontend.instance_variable_get(:@ui_dispatcher).send(:drain)
+    QApplication.process_events
+    expect(frontend.view.window).to have_received(:update).once
+    expect(frontend.view.editor.to_plain_text).to eq("!?before\nafter")
+  end
+end
+
 RSpec.describe "Qt Ctrl+N and Ctrl+P through editor session" do
   include_context "Qt input integration lifecycle"
   include QtInputIntegrationSpecHelpers

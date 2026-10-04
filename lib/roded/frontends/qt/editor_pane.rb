@@ -88,8 +88,6 @@ module Roded
 
       def render_modeline(snapshot)
         @modeline.set_text(snapshot[:modeline] || modeline_for(snapshot))
-        @modeline.update
-        @container.update
       end
 
       def subscribe_keys

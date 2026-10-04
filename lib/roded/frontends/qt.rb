@@ -99,6 +99,7 @@ module Roded
       def handle_render_command(command)
         snapshot = command.payload[:editor_snapshot]
         snapshot ? @ui_dispatcher.post(:layout, snapshot) : render
+        @ui_dispatcher.post(:refresh) if command.payload[:force_redraw]
       end
 
       def dispatch_command(command)
