@@ -21,3 +21,11 @@ at clean `b4596c2` / `c085675`. `edit-range-qt-hot` has one hundred per case;
 `edit-range-qt-large` has two. The `qt-plain-copy-*` follow-up at clean `e348e88`
 also has two observations per case. Split cases include first creation and
 subsequent pane-pool reuse; inspect individual operations when interpreting them.
+
+`qt-damage-before` / `qt-damage-after` compare forty observations per case at
+clean `bfdf4cf` / `b58976e`. `qt-damage-full` and `qt-damage-large` have two
+observations; `qt-damage-hot` has one hundred, at clean `e4296e6`.
+`exact-edit-qt-hot` matches that hundred-observation configuration at clean
+`08df59a`. The `qt-damage-typing-1500` and `exact-edit-typing-*` reports measure
+consecutive input. The 10,000-line exact-edit stream contains one hundred inserts,
+including the repeated-character case that previously failed verification.

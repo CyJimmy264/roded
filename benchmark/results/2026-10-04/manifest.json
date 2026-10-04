@@ -224,6 +224,78 @@
       "git_dirty": false,
       "cases": 15,
       "observations": 30
+    },
+    {
+      "file": "qt-damage-before.json",
+      "sha256": "a36d34ac71ea5c6181fdf36a27bdcdee81fa204ba272f085ba40048dddc2408e",
+      "git_revision": "bfdf4cf5236ece1fe97449ca65e7e6931469b57a",
+      "git_dirty": false,
+      "cases": 10,
+      "observations": 400
+    },
+    {
+      "file": "qt-damage-after.json",
+      "sha256": "41f1d3cc3b3e1a74117790b3dceaa8ae35faf760a8e62a9fdedc30f973883b08",
+      "git_revision": "b58976e68b9cd88c8c0a77ba094c17ebeacd4742",
+      "git_dirty": false,
+      "cases": 10,
+      "observations": 400
+    },
+    {
+      "file": "qt-damage-full.json",
+      "sha256": "5307240d0456c24ad45a8a72dc914ee803cbcfb389e9a4a31b1a900827cee3dc",
+      "git_revision": "e4296e6f7932ad4cb9ff6eb75e78deefbcb40bcf",
+      "git_dirty": false,
+      "cases": 34,
+      "observations": 68
+    },
+    {
+      "file": "qt-damage-large.json",
+      "sha256": "44e6a0dbb4b519c6bf4decb17f1b81486fafbb32372138a6560b0cf790ed772a",
+      "git_revision": "e4296e6f7932ad4cb9ff6eb75e78deefbcb40bcf",
+      "git_dirty": false,
+      "cases": 15,
+      "observations": 30
+    },
+    {
+      "file": "qt-damage-hot.json",
+      "sha256": "30bb8da4db8fee952ed5bb05ffe91027e8b4187fc8455c17c93bedce441f5918",
+      "git_revision": "e4296e6f7932ad4cb9ff6eb75e78deefbcb40bcf",
+      "git_dirty": false,
+      "cases": 10,
+      "observations": 1000
+    },
+    {
+      "file": "qt-damage-typing-1500.json",
+      "sha256": "0342561409f298aaf0abaf7b5501b4c0f592304aa2fd013da24bae8c297e94e4",
+      "git_revision": "e4296e6f7932ad4cb9ff6eb75e78deefbcb40bcf",
+      "git_dirty": false,
+      "cases": 1,
+      "observations": 40
+    },
+    {
+      "file": "exact-edit-typing-1500.json",
+      "sha256": "b5d335af074b265b2ca53f592daf0f029816e100644f9118da95d5596e77e735",
+      "git_revision": "08df59a56dbefea42dcabc35c2245502f1e4eb56",
+      "git_dirty": false,
+      "cases": 1,
+      "observations": 40
+    },
+    {
+      "file": "exact-edit-typing-10000.json",
+      "sha256": "04c73a2b9172b690a9b9c9227b68b3eb78f33cb9718b60cc30e01e304045a684",
+      "git_revision": "08df59a56dbefea42dcabc35c2245502f1e4eb56",
+      "git_dirty": false,
+      "cases": 1,
+      "observations": 100
+    },
+    {
+      "file": "exact-edit-qt-hot.json",
+      "sha256": "91afe6d3c0996d164ae8041830ae7033d1cfd6568f34f89feb181b2a98ea5dd0",
+      "git_revision": "08df59a56dbefea42dcabc35c2245502f1e4eb56",
+      "git_dirty": false,
+      "cases": 10,
+      "observations": 1000
     }
   ]
 }

@@ -61,7 +61,19 @@ thread and pumps events. It checks visible editor geometry, caret styling and
 position, old/new paragraph backgrounds, multiline edits, modeline updates,
 vertical/horizontal scrollbars, buffer switching and split creation/removal.
 Use `RODED_BENCHMARK_PROFILE=ruby script/benchmark_qt_live_smoke.sh` to exercise
-syntax-colored native documents. The existing `script/curses_live_smoke.rb` and
+syntax-colored native documents. Set `RODED_BENCHMARK_SCREENSHOT_DIR` to capture
+each frame and assert its pixels: the current row must have its background,
+neighboring rows must be clear, and the block caret must appear at its position.
+This optional check uses ImageMagick `import`; the default smoke does not require it.
+Run screenshot checks sequentially so their private X servers cannot collide:
+
+```sh
+RODED_BENCHMARK_SCREENSHOT_DIR=tmp/benchmarks/qt-visible script/benchmark_qt_live_smoke.sh
+RODED_BENCHMARK_PROFILE=ruby RODED_BENCHMARK_SCREENSHOT_DIR=tmp/benchmarks/qt-ruby-visible \
+  script/benchmark_qt_live_smoke.sh
+```
+
+The existing `script/curses_live_smoke.rb` and
 `script/curses_scale_live_smoke.rb` cover real terminal behavior separately.
 `script/curses_repeat_live_smoke.rb` verifies held-key scrolling and boundary
 no-ops in a private PTY: no terminal clear during movement and no rendering or

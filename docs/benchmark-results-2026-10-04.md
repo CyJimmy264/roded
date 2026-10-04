@@ -41,6 +41,8 @@ reports at clean `1da9eeb`; Ruby native-token reports at clean `6a80352`.
 The Qt plain-layout follow-up below was recorded at clean `b13a60c`.
 Edit-range reports use clean `b4596c2` before and `c085675` after;
 the unformatted Qt-copy follow-up uses clean `e348e88`.
+Qt damaged-region reports use clean `bfdf4cf` before and `b58976e` after;
+the broader follow-up uses clean `e4296e6`, and exact edit positions use `08df59a`.
 Each original JSON includes its actual source revision, dirty flag, configuration,
 fixture hashes and individual measurements. See the [raw archive](../benchmark/results/2026-10-04/README.md)
 and [file-hash manifest](../benchmark/results/2026-10-04/manifest.json).
@@ -204,6 +206,62 @@ diagnostics. On 10,000 lines the first recorded vertical split decreases from
 it must not be presented as the cost of first pane creation or a reliable tail
 estimate. First creation remains well above the target.
 
+## Qt damaged-region painting and exact edit positions
+
+`b58976e` removes unconditional repaint requests for the editor viewport and
+the entire pane after normal movement, scrolling or modeline updates. Qt paints
+the regions changed by its document, scrollbar and label operations. Explicit
+refresh retains one full repaint even when subsequent layout updates coalesce.
+
+The matched [before](../benchmark/results/2026-10-04/qt-damage-before.json) and
+[after](../benchmark/results/2026-10-04/qt-damage-after.json) runs each have forty
+observations per case. Times are milliseconds:
+
+| Operation / lines | Before median | After median | After p95 | After maximum |
+| --- | --- | --- | --- | --- |
+| Character left / 1500 | 14.68 | 8.82 | 10.26 | 11.62 |
+| Line down / 1500 | 15.20 | 9.40 | 11.83 | 13.24 |
+| Insert character / 1500 | 16.33 | 10.71 | 11.92 | 12.50 |
+| Character left / 10,000 | 17.85 | 12.37 | 14.39 | 15.90 |
+| Line down / 10,000 | 18.42 | 12.58 | 13.25 | 16.54 |
+| Insert character / 10,000 | 30.06 | 23.82 | 26.09 | 37.46 |
+
+All ten matched cases improve in median without a regression above 20%.
+The [complete 1500-line](../benchmark/results/2026-10-04/qt-damage-full.json)
+and [15-case 10,000-line](../benchmark/results/2026-10-04/qt-damage-large.json)
+diagnostics also have no median regression above 20% against the plain-copy
+reports. Their two observations do not establish tail behavior. The first
+recorded 10,000-line vertical split takes 110.89 ms; pooled-pane reuse takes
+55.53 ms. First creation remains expensive.
+
+The longer [100-observation run](../benchmark/results/2026-10-04/qt-damage-hot.json)
+has higher costs than the forty-observation run: 10,000-line insertion median
+27.45 ms, p95 33.72 ms, maximum 49.60 ms. It has no configuration-matched
+pre-repaint baseline, so its differences from the shorter run are not a measured
+regression. The target is still exceeded in some tails.
+
+Long consecutive typing exposed a correctness error in the existing range
+derivation: inserting a letter identical to the next letter could report the
+insertion at a later position, leaving the caret behind. `08df59a` supplies the
+known insertion/deletion/split/join/region boundaries directly. Arbitrary whole
+document replacements retain derived ranges. Repeated Unicode, blank rows,
+multiple views, marks, grouped typing and undo/redo have regression coverage.
+The [matched 100-observation reset run](../benchmark/results/2026-10-04/exact-edit-qt-hot.json)
+has no median regression above 20% against `e4296e6`.
+
+The clean consecutive plain Qt input reports after this correction give:
+
+| Lines / observations | Median ms | p95 ms | Maximum ms |
+| --- | --- | --- | --- |
+| [1500 / 40](../benchmark/results/2026-10-04/exact-edit-typing-1500.json) | 10.73 | 12.13 | 27.99 |
+| [10,000 / 100](../benchmark/results/2026-10-04/exact-edit-typing-10000.json) | 24.12 | 27.97 | 28.90 |
+
+These consecutive workloads and the reset suite differ and must be interpreted
+separately. The attempted pre-correction 100-insert stream failed correctness
+verification; it supplies no valid performance baseline. The earlier successful
+[1500-line stream](../benchmark/results/2026-10-04/qt-damage-typing-1500.json)
+is retained with its original provenance.
+
 ## Consecutive typing without edited-text cache reuse
 
 Each sample starts once and inserts different successive characters into the
@@ -254,12 +312,15 @@ used to predict Ruby or other uncached highlighting costs.
 
 ## Validation and reproduction
 
-`bundle exec rake` passed after both further changes: 428 examples and RuboCop
-across 205 Ruby files.
+`bundle exec rake` passed after the exact-position correction: 435 examples and
+RuboCop across 207 Ruby files.
 Visible Qt checks run under private Xvfb with retained widgets and event pumping;
 they verify editor/caret geometry, one paragraph background at the cursor row,
 modelines, scrolling, buffers, splits and multiline edits. Both plain and Ruby
-fixtures passed. Private PTY checks verify input/quit, large buffer/window use,
+fixtures passed. Optional screenshot assertions check the actual row background,
+cleared neighboring rows and block-caret pixels for fourteen operations in each
+profile; the plain and Ruby checks run sequentially under private Xvfb.
+Private PTY checks verify input/quit, large buffer/window use,
 rapid movement without terminal clears, and zero rendering/output for repeated
 `C-p` at the document boundary.
 
