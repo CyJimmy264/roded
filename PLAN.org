@@ -263,7 +263,9 @@ replace обратимы. Provider/history/preview не становятся cur
 
 * Этап 9 — P1: полная Qt parity и Super shortcuts
 
-- [ ] Qt показывает общий window tree/modeline/minibuffer/picker/REPL в dark UI.
+- [X] Qt показывает общий window tree/modeline/minibuffer/picker/REPL в dark UI.
+  Изолированные Xvfb screenshots подтверждают split и modelines, project и
+  buffer pickers под modeline, а также живой `*ruby*` REPL; см. validation log.
 - [ ] Общие commands, file flows, region/undo/search/modes работают как в curses.
 - [X] Qt save refreshes the visible modified marker; isolated live smoke edits,
   saves, verifies the on-disk text, and observes the clean modeline.
@@ -316,13 +318,19 @@ versions/backend/наблюдения/screenshots. OS-reserved shortcuts отм�
 * Этап 10 — P1: выпуск рабочей версии и окончательная проверка
 
 - [ ] Пройти весь acceptance checklist GOAL в curses и Qt, не только unit specs.
-- [ ] Проверить 10 000 строк, десятки buffers, real paste/resize/interrupt scenarios.
+- [X] Проверить 10 000 строк, десятки buffers, real paste/resize/interrupt scenarios.
+  Curses PTY smoke covers 10 000 lines, 31 buffers, 30 switches, document-end
+  navigation, save, resize, redraw and live REPL interrupt/recovery. Qt Xvfb
+  smoke covers 10 000 lines, 31 buffers, native Super buffer switching, end
+  navigation, save, resize and screenshots of document start/end; a separate
+  live Qt/Xvfb smoke verifies external clipboard paste/undo and REPL interrupt,
+  recovery, discard and quit.
 - [X] Обновить README: install/start обоих UI, keys, config, windows/modes/picker/REPL.
 - [X] Docs отделяют реализованное от roadmap; README/Roded.org описывают
   текущую версию, а diagnostics записываются в отдельный файл. `logging_spec`
   проверяет настроенный путь и отсутствие stdout/stderr вывода.
 - [X] Убрать временный lint baseline; green =bundle exec rake=.
-- [ ] Validation log содержит воспроизводимые commands/results, runtime UI evidence
+- [X] Validation log содержит воспроизводимые commands/results, runtime UI evidence
   и оставшиеся ограничения; обязательные features не скрыты под TODO.
 - [ ] Основные этапы закоммичены; состояние tree и commit list проверены.
 - [ ] Финальный отчёт содержит способы запуска, проверки и commit list.

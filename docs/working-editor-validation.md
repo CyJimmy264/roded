@@ -1451,3 +1451,56 @@ File save здесь сохраняет текстовое представле�
   a diagnostic goes to the configured log file without stdout/stderr output:
   `bundle exec rspec spec/logging_spec.rb` — **1 example, 0 failures**;
   targeted RuboCop also passes.
+
+## 2026-10-04 — large-buffer PTY and Qt live acceptance
+
+- Added repeatable scale smoke scripts for the actual curses and Qt frontends.
+  Curses runs `bundle exec ruby script/curses_scale_live_smoke.rb` in a real
+  `xterm-256color` PTY at 24×80, opens a 10,000-line document plus 30 other
+  buffers, switches buffers 30 times, moves to document end, saves, resizes the
+  PTY to 12×50, redraws and runs/interrupts a long REPL expression before proving
+  that the editor accepts the next expression. It checks the final `10001:1`
+  position and verifies the source file was not changed. Result:
+  `/tmp/roded-curses-scale.20261004-629206-g89zva/roded.log`.
+- `script/qt_scale_live_smoke.sh` runs Qt Widgets **6.11.2**, gem `qt` **0.2.0**,
+  XCB on private Xvfb **1280×800×24** with private `XDG_CONFIG_HOME`. It opens
+  10,000 lines plus 30 other buffers, sends native X11 Super+`,` / Super+`.`
+  and `M->`, saves, resizes the real window, and checks the file is unchanged.
+  Both captured frames were visually inspected: the initial view shows lines
+  1–37 and the final view shows lines 9971–10000, the final blank row and caret
+  at `10001:1`. Artifacts: `/tmp/roded-qt-scale.EOsjv7/`.
+- `script/qt_repl_live_smoke.sh` uses the same Qt/Xvfb isolation. An external
+  X clipboard paste inserts `pasted\ntext` at the initial point; save and undo
+  restore the exact original file. The live `*ruby*` buffer evaluates `40 + 2`,
+  interrupts `loop { sleep 0.01 }` through `C-c C-k`, then evaluates `1 + 1`.
+  The captured frame visibly shows the `Interrupt` result and successful next
+  expression; the modified REPL buffer is discarded before clean quit. Log and
+  screenshots: `/tmp/roded-qt-repl-smoke.ZOZa6q/`.
+- The smoke scripts use isolated Xvfb/PTY sessions rather than the desktop
+  `DISPLAY`. `bash -n` passes for the Qt scripts; targeted RuboCop passes for
+  `script/curses_scale_live_smoke.rb`.
+- `Keymap.default_path` now follows `XDG_CONFIG_HOME`, with `~/.config` as the
+  fallback. This keeps standalone UI runs from reading a caller's keymap;
+  `bundle exec rspec spec/keymap_spec.rb` passes **5 examples, 0 failures**.
+- Re-ran `script/qt_live_smoke.sh` after the keymap-path change using Qt Widgets
+  **6.11.2**, `qt` **0.2.0**, XCB on private Xvfb **1280×800×24**, and a private
+  `XDG_CONFIG_HOME`: `/tmp/roded-qt-live-smoke.cuuITA`. The run passed edit/save,
+  undo/redo, horizontal scroll, wheel and mouse selection, project/buffer Menu
+  pickers, native Super resize, no-click scratch startup, and close save/discard/
+  cancel. It recorded 32 key events, 1 wheel event and 12 mouse-selection events.
+- `script/qt_picker_live_smoke.sh` passed on its own Xvfb display; captured
+  project-file and buffer pickers show the query/candidate list below the
+  modeline, followed by cancel and clean quit. Screenshots and log:
+  `/tmp/roded-qt-picker-smoke.2l2V3E/`.
+- Final automated validation for this stage: `bundle exec rake` — **304 examples,
+  0 failures; 157 files, 0 RuboCop offenses**. `bundle exec rspec
+  spec/keymap_spec.rb` — **5 examples, 0 failures**; targeted RuboCop, all four
+  Qt smoke-script `bash -n` checks and `git diff --check` pass. The full curses
+  PTY UI smoke also passed again:
+  `/tmp/roded-curses-smoke.20261004-690226-1o9x6y`.
+- Outstanding validation is explicit: physical `s-Left/s-Right` and other
+  Super chords still need confirmation on the user's desktop because Xvfb cannot
+  determine whether the window manager intercepts a physical shortcut. The full
+  two-file, shared-view, search/replace and save-as acceptance scenario also
+  remains open across both frontends; existing unit/integration coverage does
+  not substitute for that live workflow.

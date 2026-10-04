@@ -110,8 +110,9 @@ for aliases, fallback bindings, and the tested limits.
 
 ## Configuration and development
 
-An optional YAML keymap at `~/.config/roded/keymap.yml` overrides individual
-bindings. Each entry names a command type; custom command bindings can include a
+An optional YAML keymap at `$XDG_CONFIG_HOME/roded/keymap.yml` overrides
+individual bindings (`~/.config/roded/keymap.yml` when `XDG_CONFIG_HOME` is not
+set). Each entry names a command type; custom command bindings can include a
 command name:
 
 ```yaml

@@ -1,5 +1,14 @@
 # rubocop:disable Metrics/BlockLength
 RSpec.describe Roded::Keymap do
+  it "uses XDG_CONFIG_HOME for the default keymap path" do
+    previous = ENV.fetch("XDG_CONFIG_HOME", nil)
+    ENV["XDG_CONFIG_HOME"] = "/tmp/roded-test-config"
+
+    expect(described_class.default_path).to eq("/tmp/roded-test-config/roded/keymap.yml")
+  ensure
+    ENV["XDG_CONFIG_HOME"] = previous
+  end
+
   it "loads valid custom bindings alongside defaults" do
     Dir.mktmpdir("roded-keymap") do |directory|
       path = File.join(directory, "keymap.yml")

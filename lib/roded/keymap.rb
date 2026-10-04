@@ -7,7 +7,10 @@ module Roded
     DEFAULT = DefaultKeyBindings::BINDINGS
 
     def self.default_path
-      File.join(Dir.home, ".config", "roded", "keymap.yml")
+      config_home = ENV.fetch("XDG_CONFIG_HOME", nil)
+      config_home = File.join(Dir.home, ".config") if config_home.to_s.empty?
+
+      File.join(config_home, "roded", "keymap.yml")
     end
 
     def self.load(path = default_path)
