@@ -2,8 +2,9 @@ module Roded
   module Frontends
     # HTML insertion retains the destination paragraph format; replace it explicitly.
     class QtCurrentLineFormat
-      def initialize
-        @template = ::Qt::QTextEdit.new
+      def initialize(editor)
+        @template = ::Qt::QTextEdit.new(editor)
+        @template.hide
         @template.set_html('<p style="margin:0; padding:0; white-space:pre;">plain</p>' \
                            '<p style="margin:0; padding:0; white-space:pre; background-color:#343a46;">active</p>')
       end

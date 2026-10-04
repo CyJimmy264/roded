@@ -53,7 +53,8 @@ end
 Roded::Benchmarking::Isolation.run(xvfb: true) do
   fixture = Roded::Benchmarking::Fixture.new(line_count: 1500, profile: "plain")
   work = Roded::Benchmarking::Workspace.new(layer: "qt", fixture:, buffer_count: 4, window_count: 1)
-  selected = %w[cursor.line_down scroll.page_down scroll.horizontal edit.insert_char buffer.next
+  selected = %w[cursor.line_down scroll.page_down scroll.horizontal edit.insert_char edit.newline
+                edit.paste_block edit.delete_block buffer.next
                 window.split_vertical window.delete]
   Roded::Benchmarking::Scenarios.all.select { |scenario| selected.include?(scenario.name) }.each do |scenario|
     work.reset

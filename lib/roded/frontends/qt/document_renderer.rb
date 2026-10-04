@@ -114,7 +114,7 @@ module Roded
       def set_row_format(cursor, row, snapshot)
         cursor.set_position(@index.position(row)) if @index
         QtCursorMapper.move_to_row(cursor, row) unless @index
-        (@line_format ||= QtCurrentLineFormat.new).apply(cursor, active: snapshot[:point][:row] == row)
+        (@line_format ||= QtCurrentLineFormat.new(@editor)).apply(cursor, active: snapshot[:point][:row] == row)
       end
 
       protected
