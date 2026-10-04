@@ -343,7 +343,8 @@ versions/backend/наблюдения/screenshots. OS-reserved shortcuts отм�
   и оставшиеся ограничения; обязательные features не скрыты под TODO.
 - [X] Основные этапы закоммичены; состояние tree и commit list проверены.
   Branch `1-architecture` is clean; validation updates: `ce40641`, `139f111`.
-- [ ] Финальный отчёт содержит способы запуска, проверки и commit list.
+- [X] Финальный отчёт содержит способы запуска, проверки и commit list; physical
+  desktop `s-Left/s-Right` остается явно отмеченным внешним smoke blocker.
 
 Критерий: все обязательные пункты GOAL подтверждены, PLAN обновлён.
 Внешний blocker проверки реального UI документируется и не выдаётся за готовность.

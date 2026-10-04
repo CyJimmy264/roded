@@ -1540,3 +1540,27 @@ File save здесь сохраняет текстовое представле�
 - Desktop physical `s-Left`/`s-Right` is still awaiting user confirmation;
   Xvfb input and key-shaped specs do not establish whether the desktop window
   manager intercepts those physical keys.
+
+## First working version — final report (2026-10-04)
+
+- Start the terminal frontend with `bundle exec bin/roded --frontend curses
+  [file ...]` (or `bundle exec bin/roded [file ...]`). Start the desktop frontend
+  with `bundle exec bin/roded --frontend qt [file ...]`.
+- Full suite and lint: `bundle exec rake` — **308 examples, 0 failures; 158
+  files, 0 RuboCop offenses**. Live curses acceptance:
+  `bundle exec ruby script/curses_two_file_acceptance_smoke.rb` (private PTY,
+  Ruby 3.4.2, curses 1.5.3). Live Qt acceptance:
+  `script/qt_two_file_acceptance_smoke.sh` (private Xvfb, Qt Widgets 6.11.2,
+  `qt` gem 0.2.0, XCB, 1280×800×24). Both exercised real editing and save flows;
+  screenshots and detailed evidence are recorded above. Neither live check used
+  the desktop display.
+- Qt Super/Menu aliases and custom binding routing pass translator/router and
+  integration specs. The user confirmed physical `M-s-k`, `s-,` and `s-.` in
+  the desktop UI. Physical desktop `s-Left`/`s-Right` is the sole remaining
+  acceptance check; isolated Xvfb cannot determine whether the desktop window
+  manager intercepts those keys.
+- Implementation/acceptance commits in the final validation sequence:
+  `cb9cb9d`, `0d995b3`, `83aa41a`, `b4eb6db`, `a280c90`, `ce40641`, `139f111`,
+  `8000445`. Later completed core/PTY/Qt acceptance commits:
+  `d977eb9`, `c2f8614`, `a230f62`, `336e678`, `39ef390`, `cf4b498`, `63903f6`,
+  `4910088`, `e7de533`, `d334558`.
