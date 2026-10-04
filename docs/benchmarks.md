@@ -95,6 +95,45 @@ script/qt_scale_live_smoke.sh
 The ticker probe proves Ruby thread progress in the native loop. It does not
 include real keystrokes or painted editor frames and is not an input-latency score.
 
+## Real Qt keystroke-to-frame measurement
+
+`benchmark/qt_key_latency.rb` starts a private Xvfb and separate editor/controller
+processes. The editor runs the production `QApplication.exec`, core thread and
+12 ms UI dispatcher. XTest sends real X11 key events. The controller reads X11
+pixels until the block caret appears at the new position and disappears from the
+old position, and independently checks the expected core point and edited line.
+It never drains the dispatcher or calls `process_events`.
+
+```sh
+bundle exec ruby benchmark/qt_key_latency.rb --lines 1500 --profile plain \
+  --iterations 40 --output tmp/benchmarks/qt-key-plain-1500.json
+bundle exec ruby benchmark/qt_key_latency.rb --lines 10000 --profile ruby \
+  --iterations 40 --output tmp/benchmarks/qt-key-ruby-10000.json
+```
+
+Run these sequentially and without other CPU-heavy work. Dependencies are Xvfb,
+xdotool, libX11, libXtst and the existing Ruby FFI/Qt dependencies. A fresh child
+is used for each workload: alternating `C-f`/`C-b`, alternating `C-n`/`C-p`,
+alternating insertion/backspace, and consecutive insertion. `--workloads
+char,line,edit,typing` selects the groups; `--warmup` defaults to four keystrokes
+per group. Each next key is sent after detection of the preceding frame. This
+measures serialized input latency, not held-key throughput. Startup, first syntax
+highlighting and shutdown are outside the measured intervals. Ruby color settling
+can occur concurrently; the reported frame requires the new text/caret, not final
+syntax colors.
+
+Reports have a separate workload/schema and harness digest. They retain individual
+monotonic timestamps for send, Qt key receipt, core start, snapshot posting, widget
+application and frame detection, plus summaries for these intervals. Snapshot
+matching prevents an unrelated background render from acknowledging a key.
+`--original` deliberately uses the original GVL-holding Qt binding for comparison.
+
+The result is an upper bound on Xvfb server-side frame latency: it includes small
+instrumentation/IPC costs and a 1 ms pixel poll. Widget completion precedes paint;
+only the controller's pixel check establishes the frame. There is no desktop
+compositor, physical keyboard or display scanout here. These numbers cannot be
+treated as directly comparable to published measurements from other editors.
+
 ## Scenarios and state
 
 The catalog in `benchmark/roded/scenarios.rb` contains 34 scenarios:
