@@ -39,6 +39,8 @@ old Qt viewport bug also limits equivalence of its painted frames.
 Candidate core/curses reports were recorded at clean `692caf9`; earlier Qt
 reports at clean `1da9eeb`; Ruby native-token reports at clean `6a80352`.
 The Qt plain-layout follow-up below was recorded at clean `b13a60c`.
+Edit-range reports use clean `b4596c2` before and `c085675` after;
+the unformatted Qt-copy follow-up uses clean `e348e88`.
 Each original JSON includes its actual source revision, dirty flag, configuration,
 fixture hashes and individual measurements. See the [raw archive](../benchmark/results/2026-10-04/README.md)
 and [file-hash manifest](../benchmark/results/2026-10-04/manifest.json).
@@ -155,6 +157,53 @@ results on 10,000 lines exceed the target even though the short diagnostic input
 median is 28.15 ms. These reports still exclude keyboard queues, dispatcher wait
 and compositor timing; they do not establish keyboard-to-frame latency.
 
+## Edit-range and pane-copy follow-ups
+
+`c085675` finds edit ranges without allocating an object for every character.
+It skips equal prefix/suffix lines, compares UTF-8 bytes with character-aligned
+boundaries, and maps only the range endpoints back to logical positions.
+Inputs outside valid UTF-8/ASCII retain character-based comparison. Tests compare against a
+character-based oracle on 600 generated Unicode cases and verify precise
+replacement/undo/redo ranges, including edits inside a 1500-line document.
+
+The matched [before](../benchmark/results/2026-10-04/edit-range-before.json)
+and [after](../benchmark/results/2026-10-04/edit-range-after.json) reports contain
+24 cases, forty observations each: insert, backspace, newline and delete-block
+across core/application/curses on 1500 and 10,000 lines. There is no median
+regression above 20%. Deleting 100 rows gives:
+
+| Layer / lines | Before median ms | After median ms | After p95 ms |
+| --- | --- | --- | --- |
+| core / 1500 | 10.018 | 0.436 | 0.516 |
+| core / 10,000 | 7.073 | 1.307 | 1.610 |
+| application / 10,000 | 15.255 | 7.038 | 10.499 |
+| curses / 1500 | 12.473 | 2.480 | 2.675 |
+| curses / 10,000 | 18.674 | 7.925 | 10.700 |
+
+Core delete-block allocations decrease from about 33,595 to 239 objects per
+operation (99.3%); character insertion decreases from 737 to 78. The
+[Qt diagnostic](../benchmark/results/2026-10-04/edit-range-qt-large.json)
+shows delete-block median 40.77 ms, compared with 46.62 ms before this change.
+The [100-observation Qt input run](../benchmark/results/2026-10-04/edit-range-qt-hot.json)
+still gives median 31.55 ms for insertion and 31.86 ms for backspace; p95 values
+are 37.19 and 36.18 ms. Fewer allocated objects do not remove that remaining cost.
+
+`e348e88` copies unformatted Qt panes as native plain text and restores the
+caret/current-row formatting. This path requires uniform monospace fonts and no
+syntax spans, selection or search highlight; other documents retain native
+fragment copying. Editor font and wrap settings are established before copying.
+Tests and visible frames verify Unicode, expanded tabs, empty/EOL caret cells,
+independent documents, syntax colors and selections.
+
+The [complete 1500-line report](../benchmark/results/2026-10-04/qt-plain-copy-full.json)
+and [15-case 10,000-line report](../benchmark/results/2026-10-04/qt-plain-copy-large.json)
+have no median regression above 20% against `b13a60c`. These are two-observation
+diagnostics. On 10,000 lines the first recorded vertical split decreases from
+145.35 to 120.15 ms, while the second split reusing a pooled pane changes from
+64.89 to 63.99 ms. The two-operation median changes from 105.12 to 92.07 ms;
+it must not be presented as the cost of first pane creation or a reliable tail
+estimate. First creation remains well above the target.
+
 ## Consecutive typing without edited-text cache reuse
 
 Each sample starts once and inserts different successive characters into the
@@ -196,16 +245,17 @@ used to predict Ruby or other uncached highlighting costs.
   first split creation, large block edits and uncached 10,000-line input remain
   expensive. Further document construction and retention changes need separate
   memory/correctness measurements.
-- Large block edits still compute whole-document position changes in the core.
-  Their allocation cost grows with document length.
+- Shared snapshots and serialized text are still rebuilt after document edits.
+  Application work for plain input grows from about 1 ms on 1500 lines to about
+  6.5 ms on 10,000 lines even after edit-range allocations are removed.
 - These runs do not measure sustained real keyboard-to-frame throughput,
   compositor timing, native Qt allocations or terminal-emulator I/O. Boundary
   no-ops are checked separately rather than substituted for real motion timings.
 
 ## Validation and reproduction
 
-`bundle exec rake` passed after the plain-layout change: 421 examples and RuboCop
-across 203 Ruby files.
+`bundle exec rake` passed after both further changes: 428 examples and RuboCop
+across 205 Ruby files.
 Visible Qt checks run under private Xvfb with retained widgets and event pumping;
 they verify editor/caret geometry, one paragraph background at the cursor row,
 modelines, scrolling, buffers, splits and multiline edits. Both plain and Ruby
