@@ -2,6 +2,18 @@ module Roded
   module Frontends
     # Applies the shared dark palette to Qt editor windows.
     module QtWindowTheme
+      def self.create_application
+        return QApplication.new(0, ["roded"]) if ENV.key?("QT_STYLE_OVERRIDE")
+
+        begin
+          # Breeze's Alt mnemonic updates repaint editor viewports on every M-key.
+          ENV["QT_STYLE_OVERRIDE"] = "Fusion"
+          QApplication.new(0, ["roded"])
+        ensure
+          ENV.delete("QT_STYLE_OVERRIDE")
+        end
+      end
+
       def self.apply(window)
         window.set_style_sheet(
           "QWidget { background: #292b34; color: #bbc2cf; margin: 0px; padding: 0px; } " \

@@ -4,7 +4,7 @@ require "rbconfig"
 
 # No desktop display or user configuration participates in this measurement.
 unless ENV["RODED_KEY_LATENCY_XVFB"] == "1"
-  exec({ "RODED_KEY_LATENCY_XVFB" => "1" }, "xvfb-run", "-a", "-s", "-screen 0 1280x800x24",
+  exec({ "RODED_KEY_LATENCY_XVFB" => "1" }, "xvfb-run", "-a", "-s", "-screen 0 1920x1080x24",
        RbConfig.ruby, __FILE__, *ARGV)
 end
 

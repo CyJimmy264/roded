@@ -1,5 +1,7 @@
 require_relative "../benchmark/roded/fixture"
+require "spec_helper"
 require_relative "../benchmark/qt_latency/workload"
+require_relative "../benchmark/qt_latency/file_fixture"
 
 RSpec.describe Roded::Benchmarking::LatencyWorkload, "word movement oracle" do
   %w[plain ruby unicode].each do |profile|
@@ -50,5 +52,34 @@ RSpec.describe Roded::Benchmarking::LatencyWorkload, "viewport oracle" do
                "top_line" => 740 }
 
     expect { oracle.verify(record, "cursor.page_down") }.to raise_error("unexpected viewport origin")
+  end
+end
+
+RSpec.describe Roded::Benchmarking::LatencyWordCursor do
+  it "crosses punctuation, blank rows and Unicode words in either direction" do
+    lines = ["alpha!", "", "\tстрока_42 界 end"]
+    forward = described_class.new(lines, { "row" => 0, "col" => 6 }).forward
+    expect(forward).to eq("row" => 2, "col" => 10)
+    expect(described_class.new(lines, { "row" => 2, "col" => 1 }).backward).to eq("row" => 0, "col" => 0)
+  end
+
+  it "checks word boundaries deep inside a line of more than 1000 characters" do
+    line = "word " * 500
+    expect(described_class.new([line], { "row" => 0, "col" => 1201 }).forward).to eq("row" => 0, "col" => 1204)
+    expect(described_class.new([line], { "row" => 0, "col" => 1204 }).backward).to eq("row" => 0, "col" => 1200)
+  end
+end
+
+RSpec.describe Roded::Benchmarking::LatencyFileFixture do
+  it "preserves a real document and its final empty line without modifying it" do
+    Dir.mktmpdir do |directory|
+      path = File.join(directory, "sample.md")
+      File.write(path, "heading\ntext\n")
+      fixture = described_class.new(path)
+      expect(fixture.line_count).to eq(3)
+      expect(fixture.mode).to eq(:markdown)
+      expect(fixture.metadata[:sha256]).to eq(Digest::SHA256.hexdigest(File.read(path)))
+      expect(File.read(path)).to eq("heading\ntext\n")
+    end
   end
 end

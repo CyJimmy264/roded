@@ -8,13 +8,23 @@ module Roded
         @previous = read_record("ready")
         focus
         wait_frame(@previous.fetch("caret"))
-        measure_idle_cpu(@previous.fetch("dispatcher_interval_ms"), @previous.fetch("dispatcher_single_shot"))
-        oracle = LatencyWorkload.new(name, @fixture, page_size: @previous.fetch("page_size"))
+        record_idle_view
+        oracle = workload_oracle(name)
         Array.new(@warmup + @count) do |index|
           scenario, key = oracle.action(index)
           sample = measure_key(scenario, key, index, oracle)
           sample unless index < @warmup
         end.compact
+      end
+
+      def record_idle_view
+        measure_idle_cpu(@previous.fetch("dispatcher_interval_ms"), @previous.fetch("dispatcher_single_shot"))
+        @idle_cpu.merge!(@previous.slice("qt_style", "width", "height"))
+      end
+
+      def workload_oracle(name)
+        LatencyWorkload.new(name, @fixture, page_size: @previous.fetch("page_size"),
+                                            start_col: @config.fetch(:start_col), start_row: @config[:start_row])
       end
 
       def measure_key(scenario, key, index, oracle)

@@ -287,3 +287,22 @@ both reports after changing the harness because its implementation hash changes.
 
 Recorded runs, their limitations and remaining bottlenecks are in
 [the 2026-10-04 results](benchmark-results-2026-10-04.md).
+
+### Deep columns, large windows and actual files
+
+The real-key Qt harness accepts --line-length 2500 --start-col 1200 --buffers 6
+and --width 1920 --height 1080. Length is a minimum in Ruby characters, not bytes;
+the report stores the generated text hash. Default fixture v1 content is unchanged.
+The independent word oracle checks arbitrary word boundaries, including Unicode
+and crossings between rows. The caret must appear in the actual X11 frame.
+
+Use --file AGENTS.md --start-row 30 --start-col 340 to reproduce an actual file,
+plus repeated --extra-file GOAL.md / --extra-file lib/roded/application.rb
+arguments for previously visited buffers. Row and column are zero-based. Source
+files are only read; the child edits its in-memory copies. Reports include content
+hashes for every source, actual Qt style and window geometry. The visited buffers
+are prepared before the timed key sequence. --buffers repeats the main fixture;
+extra files are added to that count. Real-file lengths may be less than 1500 rows.
+
+Qt defaults to Fusion to avoid Breeze's Alt mnemonic repaint overhead. An explicit
+QT_STYLE_OVERRIDE still selects the requested style, including Breeze for controls.

@@ -70,7 +70,8 @@ module Roded
         dispatcher = @frontend.instance_variable_get(:@ui_dispatcher)
         timer = dispatcher.instance_variable_get(:@timer)
         { dispatcher_interval_ms: timer.interval, dispatcher_single_shot: timer.is_single_shot,
-          page_size: @frontend.page_size }
+          page_size: @frontend.page_size, qt_style: QApplication.style.object_name,
+          width: @frontend.view.window.width, height: @frontend.view.window.height }
       end
 
       def target(snapshot)

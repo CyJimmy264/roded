@@ -1,3 +1,5 @@
+require_relative "word_cursor"
+
 module Roded
   module Benchmarking
     # Independent expected cursor/text transitions for real-key workloads.
@@ -16,12 +18,12 @@ module Roded
         "cursor.line_down" => ["row", 1], "cursor.line_up" => ["row", -1]
       }.freeze
 
-      def initialize(name, fixture, page_size:)
+      def initialize(name, fixture, page_size:, start_col: 4, start_row: nil)
         @actions = ACTIONS.fetch(name)
-        @lines = fixture.text.split("\n")
-        @point = { "row" => fixture.line_count / 2, "col" => 4 }
+        @lines = fixture.text.gsub("\r\n", "\n").split("\n", -1)
+        @point = { "row" => start_row || (fixture.line_count / 2), "col" => start_col }
         @page_size = page_size
-        @top_line = @point.fetch("row") - 10
+        @top_line = (@point.fetch("row") - 10).clamp(0, [@lines.length - page_size, 0].max)
       end
 
       def action(index) = @actions[index % @actions.length]
@@ -39,8 +41,8 @@ module Roded
 
       def advance(scenario)
         case scenario
-        when "cursor.word_forward" then @point["col"] = @lines.fetch(@point.fetch("row"))[/\A[[:alnum:]_]+/].length
-        when "cursor.word_backward" then @point["col"] = 0
+        when "cursor.word_forward" then @point = LatencyWordCursor.new(@lines, @point).forward
+        when "cursor.word_backward" then @point = LatencyWordCursor.new(@lines, @point).backward
         when "cursor.page_down" then move_page(@page_size)
         when "cursor.page_up" then move_page(-@page_size)
         else advance_local_or_edit(scenario)

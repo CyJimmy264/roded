@@ -3,12 +3,16 @@ require_relative "../roded/statistics"
 require_relative "../roded/environment"
 require_relative "../roded/report"
 require_relative "session"
+require_relative "file_fixture"
+require_relative "configuration"
 require "optparse"
 
 module Roded
   module Benchmarking
     # A separate report schema: server-side frame latency, not manually drained work.
     class LatencyRunner
+      include LatencyConfiguration
+
       PHASE_EDGES = {
         native_delivery: %w[sent_ns input_received], core_queue: %w[input_received core_started],
         core_and_snapshot: %w[core_started snapshot_posted], dispatcher_wait: %w[snapshot_posted widget_started],
@@ -17,7 +21,8 @@ module Roded
 
       def initialize(arguments)
         @config = { lines: 1500, profile: "plain", iterations: 40, warmup: 4,
-                    workloads: LatencyWorkload::NAMES, original: false, dispatcher_ms: nil }
+                    workloads: LatencyWorkload::NAMES, original: false, dispatcher_ms: nil, buffers: 1, start_col: 4,
+                    start_row: nil, width: 960, height: 640, extra_files: [] }
         @idle_samples = []
         @output = "tmp/benchmarks/qt-key-latency.json"
         parser.parse!(arguments)
@@ -25,10 +30,11 @@ module Roded
       end
 
       def run
-        fixture = Fixture.new(line_count: @config[:lines], profile: @config[:profile])
+        fixture = LatencyFileFixture.build(@config)
         results = Dir.mktmpdir("roded-key-latency-") { |directory| measure(fixture, directory) }
         report = { schema_version: 1, workload: "qt_x11_key_to_caret_frame", config: @config,
-                   fixture: fixture.metadata, environment: environment,
+                   fixture: fixture.metadata, extra_fixtures: extra_metadata,
+                   environment: environment,
                    latency_harness_sha256: harness_digest, idle_process_cpu: @idle_samples, results: }
         Report.write(@output, report)
         results.each { |row| puts "#{row[:scenario]}: #{row[:metrics].slice(:median_ms, :p95_ms, :max_ms)}" }
@@ -47,8 +53,7 @@ module Roded
       end
 
       def measure_workload(fixture, name, error_path)
-        session = LatencySession.new(fixture, count: @config[:iterations], warmup: @config[:warmup],
-                                              original: @config[:original], dispatcher_ms: @config[:dispatcher_ms])
+        session = LatencySession.new(fixture, config: @config)
         session.run(name, error_path).tap { @idle_samples << session.idle_cpu.merge(workload: name) }
       end
 
@@ -70,6 +75,8 @@ module Roded
         Statistics.latency_metrics(times.sort)
       end
 
+      def extra_metadata = @config[:extra_files].map { |path| LatencyFileFixture.new(path).metadata }
+
       def environment
         Environment.capture.merge(qt_gem: Gem::Specification.find_by_name("qt").version.to_s)
       end
@@ -77,40 +84,6 @@ module Roded
       def harness_digest
         files = Dir[File.join(__dir__, "*.rb")] + [File.expand_path("../qt_key_latency.rb", __dir__)]
         Digest::SHA256.hexdigest(files.sort.map { |path| "#{File.basename(path)}\0#{File.read(path)}" }.join("\0"))
-      end
-
-      def validate(arguments)
-        valid = arguments.empty? && @config[:lines] >= 1500 && @config[:iterations].positive? &&
-                @config[:warmup] >= 0 && valid_workloads? && valid_interval?
-        raise OptionParser::InvalidArgument, "invalid fixture, counts or workload" unless valid
-      end
-
-      def valid_interval? = @config[:dispatcher_ms].nil? || @config[:dispatcher_ms].between?(1, 1000)
-
-      def valid_workloads?
-        Fixture::PROFILES.include?(@config[:profile]) && !@config[:workloads].empty? &&
-          (@config[:workloads] - LatencyWorkload::NAMES).empty?
-      end
-
-      def parser
-        OptionParser.new do |options|
-          fixture_options(options)
-          count_options(options)
-          options.on("--original") { @config[:original] = true }
-          options.on("--output PATH") { |value| @output = value }
-          options.on("--dispatcher-ms N", Integer) { |value| @config[:dispatcher_ms] = value }
-        end
-      end
-
-      def fixture_options(options)
-        options.on("--lines N", Integer) { |value| @config[:lines] = value }
-        options.on("--profile NAME") { |value| @config[:profile] = value }
-        options.on("--workloads NAMES", Array) { |value| @config[:workloads] = value }
-      end
-
-      def count_options(options)
-        options.on("--iterations N", Integer) { |value| @config[:iterations] = value }
-        options.on("--warmup N", Integer) { |value| @config[:warmup] = value }
       end
     end
   end

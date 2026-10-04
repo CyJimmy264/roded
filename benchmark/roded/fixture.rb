@@ -9,10 +9,11 @@ module Roded
 
       attr_reader :line_count, :profile, :text, :block
 
-      def initialize(line_count:, profile:)
+      def initialize(line_count:, profile:, line_length: nil)
         @line_count = line_count
         @profile = profile
-        @text = Array.new(line_count) { |index| line(index) }.join("\n").freeze
+        @line_length = line_length
+        @text = Array.new(line_count) { |index| padded_line(index) }.join("\n").freeze
         @block = Array.new(100) { |index| "inserted block line #{index}" }.join("\n").freeze
       end
 
@@ -24,6 +25,14 @@ module Roded
       def mode = profile == "ruby" ? :ruby : :plain
 
       private
+
+      def padded_line(index)
+        content = line(index)
+        return content unless @line_length && content.length < @line_length
+
+        padding = profile == "unicode" ? " длинная_строка" : " long_column"
+        content + (padding * (@line_length - content.length).fdiv(padding.length).ceil)
+      end
 
       def line(index)
         prefix = format("row_%06d", index)

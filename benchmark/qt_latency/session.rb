@@ -13,12 +13,11 @@ module Roded
 
       attr_reader :idle_cpu
 
-      def initialize(fixture, count:, warmup:, original:, dispatcher_ms:)
+      def initialize(fixture, config:)
         @fixture = fixture
-        @count = count
-        @warmup = warmup
-        @original = original
-        @dispatcher_ms = dispatcher_ms
+        @config = config
+        @count = config.fetch(:iterations)
+        @warmup = config.fetch(:warmup)
       end
 
       def run(name, error_path)
@@ -42,9 +41,8 @@ module Roded
       end
 
       def arguments
-        values = [RbConfig.ruby, File.join(__dir__, "child.rb"), @fixture.line_count.to_s,
-                  @fixture.profile, @dispatcher_ms&.to_s || "default"]
-        values << "--original" if @original
+        values = [RbConfig.ruby, File.join(__dir__, "child.rb"), JSON.generate(@config)]
+        values << "--original" if @config[:original]
         values
       end
 

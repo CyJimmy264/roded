@@ -26,7 +26,7 @@ module Roded
       def initialize(application)
         @application = application
         @input_queue = Queue.new
-        @qt_application = QApplication.new(0, ["roded"])
+        @qt_application = QtWindowTheme.create_application
         @clipboard = QtClipboardBridge.new
         @view = QtEditorWindow.new
         @ui_dispatcher = QtUiDispatcher.new(@view, @qt_application, @clipboard)

@@ -4,7 +4,8 @@ end
 
 require_relative "../../lib/roded"
 require_relative "../../lib/roded/frontends/qt"
-require_relative "../roded/fixture"
+require_relative "file_fixture"
+require_relative "child_documents"
 require_relative "../roded/isolation"
 require_relative "trace"
 require_relative "hooks"
@@ -15,12 +16,14 @@ module Roded
     # Runs the real frontend/core loops and the production UI dispatcher.
     class LatencyChild
       include LatencyHooks
+      include LatencyChildDocuments
 
-      def run(lines:, profile:, dispatcher_ms: nil)
-        fixture = Fixture.new(line_count: lines, profile:)
+      def run(config:)
+        @config = config
+        fixture = LatencyFileFixture.build(config)
         application = build_application(fixture)
         frontend = Frontends::Qt.new(application)
-        set_dispatcher_interval(frontend, dispatcher_ms) if dispatcher_ms
+        set_dispatcher_interval(frontend, config[:dispatcher_ms]) if config[:dispatcher_ms]
         application.add_frontend(frontend)
         trace = LatencyTrace.new(frontend)
         instrument(application, frontend, trace)
@@ -59,22 +62,6 @@ module Roded
         $stdout.flush
       end
 
-      def build_application(fixture)
-        application = Application.new
-        buffer = Buffer.new("latency-#{fixture.profile}")
-        buffer.major_mode = fixture.mode
-        buffer.load_text(fixture.text)
-        application.add_buffer(buffer)
-        application.add_window(Window.new(buffer))
-        position(application.current_window, fixture.line_count)
-        application
-      end
-
-      def position(window, lines)
-        window.point = { row: lines / 2, col: 4 }
-        window.top_line = window.point[:row] - 10
-      end
-
       def ready_timer(frontend, application, trace)
         @timer = QTimer.new
         @timer.set_interval(200)
@@ -89,9 +76,11 @@ module Roded
       def start_timer_when_shown(view)
         timer = @timer
         show = view.method(:show)
+        width, height = @config.values_at(:width, :height)
         # Initial document construction can exceed the readiness delay.
         view.define_singleton_method(:show) do
           show.call
+          window.resize(width, height)
           timer.start
         end
       end
@@ -102,9 +91,7 @@ end
 if $PROGRAM_NAME == __FILE__
   Roded::Frontends::QtEventLoop.define_singleton_method(:run, &:exec) if ARGV.include?("--original")
   Roded::Benchmarking::Isolation.run(xvfb: true) do
-    interval = ARGV.fetch(2, "default")
-    interval = interval == "default" ? nil : Integer(interval)
-    Roded::Benchmarking::LatencyChild.new.run(lines: Integer(ARGV.fetch(0)), profile: ARGV.fetch(1),
-                                              dispatcher_ms: interval)
+    config = JSON.parse(ARGV.fetch(0), symbolize_names: true)
+    Roded::Benchmarking::LatencyChild.new.run(config:)
   end
 end

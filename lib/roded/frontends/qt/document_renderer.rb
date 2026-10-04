@@ -3,6 +3,7 @@ require_relative "document_structure_operations"
 require_relative "document_index"
 require_relative "current_line_format"
 require_relative "document_copy_operations"
+require_relative "caret_format_operations"
 
 module Roded
   module Frontends
@@ -10,6 +11,7 @@ module Roded
     class QtDocumentRenderer
       include QtDocumentStructureOperations
       include QtDocumentCopyOperations
+      include QtCaretFormatOperations
 
       def initialize(editor)
         @editor = editor
@@ -29,6 +31,8 @@ module Roded
       private
 
       def render_document(snapshot, lines, renderer)
+        return if update_caret_formats?(snapshot, lines, renderer)
+
         if @snapshot && @lines.length != lines.length
           update_structure(snapshot, lines, renderer)
         elsif @snapshot

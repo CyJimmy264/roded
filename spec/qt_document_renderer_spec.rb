@@ -209,3 +209,27 @@ RSpec.describe Roded::Frontends::QtDocumentRenderer, "formatted split copies" do
     target&.close
   end
 end
+
+RSpec.describe Roded::Frontends::QtDocumentRenderer, "caret formats without text replacement" do
+  include_context "Qt native document rendering"
+
+  it "moves the caret inside long syntax-colored rows without replacing native text" do
+    lines = ["def example; #{"word " * 500}; end"].freeze
+    state = snapshot(lines, { row: 0, col: 1201 })
+    expect_native_frame(state)
+    allow(Qt::Native).to receive(:qtext_cursor_insert_html).and_call_original
+    moved = state.merge(point: { row: 0, col: 1204 })
+    expect_native_frame(moved)
+
+    expect(Qt::Native).not_to have_received(:qtext_cursor_insert_html)
+    expect(@editor.to_html).to include("color:#c678dd")
+    expect_native_frame(moved.merge(point: { row: 0, col: lines.first.length }))
+    expect_native_frame(state)
+  end
+
+  it "retains expanded tabs, surrogate pairs and combining characters through local caret steps" do
+    lines = ["\t🙂é界 alpha"].freeze
+    state = snapshot(lines, { row: 0, col: 0 })
+    [0, 1, 2, 3, 4, 7, 0].each { |col| expect_native_frame(state.merge(point: { row: 0, col: })) }
+  end
+end

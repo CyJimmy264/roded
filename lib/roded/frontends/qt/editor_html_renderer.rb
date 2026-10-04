@@ -29,6 +29,11 @@ module Roded
         render_block(@lines.fetch(row), row)
       end
 
+      def character_html(row, column)
+        line = @lines.fetch(row)
+        "<p style=\"margin: 0; white-space: pre;\">#{render_segment(line, row, column, column + 1)}</p>"
+      end
+
       private
 
       def ordered_range(mark, point)
