@@ -49,15 +49,19 @@ def capture_frame(scenario, editor)
   Roded::Benchmarking::QtFrameCapture.new(directory).capture(scenario.name, editor)
 end
 
-Roded::Benchmarking::Isolation.run(xvfb: true) do
-  profile = ENV.fetch("RODED_BENCHMARK_PROFILE", "plain")
-  fixture = Roded::Benchmarking::Fixture.new(line_count: 1500, profile:)
-  work = Roded::Benchmarking::Workspace.new(layer: "qt", fixture:, buffer_count: 4, window_count: 1)
+def visible_scenarios
   selected = %w[cursor.char_left cursor.char_right cursor.line_down scroll.page_down scroll.horizontal
                 edit.backspace edit.insert_char edit.newline render.full
                 edit.paste_block edit.delete_block buffer.next
                 window.split_vertical window.delete]
-  Roded::Benchmarking::Scenarios.all.select { |scenario| selected.include?(scenario.name) }.each do |scenario|
+  Roded::Benchmarking::Scenarios.all.select { |scenario| selected.include?(scenario.name) }
+end
+
+Roded::Benchmarking::Isolation.run(xvfb: true) do
+  profile = ENV.fetch("RODED_BENCHMARK_PROFILE", "plain")
+  fixture = Roded::Benchmarking::Fixture.new(line_count: 1500, profile:)
+  work = Roded::Benchmarking::Workspace.new(layer: "qt", fixture:, buffer_count: 4, window_count: 1)
+  visible_scenarios.each do |scenario|
     work.reset
     scenario.prepare.call(work)
     work.render
