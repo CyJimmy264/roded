@@ -1,0 +1,1174 @@
+{
+  "schema_version": 1,
+  "config": {
+    "lines": [
+      1500
+    ],
+    "layers": [
+      "qt"
+    ],
+    "profile": "plain",
+    "buffers": 4,
+    "windows": 1,
+    "samples": 1,
+    "iterations": 2,
+    "warmup": 0,
+    "seed": 264
+  },
+  "environment": {
+    "recorded_at": "2026-10-04T05:19:28Z",
+    "ruby": "ruby 3.4.2 (2025-02-15 revision d2930f8e7a) +PRISM [x86_64-linux]",
+    "platform": "x86_64-linux",
+    "host": "lunnen",
+    "cpu": "AMD Ryzen 7 5825U with Radeon Graphics",
+    "yjit": false,
+    "gems": {
+      "pathname": "0.4.0",
+      "rake": "13.3.1",
+      "ast": "2.4.3",
+      "bundler": "2.6.6",
+      "curses": "1.5.3",
+      "date": "3.5.0",
+      "diff-lcs": "1.6.2",
+      "erb": "6.0.0",
+      "ffi": "1.17.4",
+      "io-console": "0.8.1",
+      "prettyprint": "0.2.0",
+      "pp": "0.6.3",
+      "stringio": "3.1.9",
+      "psych": "5.2.6",
+      "tsort": "0.2.0",
+      "rdoc": "6.16.1",
+      "reline": "0.6.3",
+      "irb": "1.15.3",
+      "json": "2.17.1",
+      "language_server-protocol": "3.17.0.5",
+      "lint_roller": "1.1.0",
+      "logger": "1.6.5",
+      "parallel": "1.27.0",
+      "racc": "1.8.1",
+      "parser": "3.3.10.0",
+      "prism": "1.6.0",
+      "qt": "0.2.0",
+      "rainbow": "3.1.1",
+      "regexp_parser": "2.11.3",
+      "unicode-emoji": "4.1.0",
+      "unicode-display_width": "3.2.0",
+      "roded": "0.1.0",
+      "rspec-support": "3.13.6",
+      "rspec-core": "3.13.6",
+      "rspec-expectations": "3.13.5",
+      "rspec-mocks": "3.13.7",
+      "rspec": "3.13.2",
+      "rubocop-ast": "1.48.0",
+      "ruby-progressbar": "1.13.0",
+      "rubocop": "1.81.7"
+    },
+    "git_revision": "4f5595c50889ec2fdff20e67c874a9947c961ec1",
+    "git_dirty": true,
+    "harness_sha256": "2f83a34c57f8f0880fa32e7e8c446084c1e016e36435d74294d88d372c2cd1bd",
+    "qt_platform": "offscreen",
+    "ruby_options": "-r/home/mveynberg/.rbenv/versions/3.4.2/lib/ruby/gems/3.4.0/gems/bundler-2.6.6/lib/bundler/setup",
+    "gc_environment": {}
+  },
+  "fixtures": [
+    {
+      "version": 1,
+      "lines": 1500,
+      "profile": "plain",
+      "bytes": 488999,
+      "sha256": "438d9d01d8e0837d5fe5147fdbf700c77d4a23b1a0997f0f81ee56a7c82371f7",
+      "block_lines": 100
+    }
+  ],
+  "results": [
+    {
+      "layer": "qt",
+      "lines": 1500,
+      "scenario": "edit.backspace",
+      "metrics": {
+        "operations": 2,
+        "median_ms": 2563.5488305,
+        "p95_ms": 2648.419106,
+        "max_ms": 2648.419106,
+        "mean_ms": 2563.5488305,
+        "operations_per_second": 0.39008424107332407,
+        "allocated_objects_per_operation": 5241239.5,
+        "gc_runs": 59,
+        "gc_ms": 1220.076234
+      },
+      "samples": [
+        [
+          {
+            "wall_ns": 2648419106,
+            "allocated_objects": 5239601,
+            "gc_runs": 31,
+            "gc_ns": 697610995
+          },
+          {
+            "wall_ns": 2478678555,
+            "allocated_objects": 5242878,
+            "gc_runs": 28,
+            "gc_ns": 522465239
+          }
+        ]
+      ]
+    },
+    {
+      "layer": "qt",
+      "lines": 1500,
+      "scenario": "scroll.page_up",
+      "metrics": {
+        "operations": 2,
+        "median_ms": 2221.7976055,
+        "p95_ms": 2333.772733,
+        "max_ms": 2333.772733,
+        "mean_ms": 2221.7976055,
+        "operations_per_second": 0.4500860013191692,
+        "allocated_objects_per_operation": 5150459.5,
+        "gc_runs": 28,
+        "gc_ms": 679.394438
+      },
+      "samples": [
+        [
+          {
+            "wall_ns": 2109822478,
+            "allocated_objects": 5147241,
+            "gc_runs": 14,
+            "gc_ns": 255003800
+          },
+          {
+            "wall_ns": 2333772733,
+            "allocated_objects": 5153678,
+            "gc_runs": 14,
+            "gc_ns": 424390638
+          }
+        ]
+      ]
+    },
+    {
+      "layer": "qt",
+      "lines": 1500,
+      "scenario": "render.full",
+      "metrics": {
+        "operations": 2,
+        "median_ms": 2302.735701,
+        "p95_ms": 2343.211464,
+        "max_ms": 2343.211464,
+        "mean_ms": 2302.735701,
+        "operations_per_second": 0.434266077329558,
+        "allocated_objects_per_operation": 5237509.5,
+        "gc_runs": 21,
+        "gc_ms": 759.680394
+      },
+      "samples": [
+        [
+          {
+            "wall_ns": 2343211464,
+            "allocated_objects": 5234267,
+            "gc_runs": 11,
+            "gc_ns": 420708845
+          },
+          {
+            "wall_ns": 2262259938,
+            "allocated_objects": 5240752,
+            "gc_runs": 10,
+            "gc_ns": 338971549
+          }
+        ]
+      ]
+    },
+    {
+      "layer": "qt",
+      "lines": 1500,
+      "scenario": "cursor.line_start",
+      "metrics": {
+        "operations": 2,
+        "median_ms": 2415.529792,
+        "p95_ms": 2497.236739,
+        "max_ms": 2497.236739,
+        "mean_ms": 2415.529792,
+        "operations_per_second": 0.413987856126595,
+        "allocated_objects_per_operation": 5236857.5,
+        "gc_runs": 18,
+        "gc_ms": 782.041218
+      },
+      "samples": [
+        [
+          {
+            "wall_ns": 2497236739,
+            "allocated_objects": 5233726,
+            "gc_runs": 9,
+            "gc_ns": 439172165
+          },
+          {
+            "wall_ns": 2333822845,
+            "allocated_objects": 5239989,
+            "gc_runs": 9,
+            "gc_ns": 342869053
+          }
+        ]
+      ]
+    },
+    {
+      "layer": "qt",
+      "lines": 1500,
+      "scenario": "buffer.previous",
+      "metrics": {
+        "operations": 2,
+        "median_ms": 1523.716144,
+        "p95_ms": 1588.0441,
+        "max_ms": 1588.0441,
+        "mean_ms": 1523.716144,
+        "operations_per_second": 0.6562902177926915,
+        "allocated_objects_per_operation": 3519326.5,
+        "gc_runs": 9,
+        "gc_ms": 389.30384
+      },
+      "samples": [
+        [
+          {
+            "wall_ns": 1459388188,
+            "allocated_objects": 3516926,
+            "gc_runs": 4,
+            "gc_ns": 127975187
+          },
+          {
+            "wall_ns": 1588044100,
+            "allocated_objects": 3521727,
+            "gc_runs": 5,
+            "gc_ns": 261328653
+          }
+        ]
+      ]
+    },
+    {
+      "layer": "qt",
+      "lines": 1500,
+      "scenario": "buffer.next",
+      "metrics": {
+        "operations": 2,
+        "median_ms": 1483.323118,
+        "p95_ms": 1530.494142,
+        "max_ms": 1530.494142,
+        "mean_ms": 1483.323118,
+        "operations_per_second": 0.674161946149888,
+        "allocated_objects_per_operation": 3519300.5,
+        "gc_runs": 8,
+        "gc_ms": 413.573323
+      },
+      "samples": [
+        [
+          {
+            "wall_ns": 1436152094,
+            "allocated_objects": 3516910,
+            "gc_runs": 4,
+            "gc_ns": 149388852
+          },
+          {
+            "wall_ns": 1530494142,
+            "allocated_objects": 3521691,
+            "gc_runs": 4,
+            "gc_ns": 264184471
+          }
+        ]
+      ]
+    },
+    {
+      "layer": "qt",
+      "lines": 1500,
+      "scenario": "input.key_down",
+      "metrics": {
+        "operations": 2,
+        "median_ms": 2157.0840145,
+        "p95_ms": 2205.701849,
+        "max_ms": 2205.701849,
+        "mean_ms": 2157.0840145,
+        "operations_per_second": 0.46358880473730385,
+        "allocated_objects_per_operation": 5239835.5,
+        "gc_runs": 8,
+        "gc_ms": 495.293679
+      },
+      "samples": [
+        [
+          {
+            "wall_ns": 2205701849,
+            "allocated_objects": 5236616,
+            "gc_runs": 4,
+            "gc_ns": 279673584
+          },
+          {
+            "wall_ns": 2108466180,
+            "allocated_objects": 5243055,
+            "gc_runs": 4,
+            "gc_ns": 215620095
+          }
+        ]
+      ]
+    },
+    {
+      "layer": "qt",
+      "lines": 1500,
+      "scenario": "scroll.horizontal",
+      "metrics": {
+        "operations": 2,
+        "median_ms": 2134.4643825,
+        "p95_ms": 2147.991577,
+        "max_ms": 2147.991577,
+        "mean_ms": 2134.4643825,
+        "operations_per_second": 0.46850161014574815,
+        "allocated_objects_per_operation": 5255615.5,
+        "gc_runs": 9,
+        "gc_ms": 488.809283
+      },
+      "samples": [
+        [
+          {
+            "wall_ns": 2120937188,
+            "allocated_objects": 5249815,
+            "gc_runs": 4,
+            "gc_ns": 226181845
+          },
+          {
+            "wall_ns": 2147991577,
+            "allocated_objects": 5261416,
+            "gc_runs": 5,
+            "gc_ns": 262627438
+          }
+        ]
+      ]
+    },
+    {
+      "layer": "qt",
+      "lines": 1500,
+      "scenario": "cursor.word_backward",
+      "metrics": {
+        "operations": 2,
+        "median_ms": 2167.882335,
+        "p95_ms": 2191.481938,
+        "max_ms": 2191.481938,
+        "mean_ms": 2167.882335,
+        "operations_per_second": 0.4612796478181552,
+        "allocated_objects_per_operation": 5237497.0,
+        "gc_runs": 8,
+        "gc_ms": 521.291578
+      },
+      "samples": [
+        [
+          {
+            "wall_ns": 2191481938,
+            "allocated_objects": 5234279,
+            "gc_runs": 4,
+            "gc_ns": 314693632
+          },
+          {
+            "wall_ns": 2144282732,
+            "allocated_objects": 5240715,
+            "gc_runs": 4,
+            "gc_ns": 206597946
+          }
+        ]
+      ]
+    },
+    {
+      "layer": "qt",
+      "lines": 1500,
+      "scenario": "edit.paste_block",
+      "metrics": {
+        "operations": 2,
+        "median_ms": 2214.7732385,
+        "p95_ms": 2231.505082,
+        "max_ms": 2231.505082,
+        "mean_ms": 2214.7732385,
+        "operations_per_second": 0.45151349249518213,
+        "allocated_objects_per_operation": 5284095.0,
+        "gc_runs": 8,
+        "gc_ms": 608.94446
+      },
+      "samples": [
+        [
+          {
+            "wall_ns": 2198041395,
+            "allocated_objects": 5282208,
+            "gc_runs": 3,
+            "gc_ns": 285455504
+          },
+          {
+            "wall_ns": 2231505082,
+            "allocated_objects": 5285982,
+            "gc_runs": 5,
+            "gc_ns": 323488956
+          }
+        ]
+      ]
+    },
+    {
+      "layer": "qt",
+      "lines": 1500,
+      "scenario": "edit.redo",
+      "metrics": {
+        "operations": 2,
+        "median_ms": 2223.459668,
+        "p95_ms": 2250.13633,
+        "max_ms": 2250.13633,
+        "mean_ms": 2223.459668,
+        "operations_per_second": 0.4497495566895077,
+        "allocated_objects_per_operation": 5239119.5,
+        "gc_runs": 9,
+        "gc_ms": 549.707924
+      },
+      "samples": [
+        [
+          {
+            "wall_ns": 2250136330,
+            "allocated_objects": 5235888,
+            "gc_runs": 5,
+            "gc_ns": 325621918
+          },
+          {
+            "wall_ns": 2196783006,
+            "allocated_objects": 5242351,
+            "gc_runs": 4,
+            "gc_ns": 224086006
+          }
+        ]
+      ]
+    },
+    {
+      "layer": "qt",
+      "lines": 1500,
+      "scenario": "edit.insert_char",
+      "metrics": {
+        "operations": 2,
+        "median_ms": 2193.687457,
+        "p95_ms": 2249.992996,
+        "max_ms": 2249.992996,
+        "mean_ms": 2193.687457,
+        "operations_per_second": 0.4558534520535393,
+        "allocated_objects_per_operation": 5241280.0,
+        "gc_runs": 8,
+        "gc_ms": 480.11883
+      },
+      "samples": [
+        [
+          {
+            "wall_ns": 2249992996,
+            "allocated_objects": 5239549,
+            "gc_runs": 4,
+            "gc_ns": 293342612
+          },
+          {
+            "wall_ns": 2137381918,
+            "allocated_objects": 5243011,
+            "gc_runs": 4,
+            "gc_ns": 186776218
+          }
+        ]
+      ]
+    },
+    {
+      "layer": "qt",
+      "lines": 1500,
+      "scenario": "edit.newline",
+      "metrics": {
+        "operations": 2,
+        "median_ms": 2271.827632,
+        "p95_ms": 2307.712616,
+        "max_ms": 2307.712616,
+        "mean_ms": 2271.827632,
+        "operations_per_second": 0.440174239416065,
+        "allocated_objects_per_operation": 5240688.5,
+        "gc_runs": 9,
+        "gc_ms": 685.098546
+      },
+      "samples": [
+        [
+          {
+            "wall_ns": 2235942648,
+            "allocated_objects": 5239049,
+            "gc_runs": 5,
+            "gc_ns": 366266037
+          },
+          {
+            "wall_ns": 2307712616,
+            "allocated_objects": 5242328,
+            "gc_runs": 4,
+            "gc_ns": 318832509
+          }
+        ]
+      ]
+    },
+    {
+      "layer": "qt",
+      "lines": 1500,
+      "scenario": "window.delete_others",
+      "metrics": {
+        "operations": 2,
+        "median_ms": 2287.89141,
+        "p95_ms": 2439.991353,
+        "max_ms": 2439.991353,
+        "mean_ms": 2287.89141,
+        "operations_per_second": 0.43708368134482395,
+        "allocated_objects_per_operation": 5230768.5,
+        "gc_runs": 5,
+        "gc_ms": 494.245013
+      },
+      "samples": [
+        [
+          {
+            "wall_ns": 2439991353,
+            "allocated_objects": 5231580,
+            "gc_runs": 3,
+            "gc_ns": 318188276
+          },
+          {
+            "wall_ns": 2135791467,
+            "allocated_objects": 5229957,
+            "gc_runs": 2,
+            "gc_ns": 176056737
+          }
+        ]
+      ]
+    },
+    {
+      "layer": "qt",
+      "lines": 1500,
+      "scenario": "edit.delete_block",
+      "metrics": {
+        "operations": 2,
+        "median_ms": 2123.5240945,
+        "p95_ms": 2227.320743,
+        "max_ms": 2227.320743,
+        "mean_ms": 2123.5240945,
+        "operations_per_second": 0.47091530658401015,
+        "allocated_objects_per_operation": 5039184.0,
+        "gc_runs": 5,
+        "gc_ms": 508.118491
+      },
+      "samples": [
+        [
+          {
+            "wall_ns": 2019727446,
+            "allocated_objects": 5037632,
+            "gc_runs": 2,
+            "gc_ns": 199135103
+          },
+          {
+            "wall_ns": 2227320743,
+            "allocated_objects": 5040736,
+            "gc_runs": 3,
+            "gc_ns": 308983388
+          }
+        ]
+      ]
+    },
+    {
+      "layer": "qt",
+      "lines": 1500,
+      "scenario": "cursor.char_right",
+      "metrics": {
+        "operations": 2,
+        "median_ms": 2283.6058745,
+        "p95_ms": 2301.787269,
+        "max_ms": 2301.787269,
+        "mean_ms": 2283.6058745,
+        "operations_per_second": 0.43790393568634167,
+        "allocated_objects_per_operation": 5237586.5,
+        "gc_runs": 7,
+        "gc_ms": 636.306682
+      },
+      "samples": [
+        [
+          {
+            "wall_ns": 2265424480,
+            "allocated_objects": 5234354,
+            "gc_runs": 3,
+            "gc_ns": 329003637
+          },
+          {
+            "wall_ns": 2301787269,
+            "allocated_objects": 5240819,
+            "gc_runs": 4,
+            "gc_ns": 307303045
+          }
+        ]
+      ]
+    },
+    {
+      "layer": "qt",
+      "lines": 1500,
+      "scenario": "cursor.line_end",
+      "metrics": {
+        "operations": 2,
+        "median_ms": 2356.167065,
+        "p95_ms": 2392.152168,
+        "max_ms": 2392.152168,
+        "mean_ms": 2356.167065,
+        "operations_per_second": 0.42441812164113246,
+        "allocated_objects_per_operation": 5385736.5,
+        "gc_runs": 9,
+        "gc_ms": 689.498754
+      },
+      "samples": [
+        [
+          {
+            "wall_ns": 2392152168,
+            "allocated_objects": 5346629,
+            "gc_runs": 4,
+            "gc_ns": 377907990
+          },
+          {
+            "wall_ns": 2320181962,
+            "allocated_objects": 5424844,
+            "gc_runs": 5,
+            "gc_ns": 311590764
+          }
+        ]
+      ]
+    },
+    {
+      "layer": "qt",
+      "lines": 1500,
+      "scenario": "scroll.line_up",
+      "metrics": {
+        "operations": 2,
+        "median_ms": 2217.409315,
+        "p95_ms": 2257.806793,
+        "max_ms": 2257.806793,
+        "mean_ms": 2217.409315,
+        "operations_per_second": 0.45097672912048714,
+        "allocated_objects_per_operation": 5235217.0,
+        "gc_runs": 6,
+        "gc_ms": 536.403321
+      },
+      "samples": [
+        [
+          {
+            "wall_ns": 2257806793,
+            "allocated_objects": 5231989,
+            "gc_runs": 3,
+            "gc_ns": 312696681
+          },
+          {
+            "wall_ns": 2177011837,
+            "allocated_objects": 5238445,
+            "gc_runs": 3,
+            "gc_ns": 223706640
+          }
+        ]
+      ]
+    },
+    {
+      "layer": "qt",
+      "lines": 1500,
+      "scenario": "edit.undo",
+      "metrics": {
+        "operations": 2,
+        "median_ms": 2233.2451585,
+        "p95_ms": 2285.729572,
+        "max_ms": 2285.729572,
+        "mean_ms": 2233.2451585,
+        "operations_per_second": 0.4477788729078308,
+        "allocated_objects_per_operation": 5239056.0,
+        "gc_runs": 6,
+        "gc_ms": 569.488471
+      },
+      "samples": [
+        [
+          {
+            "wall_ns": 2285729572,
+            "allocated_objects": 5235828,
+            "gc_runs": 3,
+            "gc_ns": 337242614
+          },
+          {
+            "wall_ns": 2180760745,
+            "allocated_objects": 5242284,
+            "gc_runs": 3,
+            "gc_ns": 232245857
+          }
+        ]
+      ]
+    },
+    {
+      "layer": "qt",
+      "lines": 1500,
+      "scenario": "window.delete",
+      "metrics": {
+        "operations": 2,
+        "median_ms": 2268.64079,
+        "p95_ms": 2282.019676,
+        "max_ms": 2282.019676,
+        "mean_ms": 2268.64079,
+        "operations_per_second": 0.44079256813503737,
+        "allocated_objects_per_operation": 5237641.5,
+        "gc_runs": 6,
+        "gc_ms": 563.626973
+      },
+      "samples": [
+        [
+          {
+            "wall_ns": 2282019676,
+            "allocated_objects": 5234410,
+            "gc_runs": 4,
+            "gc_ns": 314052385
+          },
+          {
+            "wall_ns": 2255261904,
+            "allocated_objects": 5240873,
+            "gc_runs": 2,
+            "gc_ns": 249574588
+          }
+        ]
+      ]
+    },
+    {
+      "layer": "qt",
+      "lines": 1500,
+      "scenario": "window.split_horizontal",
+      "metrics": {
+        "operations": 2,
+        "median_ms": 4478.0890525,
+        "p95_ms": 4486.83386,
+        "max_ms": 4486.83386,
+        "mean_ms": 4478.0890525,
+        "operations_per_second": 0.22330953857242436,
+        "allocated_objects_per_operation": 10466898.5,
+        "gc_runs": 14,
+        "gc_ms": 1215.2317
+      },
+      "samples": [
+        [
+          {
+            "wall_ns": 4486833860,
+            "allocated_objects": 10461715,
+            "gc_runs": 7,
+            "gc_ns": 593819768
+          },
+          {
+            "wall_ns": 4469344245,
+            "allocated_objects": 10472082,
+            "gc_runs": 7,
+            "gc_ns": 621411932
+          }
+        ]
+      ]
+    },
+    {
+      "layer": "qt",
+      "lines": 1500,
+      "scenario": "scroll.page_down",
+      "metrics": {
+        "operations": 2,
+        "median_ms": 2275.376356,
+        "p95_ms": 2313.141339,
+        "max_ms": 2313.141339,
+        "mean_ms": 2275.376356,
+        "operations_per_second": 0.4394877345732602,
+        "allocated_objects_per_operation": 5324563.5,
+        "gc_runs": 6,
+        "gc_ms": 583.947601
+      },
+      "samples": [
+        [
+          {
+            "wall_ns": 2313141339,
+            "allocated_objects": 5321338,
+            "gc_runs": 3,
+            "gc_ns": 345096564
+          },
+          {
+            "wall_ns": 2237611373,
+            "allocated_objects": 5327789,
+            "gc_runs": 3,
+            "gc_ns": 238851037
+          }
+        ]
+      ]
+    },
+    {
+      "layer": "qt",
+      "lines": 1500,
+      "scenario": "cursor.line_down",
+      "metrics": {
+        "operations": 2,
+        "median_ms": 2264.309861,
+        "p95_ms": 2308.326668,
+        "max_ms": 2308.326668,
+        "mean_ms": 2264.309861,
+        "operations_per_second": 0.44163566887367806,
+        "allocated_objects_per_operation": 5239820.0,
+        "gc_runs": 5,
+        "gc_ms": 671.40559
+      },
+      "samples": [
+        [
+          {
+            "wall_ns": 2308326668,
+            "allocated_objects": 5236592,
+            "gc_runs": 3,
+            "gc_ns": 385497813
+          },
+          {
+            "wall_ns": 2220293054,
+            "allocated_objects": 5243048,
+            "gc_runs": 2,
+            "gc_ns": 285907777
+          }
+        ]
+      ]
+    },
+    {
+      "layer": "qt",
+      "lines": 1500,
+      "scenario": "cursor.page_down",
+      "metrics": {
+        "operations": 2,
+        "median_ms": 2280.937287,
+        "p95_ms": 2323.395242,
+        "max_ms": 2323.395242,
+        "mean_ms": 2280.937287,
+        "operations_per_second": 0.43841626234066644,
+        "allocated_objects_per_operation": 5324603.5,
+        "gc_runs": 7,
+        "gc_ms": 546.025791
+      },
+      "samples": [
+        [
+          {
+            "wall_ns": 2323395242,
+            "allocated_objects": 5321378,
+            "gc_runs": 4,
+            "gc_ns": 350963318
+          },
+          {
+            "wall_ns": 2238479332,
+            "allocated_objects": 5327829,
+            "gc_runs": 3,
+            "gc_ns": 195062473
+          }
+        ]
+      ]
+    },
+    {
+      "layer": "qt",
+      "lines": 1500,
+      "scenario": "cursor.line_up",
+      "metrics": {
+        "operations": 2,
+        "median_ms": 2247.1034025,
+        "p95_ms": 2293.859462,
+        "max_ms": 2293.859462,
+        "mean_ms": 2247.1034025,
+        "operations_per_second": 0.4450173493963191,
+        "allocated_objects_per_operation": 5235238.5,
+        "gc_runs": 7,
+        "gc_ms": 549.137968
+      },
+      "samples": [
+        [
+          {
+            "wall_ns": 2293859462,
+            "allocated_objects": 5232012,
+            "gc_runs": 4,
+            "gc_ns": 354267667
+          },
+          {
+            "wall_ns": 2200347343,
+            "allocated_objects": 5238465,
+            "gc_runs": 3,
+            "gc_ns": 194870301
+          }
+        ]
+      ]
+    },
+    {
+      "layer": "qt",
+      "lines": 1500,
+      "scenario": "cursor.word_forward",
+      "metrics": {
+        "operations": 2,
+        "median_ms": 2185.3825045,
+        "p95_ms": 2262.52148,
+        "max_ms": 2262.52148,
+        "mean_ms": 2185.3825045,
+        "operations_per_second": 0.4575857992552168,
+        "allocated_objects_per_operation": 5237781.5,
+        "gc_runs": 6,
+        "gc_ms": 536.595334
+      },
+      "samples": [
+        [
+          {
+            "wall_ns": 2262521480,
+            "allocated_objects": 5234528,
+            "gc_runs": 3,
+            "gc_ns": 346964921
+          },
+          {
+            "wall_ns": 2108243529,
+            "allocated_objects": 5241035,
+            "gc_runs": 3,
+            "gc_ns": 189630413
+          }
+        ]
+      ]
+    },
+    {
+      "layer": "qt",
+      "lines": 1500,
+      "scenario": "cursor.char_left",
+      "metrics": {
+        "operations": 2,
+        "median_ms": 2250.318366,
+        "p95_ms": 2279.552571,
+        "max_ms": 2279.552571,
+        "mean_ms": 2250.318366,
+        "operations_per_second": 0.44438156623034913,
+        "allocated_objects_per_operation": 5237474.0,
+        "gc_runs": 4,
+        "gc_ms": 627.821512
+      },
+      "samples": [
+        [
+          {
+            "wall_ns": 2221084161,
+            "allocated_objects": 5234254,
+            "gc_runs": 2,
+            "gc_ns": 312862492
+          },
+          {
+            "wall_ns": 2279552571,
+            "allocated_objects": 5240694,
+            "gc_runs": 2,
+            "gc_ns": 314959020
+          }
+        ]
+      ]
+    },
+    {
+      "layer": "qt",
+      "lines": 1500,
+      "scenario": "window.other",
+      "metrics": {
+        "operations": 2,
+        "median_ms": 4428.7084365,
+        "p95_ms": 4467.297573,
+        "max_ms": 4467.297573,
+        "mean_ms": 4428.7084365,
+        "operations_per_second": 0.22579946599291104,
+        "allocated_objects_per_operation": 10468580.5,
+        "gc_runs": 11,
+        "gc_ms": 1147.261445
+      },
+      "samples": [
+        [
+          {
+            "wall_ns": 4390119300,
+            "allocated_objects": 10465339,
+            "gc_runs": 5,
+            "gc_ns": 518823341
+          },
+          {
+            "wall_ns": 4467297573,
+            "allocated_objects": 10471822,
+            "gc_runs": 6,
+            "gc_ns": 628438104
+          }
+        ]
+      ]
+    },
+    {
+      "layer": "qt",
+      "lines": 1500,
+      "scenario": "window.split_vertical",
+      "metrics": {
+        "operations": 2,
+        "median_ms": 4501.9716455,
+        "p95_ms": 4598.47449,
+        "max_ms": 4598.47449,
+        "mean_ms": 4501.9716455,
+        "operations_per_second": 0.2221248996535911,
+        "allocated_objects_per_operation": 10466890.0,
+        "gc_runs": 9,
+        "gc_ms": 1113.207643
+      },
+      "samples": [
+        [
+          {
+            "wall_ns": 4598474490,
+            "allocated_objects": 10461697,
+            "gc_runs": 5,
+            "gc_ns": 606760353
+          },
+          {
+            "wall_ns": 4405468801,
+            "allocated_objects": 10472083,
+            "gc_runs": 4,
+            "gc_ns": 506447290
+          }
+        ]
+      ]
+    },
+    {
+      "layer": "qt",
+      "lines": 1500,
+      "scenario": "scroll.line_down",
+      "metrics": {
+        "operations": 2,
+        "median_ms": 2252.340753,
+        "p95_ms": 2256.576335,
+        "max_ms": 2256.576335,
+        "mean_ms": 2252.340753,
+        "operations_per_second": 0.44398255400212083,
+        "allocated_objects_per_operation": 5239799.0,
+        "gc_runs": 5,
+        "gc_ms": 667.171401
+      },
+      "samples": [
+        [
+          {
+            "wall_ns": 2248105171,
+            "allocated_objects": 5236571,
+            "gc_runs": 3,
+            "gc_ns": 349279261
+          },
+          {
+            "wall_ns": 2256576335,
+            "allocated_objects": 5243027,
+            "gc_runs": 2,
+            "gc_ns": 317892140
+          }
+        ]
+      ]
+    },
+    {
+      "layer": "qt",
+      "lines": 1500,
+      "scenario": "cursor.document_end",
+      "metrics": {
+        "operations": 2,
+        "median_ms": 3047.79845,
+        "p95_ms": 3052.307752,
+        "max_ms": 3052.307752,
+        "mean_ms": 3047.79845,
+        "operations_per_second": 0.3281056855974187,
+        "allocated_objects_per_operation": 7101677.5,
+        "gc_runs": 9,
+        "gc_ms": 945.144591
+      },
+      "samples": [
+        [
+          {
+            "wall_ns": 3052307752,
+            "allocated_objects": 7062588,
+            "gc_runs": 4,
+            "gc_ns": 468955533
+          },
+          {
+            "wall_ns": 3043289148,
+            "allocated_objects": 7140767,
+            "gc_runs": 5,
+            "gc_ns": 476189058
+          }
+        ]
+      ]
+    },
+    {
+      "layer": "qt",
+      "lines": 1500,
+      "scenario": "cursor.page_up",
+      "metrics": {
+        "operations": 2,
+        "median_ms": 2262.622349,
+        "p95_ms": 2330.062644,
+        "max_ms": 2330.062644,
+        "mean_ms": 2262.622349,
+        "operations_per_second": 0.4419650501737354,
+        "allocated_objects_per_operation": 5150486.5,
+        "gc_runs": 6,
+        "gc_ms": 497.642674
+      },
+      "samples": [
+        [
+          {
+            "wall_ns": 2330062644,
+            "allocated_objects": 5147260,
+            "gc_runs": 3,
+            "gc_ns": 231233991
+          },
+          {
+            "wall_ns": 2195182054,
+            "allocated_objects": 5153713,
+            "gc_runs": 3,
+            "gc_ns": 266408683
+          }
+        ]
+      ]
+    },
+    {
+      "layer": "qt",
+      "lines": 1500,
+      "scenario": "cursor.document_start",
+      "metrics": {
+        "operations": 2,
+        "median_ms": 1536.000089,
+        "p95_ms": 1546.644053,
+        "max_ms": 1546.644053,
+        "mean_ms": 1536.000089,
+        "operations_per_second": 0.6510416289435514,
+        "allocated_objects_per_operation": 3518589.5,
+        "gc_runs": 5,
+        "gc_ms": 472.848547
+      },
+      "samples": [
+        [
+          {
+            "wall_ns": 1525356125,
+            "allocated_objects": 3515447,
+            "gc_runs": 2,
+            "gc_ns": 211176264
+          },
+          {
+            "wall_ns": 1546644053,
+            "allocated_objects": 3521732,
+            "gc_runs": 3,
+            "gc_ns": 261672283
+          }
+        ]
+      ]
+    },
+    {
+      "layer": "qt",
+      "lines": 1500,
+      "scenario": "edit.delete_char",
+      "metrics": {
+        "operations": 2,
+        "median_ms": 2293.332544,
+        "p95_ms": 2337.579549,
+        "max_ms": 2337.579549,
+        "mean_ms": 2293.332544,
+        "operations_per_second": 0.43604666170908357,
+        "allocated_objects_per_operation": 5241212.5,
+        "gc_runs": 5,
+        "gc_ms": 760.162798
+      },
+      "samples": [
+        [
+          {
+            "wall_ns": 2249085539,
+            "allocated_objects": 5239490,
+            "gc_runs": 2,
+            "gc_ns": 371503598
+          },
+          {
+            "wall_ns": 2337579549,
+            "allocated_objects": 5242935,
+            "gc_runs": 3,
+            "gc_ns": 388659200
+          }
+        ]
+      ]
+    }
+  ]
+}

@@ -58,9 +58,14 @@ script/benchmark_qt_live_smoke.sh
 
 The live Qt smoke check retains the application/widgets, changes them on the GUI
 thread and pumps events. It checks visible editor geometry, caret styling and
-position, modeline updates, vertical/horizontal scrollbars, buffer switching and
-split creation/removal. The existing `script/curses_live_smoke.rb` and
+position, old/new paragraph backgrounds, multiline edits, modeline updates,
+vertical/horizontal scrollbars, buffer switching and split creation/removal.
+Use `RODED_BENCHMARK_PROFILE=ruby script/benchmark_qt_live_smoke.sh` to exercise
+syntax-colored native documents. The existing `script/curses_live_smoke.rb` and
 `script/curses_scale_live_smoke.rb` cover real terminal behavior separately.
+`script/curses_repeat_live_smoke.rb` verifies held-key scrolling and boundary
+no-ops in a private PTY: no terminal clear during movement and no rendering or
+terminal output for further `C-p` presses at the beginning of the document.
 
 ## Scenarios and state
 
@@ -84,6 +89,25 @@ of the document. Cursor and scrolling operations therefore always move instead
 of eventually measuring a boundary no-op. A page operation is explicitly 38
 logical lines across all layers, independent of split geometry. Setup, initial
 render and behavioral verification are outside timing and allocation counters.
+
+Resetting each invocation can reuse syntax cached for an identical edited
+document. Also measure consecutive typing to expose uncached highlighting:
+
+```sh
+bundle exec ruby benchmark/typing_stream.rb --mode plain --lines 1500 \
+  --layer curses --samples 5 --iterations 20 --output tmp/benchmarks/typing-plain.json
+bundle exec ruby benchmark/typing_stream.rb --mode ruby --lines 10000 \
+  --layer qt --samples 5 --iterations 20 --output tmp/benchmarks/typing-ruby.json
+```
+
+The stream prepares/renders once per sample, then inserts successive characters
+without resetting or warming the edited-text cache. It supports plain, Ruby,
+JSON, YAML and Markdown modes. Ruby uses the Ruby fixture; the other modes use
+the long plain fixture with that highlighting mode enabled. Markdown timings
+therefore do not represent a Markdown-heavy real document. The standalone stream
+report records its own script hash and workload/configuration; it is not a main
+suite report and cannot be passed to `benchmark/run.rb --baseline`. Compare
+streams with matching mode, fixture, machine, script/harness hashes and counts.
 
 Each sample owns a new application. Temporary split views are detached from
 buffer edit observers during reset, including views already removed by a delete
@@ -145,3 +169,6 @@ To extend the system, add a `Scenario` with preparation, one logical action, and
 a verification predicate. Preparation and verification are untimed. Add a
 behavioral harness spec, run the relevant frontend smoke check, and regenerate
 both reports after changing the harness because its implementation hash changes.
+
+Recorded runs, their limitations and remaining bottlenecks are in
+[the 2026-10-04 results](benchmark-results-2026-10-04.md).

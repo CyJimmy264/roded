@@ -1,0 +1,350 @@
+{
+  "fixtures": [
+    {
+      "version": 1,
+      "lines": 1500,
+      "profile": "ruby",
+      "bytes": 505889,
+      "sha256": "86ab36775a46ec7149178b504d0ffea79aa534576a3488ecc8583e696c82695d",
+      "block_lines": 100
+    }
+  ],
+  "results": [
+    {
+      "layer": "curses",
+      "lines": 1500,
+      "scenario": "edit.typing_stream",
+      "metrics": {
+        "operations": 40,
+        "median_ms": 71.3812375,
+        "p95_ms": 96.854715,
+        "max_ms": 101.243712,
+        "mean_ms": 75.817931875,
+        "operations_per_second": 13.189491921893708,
+        "allocated_objects_per_operation": 119933.7,
+        "gc_runs": 52,
+        "gc_ms": 455.330103
+      },
+      "samples": [
+        [
+          {
+            "wall_ns": 70040026,
+            "allocated_objects": 120127,
+            "gc_runs": 1,
+            "gc_ns": 3787186
+          },
+          {
+            "wall_ns": 72571220,
+            "allocated_objects": 119913,
+            "gc_runs": 1,
+            "gc_ns": 7795717
+          },
+          {
+            "wall_ns": 69567195,
+            "allocated_objects": 119910,
+            "gc_runs": 1,
+            "gc_ns": 6391899
+          },
+          {
+            "wall_ns": 96130570,
+            "allocated_objects": 119913,
+            "gc_runs": 2,
+            "gc_ns": 32569416
+          },
+          {
+            "wall_ns": 70912443,
+            "allocated_objects": 119917,
+            "gc_runs": 2,
+            "gc_ns": 6837251
+          },
+          {
+            "wall_ns": 70616098,
+            "allocated_objects": 119919,
+            "gc_runs": 1,
+            "gc_ns": 6962175
+          },
+          {
+            "wall_ns": 70430285,
+            "allocated_objects": 119921,
+            "gc_runs": 1,
+            "gc_ns": 6789009
+          },
+          {
+            "wall_ns": 99242565,
+            "allocated_objects": 119923,
+            "gc_runs": 2,
+            "gc_ns": 31739636
+          },
+          {
+            "wall_ns": 70840251,
+            "allocated_objects": 119925,
+            "gc_runs": 2,
+            "gc_ns": 7105682
+          },
+          {
+            "wall_ns": 70242860,
+            "allocated_objects": 119927,
+            "gc_runs": 1,
+            "gc_ns": 6762048
+          },
+          {
+            "wall_ns": 96854715,
+            "allocated_objects": 119929,
+            "gc_runs": 2,
+            "gc_ns": 32241981
+          },
+          {
+            "wall_ns": 71034279,
+            "allocated_objects": 119933,
+            "gc_runs": 2,
+            "gc_ns": 6727471
+          },
+          {
+            "wall_ns": 71023247,
+            "allocated_objects": 119934,
+            "gc_runs": 1,
+            "gc_ns": 7056079
+          },
+          {
+            "wall_ns": 96115844,
+            "allocated_objects": 119936,
+            "gc_runs": 2,
+            "gc_ns": 32018044
+          },
+          {
+            "wall_ns": 71005916,
+            "allocated_objects": 119938,
+            "gc_runs": 2,
+            "gc_ns": 7098779
+          },
+          {
+            "wall_ns": 70845189,
+            "allocated_objects": 119940,
+            "gc_runs": 1,
+            "gc_ns": 6969157
+          },
+          {
+            "wall_ns": 95968321,
+            "allocated_objects": 119942,
+            "gc_runs": 2,
+            "gc_ns": 32433413
+          },
+          {
+            "wall_ns": 69822355,
+            "allocated_objects": 119944,
+            "gc_runs": 2,
+            "gc_ns": 6554254
+          },
+          {
+            "wall_ns": 71539649,
+            "allocated_objects": 119946,
+            "gc_runs": 1,
+            "gc_ns": 7084587
+          },
+          {
+            "wall_ns": 101243712,
+            "allocated_objects": 119948,
+            "gc_runs": 2,
+            "gc_ns": 33664756
+          }
+        ],
+        [
+          {
+            "wall_ns": 69476918,
+            "allocated_objects": 119911,
+            "gc_runs": 1,
+            "gc_ns": 5117497
+          },
+          {
+            "wall_ns": 72549199,
+            "allocated_objects": 119908,
+            "gc_runs": 1,
+            "gc_ns": 7318831
+          },
+          {
+            "wall_ns": 90932011,
+            "allocated_objects": 119910,
+            "gc_runs": 2,
+            "gc_ns": 25549925
+          },
+          {
+            "wall_ns": 76024343,
+            "allocated_objects": 119913,
+            "gc_runs": 1,
+            "gc_ns": 12007655
+          },
+          {
+            "wall_ns": 71103024,
+            "allocated_objects": 119917,
+            "gc_runs": 1,
+            "gc_ns": 7222800
+          },
+          {
+            "wall_ns": 71382570,
+            "allocated_objects": 119919,
+            "gc_runs": 1,
+            "gc_ns": 7227942
+          },
+          {
+            "wall_ns": 71219079,
+            "allocated_objects": 119921,
+            "gc_runs": 1,
+            "gc_ns": 7272365
+          },
+          {
+            "wall_ns": 75537506,
+            "allocated_objects": 119923,
+            "gc_runs": 1,
+            "gc_ns": 7234925
+          },
+          {
+            "wall_ns": 72111403,
+            "allocated_objects": 119925,
+            "gc_runs": 1,
+            "gc_ns": 7374286
+          },
+          {
+            "wall_ns": 71686500,
+            "allocated_objects": 119927,
+            "gc_runs": 1,
+            "gc_ns": 7301409
+          },
+          {
+            "wall_ns": 71612373,
+            "allocated_objects": 119929,
+            "gc_runs": 1,
+            "gc_ns": 7285742
+          },
+          {
+            "wall_ns": 72304277,
+            "allocated_objects": 119932,
+            "gc_runs": 1,
+            "gc_ns": 7468713
+          },
+          {
+            "wall_ns": 71379905,
+            "allocated_objects": 119934,
+            "gc_runs": 1,
+            "gc_ns": 7320909
+          },
+          {
+            "wall_ns": 71441599,
+            "allocated_objects": 119936,
+            "gc_runs": 1,
+            "gc_ns": 7266793
+          },
+          {
+            "wall_ns": 71223536,
+            "allocated_objects": 119938,
+            "gc_runs": 1,
+            "gc_ns": 7213452
+          },
+          {
+            "wall_ns": 71627512,
+            "allocated_objects": 119940,
+            "gc_runs": 1,
+            "gc_ns": 7224963
+          },
+          {
+            "wall_ns": 71513361,
+            "allocated_objects": 119942,
+            "gc_runs": 1,
+            "gc_ns": 7410465
+          },
+          {
+            "wall_ns": 71351542,
+            "allocated_objects": 119944,
+            "gc_runs": 1,
+            "gc_ns": 7266334
+          },
+          {
+            "wall_ns": 70998703,
+            "allocated_objects": 119946,
+            "gc_runs": 1,
+            "gc_ns": 7290418
+          },
+          {
+            "wall_ns": 71195174,
+            "allocated_objects": 119948,
+            "gc_runs": 1,
+            "gc_ns": 7366139
+          }
+        ]
+      ]
+    }
+  ],
+  "config": {
+    "lines": [
+      1500
+    ],
+    "layers": [
+      "curses"
+    ],
+    "samples": 2,
+    "iterations": 20,
+    "warmup": 0,
+    "buffers": 4,
+    "windows": 1,
+    "seed": 1,
+    "profile": "ruby",
+    "mode": "ruby",
+    "workload": "consecutive_typing"
+  },
+  "environment": {
+    "recorded_at": "2026-10-04T07:06:08Z",
+    "ruby": "ruby 3.4.2 (2025-02-15 revision d2930f8e7a) +PRISM [x86_64-linux]",
+    "platform": "x86_64-linux",
+    "host": "lunnen",
+    "cpu": "AMD Ryzen 7 5825U with Radeon Graphics",
+    "yjit": false,
+    "gems": {
+      "pathname": "0.4.0",
+      "rake": "13.3.1",
+      "ast": "2.4.3",
+      "bundler": "2.6.6",
+      "curses": "1.5.3",
+      "date": "3.5.0",
+      "diff-lcs": "1.6.2",
+      "erb": "6.0.0",
+      "ffi": "1.17.4",
+      "io-console": "0.8.1",
+      "prettyprint": "0.2.0",
+      "pp": "0.6.3",
+      "stringio": "3.1.9",
+      "psych": "5.2.6",
+      "tsort": "0.2.0",
+      "rdoc": "6.16.1",
+      "reline": "0.6.3",
+      "irb": "1.15.3",
+      "json": "2.17.1",
+      "language_server-protocol": "3.17.0.5",
+      "lint_roller": "1.1.0",
+      "logger": "1.6.5",
+      "parallel": "1.27.0",
+      "racc": "1.8.1",
+      "parser": "3.3.10.0",
+      "prism": "1.6.0",
+      "qt": "0.2.0",
+      "rainbow": "3.1.1",
+      "regexp_parser": "2.11.3",
+      "unicode-emoji": "4.1.0",
+      "unicode-display_width": "3.2.0",
+      "roded": "0.1.0",
+      "rspec-support": "3.13.6",
+      "rspec-core": "3.13.6",
+      "rspec-expectations": "3.13.5",
+      "rspec-mocks": "3.13.7",
+      "rspec": "3.13.2",
+      "rubocop-ast": "1.48.0",
+      "ruby-progressbar": "1.13.0",
+      "rubocop": "1.81.7"
+    },
+    "git_revision": "6a80352be8bcf4c8ea951fcbe3a19755bb06f8e8",
+    "git_dirty": false,
+    "harness_sha256": "2f83a34c57f8f0880fa32e7e8c446084c1e016e36435d74294d88d372c2cd1bd",
+    "qt_platform": "offscreen",
+    "ruby_options": "-r/home/mveynberg/.rbenv/versions/3.4.2/lib/ruby/gems/3.4.0/gems/bundler-2.6.6/lib/bundler/setup",
+    "gc_environment": {},
+    "stream_sha256": "ac7b44db9806a4d2405eac41fbea7260b2af4b6299aca383cf15f215ff84f9de"
+  }
+}

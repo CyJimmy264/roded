@@ -1,0 +1,141 @@
+{
+  "description": "Original benchmark reports; baselines are exploratory dirty-checkout measurements.",
+  "reports": [
+    {
+      "file": "baseline-core-curses.json",
+      "sha256": "03662e188cab7d7f79d9f77561ea759fa959de4436cca2d416b8c6d862852c2b",
+      "git_revision": "4f5595c50889ec2fdff20e67c874a9947c961ec1",
+      "git_dirty": true,
+      "cases": 204,
+      "observations": 1224
+    },
+    {
+      "file": "baseline-qt.json",
+      "sha256": "181f4cf4388315546e14f2e7561fb5ef9be7fd7093ec37b8b1618b82e2676498",
+      "git_revision": "4f5595c50889ec2fdff20e67c874a9947c961ec1",
+      "git_dirty": true,
+      "cases": 34,
+      "observations": 68
+    },
+    {
+      "file": "core-curses.json",
+      "sha256": "f2d9a34965bbe4a9c76a6a7ca9b1a2409bd8742ccb37cf89971586f0a33b8e60",
+      "git_revision": "692caf91c43cd5e82de80e8f5139a23448c2c5dd",
+      "git_dirty": false,
+      "cases": 204,
+      "observations": 1224
+    },
+    {
+      "file": "qt-full.json",
+      "sha256": "aa023b5e6454b34e49a52e8ac92466dfcec98a9280fd310c79f65ac84d425279",
+      "git_revision": "1da9eeb5e618887cf68d8d97a9fa4fd498d516d3",
+      "git_dirty": false,
+      "cases": 34,
+      "observations": 68
+    },
+    {
+      "file": "qt-large.json",
+      "sha256": "15f9952a2bd7cfccdad3f59e60927001cf409d9238f2587829842e45db8b0f6d",
+      "git_revision": "1da9eeb5e618887cf68d8d97a9fa4fd498d516d3",
+      "git_dirty": false,
+      "cases": 15,
+      "observations": 30
+    },
+    {
+      "file": "qt-hot-before.json",
+      "sha256": "b6c49df15c684c961c92b8b4815e33809c75f6900652fb20473363ef7760d84a",
+      "git_revision": "692caf91c43cd5e82de80e8f5139a23448c2c5dd",
+      "git_dirty": false,
+      "cases": 5,
+      "observations": 200
+    },
+    {
+      "file": "qt-hot.json",
+      "sha256": "31d2cdb9e667947cfd177d4b5c5c4c8b8b5e90730ade45c39d777ebde6b97319",
+      "git_revision": "1da9eeb5e618887cf68d8d97a9fa4fd498d516d3",
+      "git_dirty": false,
+      "cases": 5,
+      "observations": 200
+    },
+    {
+      "file": "qt-typing.json",
+      "sha256": "ae13d7d9ec754bfa9dde47fee1066ff8286206b278a48e923a2ef812f650a19d",
+      "git_revision": "1da9eeb5e618887cf68d8d97a9fa4fd498d516d3",
+      "git_dirty": false,
+      "cases": 1,
+      "observations": 40
+    },
+    {
+      "file": "curses-plain-1500.json",
+      "sha256": "8154acc03b5b1cc3fca48fad7ec077c233ece1e2394eb3cf78f080bc7644cc36",
+      "git_revision": "692caf91c43cd5e82de80e8f5139a23448c2c5dd",
+      "git_dirty": false,
+      "cases": 1,
+      "observations": 40
+    },
+    {
+      "file": "curses-plain-10000.json",
+      "sha256": "1f4d07b811793f9e72decad073f70680d0bd01829a0f210c5f62f731c89634f2",
+      "git_revision": "692caf91c43cd5e82de80e8f5139a23448c2c5dd",
+      "git_dirty": false,
+      "cases": 1,
+      "observations": 40
+    },
+    {
+      "file": "curses-markdown-1500.json",
+      "sha256": "4c8f5138994aa215740a572a234306664d8b17c30ed6ea47a724810057f83b65",
+      "git_revision": "692caf91c43cd5e82de80e8f5139a23448c2c5dd",
+      "git_dirty": false,
+      "cases": 1,
+      "observations": 40
+    },
+    {
+      "file": "curses-markdown-10000.json",
+      "sha256": "c1b828ba1bd25bfdf6d3196388c331328cbd3f3498d9272cec190903224b655b",
+      "git_revision": "692caf91c43cd5e82de80e8f5139a23448c2c5dd",
+      "git_dirty": false,
+      "cases": 1,
+      "observations": 40
+    },
+    {
+      "file": "curses-ruby-before-1500.json",
+      "sha256": "f4ee25d53b37fed21304adf68b48a1486a866f55fc0636bdcffc708ae6dfd5a2",
+      "git_revision": "692caf91c43cd5e82de80e8f5139a23448c2c5dd",
+      "git_dirty": false,
+      "cases": 1,
+      "observations": 10
+    },
+    {
+      "file": "curses-ruby-before-10000.json",
+      "sha256": "38a2f9b7b2a1e15a057a89f48ba63e7a884a5577609d2fcc37c86d49a2641aef",
+      "git_revision": "692caf91c43cd5e82de80e8f5139a23448c2c5dd",
+      "git_dirty": false,
+      "cases": 1,
+      "observations": 3
+    },
+    {
+      "file": "curses-ruby-after-1500.json",
+      "sha256": "887778e2e3d319c5c36d79c32f8ef1a9568d2c406da4a2a9be4427765da9b9cf",
+      "git_revision": "6a80352be8bcf4c8ea951fcbe3a19755bb06f8e8",
+      "git_dirty": false,
+      "cases": 1,
+      "observations": 10
+    },
+    {
+      "file": "curses-ruby-after-10000.json",
+      "sha256": "0cbe00532bbfaffd660137fddfbe813112c11d66212725fb913a7ebe46528dfc",
+      "git_revision": "6a80352be8bcf4c8ea951fcbe3a19755bb06f8e8",
+      "git_dirty": false,
+      "cases": 1,
+      "observations": 3
+    },
+    {
+      "file": "curses-ruby-hot.json",
+      "sha256": "5271f765b1a2a4bce8cdb8440cd720ee41ccc07c2ce1320e6a6ddc7e381a7f0f",
+      "git_revision": "6a80352be8bcf4c8ea951fcbe3a19755bb06f8e8",
+      "git_dirty": false,
+      "cases": 1,
+      "observations": 40
+    }
+  ]
+}
