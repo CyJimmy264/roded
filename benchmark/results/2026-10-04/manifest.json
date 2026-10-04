@@ -136,6 +136,46 @@
       "git_dirty": false,
       "cases": 1,
       "observations": 40
+    },
+    {
+      "file": "qt-plain-layout-full.json",
+      "sha256": "76dc6439ac5c0a3f3f13ddd98f2ae22b23c5e098ab1f8ed5388aa60cc5c5f8ca",
+      "git_revision": "b13a60cd332d5f725b57ab088b394df14c134577",
+      "git_dirty": false,
+      "cases": 34,
+      "observations": 68
+    },
+    {
+      "file": "qt-plain-layout-large.json",
+      "sha256": "928830480d39b92e030b52175787b473057ff92e44448cd4f3e0a085f41e05aa",
+      "git_revision": "b13a60cd332d5f725b57ab088b394df14c134577",
+      "git_dirty": false,
+      "cases": 15,
+      "observations": 30
+    },
+    {
+      "file": "qt-plain-layout-hot.json",
+      "sha256": "3cb6e008c44e1c349a237883fa30d4ab41a100b530fe34cab64e345e8f7dbebe",
+      "git_revision": "b13a60cd332d5f725b57ab088b394df14c134577",
+      "git_dirty": false,
+      "cases": 5,
+      "observations": 200
+    },
+    {
+      "file": "qt-plain-layout-hot-large.json",
+      "sha256": "b71cc119855b958f0e8c2504a6b1f5df941165a5e046330e9ecd8af35224f505",
+      "git_revision": "b13a60cd332d5f725b57ab088b394df14c134577",
+      "git_dirty": false,
+      "cases": 5,
+      "observations": 500
+    },
+    {
+      "file": "qt-plain-layout-typing.json",
+      "sha256": "f2d29c5ee77953fc245062341a2b44ae253f9a14e2d86d156692c55a41f9338c",
+      "git_revision": "b13a60cd332d5f725b57ab088b394df14c134577",
+      "git_dirty": false,
+      "cases": 1,
+      "observations": 40
     }
   ]
 }

@@ -36,8 +36,9 @@ Qt renderer. These baselines do not uniquely identify a clean source tree and
 should not be treated as reproducible clean-commit performance contracts. The
 old Qt viewport bug also limits equivalence of its painted frames.
 
-Candidate core/curses reports were recorded at clean `692caf9`; the final Qt
+Candidate core/curses reports were recorded at clean `692caf9`; earlier Qt
 reports at clean `1da9eeb`; Ruby native-token reports at clean `6a80352`.
+The Qt plain-layout follow-up below was recorded at clean `b13a60c`.
 Each original JSON includes its actual source revision, dirty flag, configuration,
 fixture hashes and individual measurements. See the [raw archive](../benchmark/results/2026-10-04/README.md)
 and [file-hash manifest](../benchmark/results/2026-10-04/manifest.json).
@@ -110,6 +111,50 @@ and [large Qt](../benchmark/results/2026-10-04/qt-large.json).
 | window.split_vertical | 111.91 | 397.65 |
 | window.delete | 32.59 | 84.76 |
 
+## Qt plain-layout follow-up
+
+Qt now uses `QPlainTextEdit` with native inline and paragraph formatting. Its
+layout avoids shaping all preceding rows when jumping through a long document.
+Split panes copy a native document fragment into independently editable plain
+layouts. Structural edits retain and update the UTF-16 position index, avoiding
+native cursor traversal through thousands of blocks. Cursor geometry uses cached
+snapshot lines instead of splitting the entire document on each render.
+
+The matched [1500-line complete run](../benchmark/results/2026-10-04/qt-plain-layout-full.json)
+and [10,000-line selection](../benchmark/results/2026-10-04/qt-plain-layout-large.json)
+have no median regression above 20% against the earlier clean Qt reports.
+These remain two-observation diagnostics. Selected 10,000-line medians:
+
+| Operation | Earlier ms | Plain layout ms |
+| --- | --- | --- |
+| cursor.document_end | 440.47 | 31.70 |
+| buffer.next | 443.99 | 35.09 |
+| edit.newline | 74.19 | 32.29 |
+| edit.delete_block | 80.05 | 46.62 |
+| window.split_vertical | 397.65 | 105.12 |
+| window.delete | 84.76 | 27.39 |
+
+The [focused 1500-line run](../benchmark/results/2026-10-04/qt-plain-layout-hot.json)
+uses the same forty-observation configuration as the earlier focused run; all
+five medians improve by 22–27%. The separate
+[10,000-line focused run](../benchmark/results/2026-10-04/qt-plain-layout-hot-large.json)
+has one hundred observations per case. Times are milliseconds:
+
+| Operation | 1500 median | 1500 p95 | 10,000 median | 10,000 p95 |
+| --- | --- | --- | --- | --- |
+| cursor.char_left | 14.46 | 16.40 | 20.35 | 24.57 |
+| cursor.char_right | 14.19 | 16.67 | 20.24 | 27.55 |
+| cursor.line_down | 14.85 | 17.89 | 20.79 | 26.84 |
+| edit.backspace | 16.14 | 19.48 | 31.74 | 37.16 |
+| edit.insert_char | 17.41 | 23.32 | 32.14 | 39.44 |
+
+[Consecutive Qt typing on 1500 lines](../benchmark/results/2026-10-04/qt-plain-layout-typing.json)
+has median 16.30 ms, p95 17.85 ms and maximum 20.79 ms over forty operations,
+compared with the earlier matched median 23.97 ms. The hundred-observation input
+results on 10,000 lines exceed the target even though the short diagnostic input
+median is 28.15 ms. These reports still exclude keyboard queues, dispatcher wait
+and compositor timing; they do not establish keyboard-to-frame latency.
+
 ## Consecutive typing without edited-text cache reuse
 
 Each sample starts once and inserts different successive characters into the
@@ -123,7 +168,7 @@ maximum. Times are milliseconds.
 | curses / plain | 2.93 | 3.47 | 8.00 | 11.64 |
 | curses / Markdown mode | 4.28 | 4.76 | 19.36 | 23.43 |
 | curses / Ruby after | 71.72 | 101.01 | 474.67 | 555.11 |
-| Qt / plain | 23.97 | 29.06 | — | — |
+| Qt / plain, earlier rich layout | 23.97 | 29.06 | — | — |
 
 Ruby's matched medians changed from 270.69 to 71.72 ms on 1500 lines and from
 2139.37 to 474.67 ms on 10,000 lines. A separate forty-operation Ruby run gives
@@ -147,9 +192,10 @@ used to predict Ruby or other uncached highlighting costs.
   cost, but this remains above 12–30 ms; heredoc documents retain the slower lexer.
   Incremental lexical checkpoints or revision-checked background highlighting
   are further work, not features claimed by these measurements.
-- Qt document swaps, native layout on long documents and first split creation
-  remain expensive. Per-buffer native document retention and cheaper document
-  construction need separate memory/correctness measurements.
+- Qt plain layout reduces long-document navigation and buffer-switch costs, but
+  first split creation, large block edits and uncached 10,000-line input remain
+  expensive. Further document construction and retention changes need separate
+  memory/correctness measurements.
 - Large block edits still compute whole-document position changes in the core.
   Their allocation cost grows with document length.
 - These runs do not measure sustained real keyboard-to-frame throughput,
@@ -158,7 +204,8 @@ used to predict Ruby or other uncached highlighting costs.
 
 ## Validation and reproduction
 
-`bundle exec rake` passed: 418 examples and RuboCop across 201 Ruby files.
+`bundle exec rake` passed after the plain-layout change: 421 examples and RuboCop
+across 203 Ruby files.
 Visible Qt checks run under private Xvfb with retained widgets and event pumping;
 they verify editor/caret geometry, one paragraph background at the cursor row,
 modelines, scrolling, buffers, splits and multiline edits. Both plain and Ruby

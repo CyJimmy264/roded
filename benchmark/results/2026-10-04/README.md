@@ -9,3 +9,9 @@ operation, environment, source revision and dirty-checkout flag.
 commit baselines. The other reports were recorded at the clean revision stated
 in each file. The main suite resets each invocation; `*-typing` and `curses-plain`,
 `curses-markdown`, `curses-ruby` files measure consecutive edits instead.
+
+`qt-plain-layout-*` reports record the clean `b13a60c` follow-up. Complete and
+large diagnostic reports contain two observations per case; the focused 1500-line
+report has forty and the focused 10,000-line report has one hundred. Their
+methodology remains execution plus frontend flush, excluding keyboard queues and
+compositor timing.
