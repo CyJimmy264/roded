@@ -126,3 +126,25 @@ def decoder_pipes
   wake_reader, wake_writer = IO.pipe
   [input, writer, wake_reader, wake_writer]
 end
+
+RSpec.describe Roded::Frontends::CursesInputDecoder, "consecutive terminal keys" do
+  it "preserves keys arriving immediately after a Meta key" do
+    decoder = described_class.new
+    input, writer, wake_reader, wake_writer = decoder_pipes
+    writer.write("\egg32\r\x06\x02")
+    keys = Array.new(7) { decoder.read_key(input, wake_reader) }
+    expect(keys).to eq(%w[M-g g 3 2 Enter C-f C-b])
+  ensure
+    [input, writer, wake_reader, wake_writer].compact.each(&:close)
+  end
+
+  it "preserves a Unicode Meta key and escape sequences buffered after paste" do
+    decoder = described_class.new
+    input, writer, wake_reader, wake_writer = decoder_pipes
+    writer.write("\e[200~text\e[201~\eЖ\e[D\x02")
+    expect(decoder.read_key(input, wake_reader)).to eq(described_class::PasteInput.new("text"))
+    expect(Array.new(3) { decoder.read_key(input, wake_reader) }).to eq(%w[M-Ж Left C-b])
+  ensure
+    [input, writer, wake_reader, wake_writer].compact.each(&:close)
+  end
+end

@@ -111,7 +111,14 @@ module Roded
       end
 
       def complete_sequence?(sequence, paste_start)
-        SEQUENCES.include?(sequence) || sequence == paste_start || CSI_U_TRANSLATOR.complete?(sequence)
+        SEQUENCES.include?(sequence) || sequence == paste_start || CSI_U_TRANSLATOR.complete?(sequence) ||
+          complete_meta_character?(sequence)
+      end
+
+      def complete_meta_character?(sequence)
+        return false if sequence.empty? || sequence.start_with?("[", "O")
+
+        sequence.dup.force_encoding("UTF-8").valid_encoding?
       end
 
       def translate_escape(sequence)
@@ -214,9 +221,10 @@ module Roded
       def collect_escape_sequence(stdin)
         sequence = +"".b
         loop do
-          break unless stdin.wait_readable(@key_translator.timeout(sequence, BRACKETED_PASTE_START))
+          timeout = @key_translator.timeout(sequence, BRACKETED_PASTE_START)
+          break unless !@pending_input.empty? || stdin.wait_readable(timeout)
 
-          sequence << stdin.read_nonblock(1)
+          sequence << read_input_byte(stdin)
           break if @key_translator.complete_sequence?(sequence, BRACKETED_PASTE_START)
         end
         sequence

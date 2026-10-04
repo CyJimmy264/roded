@@ -48,3 +48,29 @@ RSpec.describe Roded::UIUpdate do
     end.to raise_error(TypeError, /unsupported mutable UI update value/)
   end
 end
+
+RSpec.describe Roded::UIUpdate, "shared immutable payload validation" do
+  it "reuses deeply immutable containers without trusting a frozen outer container with mutable children" do
+    lines = ["original".freeze].freeze
+    frozen = { lines: }.freeze
+    first = described_class.new(:render, frozen)
+    expect(first.payload).to equal(frozen)
+    expect(described_class.new(:render, frozen).payload).to equal(frozen)
+    mutable_line = +"mutable"
+    shallow = { lines: [mutable_line] }.freeze
+    copied = described_class.new(:render, shallow)
+    mutable_line << " changed"
+    expect(copied.payload[:lines]).to eq(["mutable"])
+    expect(copied.payload[:lines]).to be_frozen
+  end
+
+  it "validates shared immutable snapshots from multiple frontend threads" do
+    payload = { lines: Array.new(1500, "text".freeze).freeze }.freeze
+    results = Queue.new
+    threads = Array.new(4) do
+      Thread.new { 20.times { results << described_class.new(:render, payload).payload } }
+    end
+    threads.each(&:join)
+    expect(Array.new(80) { results.pop }).to all(equal(payload))
+  end
+end

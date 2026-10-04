@@ -1,6 +1,9 @@
 module Roded
   # Keeps frontend messages independent from later core mutations.
   module UIUpdatePayload
+    @immutable_cache = ObjectSpace::WeakMap.new
+    @immutable_cache_mutex = Mutex.new
+
     module_function
 
     def copy(value)
@@ -16,10 +19,17 @@ module Roded
     def deeply_frozen?(value)
       return immutable_scalar?(value) if scalar?(value)
       return false unless value.frozen?
-      return deeply_frozen_hash?(value) if value.is_a?(Hash)
-      return deeply_frozen_array?(value) if value.is_a?(Array)
+      return cached_immutable_container?(value) if value.is_a?(Hash) || value.is_a?(Array)
 
       value.is_a?(String)
+    end
+
+    def cached_immutable_container?(value)
+      return true if @immutable_cache_mutex.synchronize { @immutable_cache.key?(value) }
+
+      frozen = value.is_a?(Hash) ? deeply_frozen_hash?(value) : deeply_frozen_array?(value)
+      @immutable_cache_mutex.synchronize { @immutable_cache[value] = true } if frozen
+      frozen
     end
 
     def copy_hash(value)

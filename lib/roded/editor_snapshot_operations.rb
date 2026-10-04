@@ -33,7 +33,8 @@ module Roded
       return cached[:content] if cached && cached[:revision] == buffer.revision && cached[:mode] == mode
 
       lines = buffer.lines
-      content = { text: buffer.text_snapshot, lines:, mode:, tokens: @syntax_highlighter.spans(mode, lines) }.freeze
+      content = { buffer_id: buffer.object_id, text: buffer.text_snapshot, lines:, mode:,
+                  tokens: @syntax_highlighter.spans(mode, lines) }.freeze
       @document_snapshots[buffer] = { revision: buffer.revision, mode:, content: }
       content
     end

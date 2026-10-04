@@ -164,7 +164,7 @@ required_log_entries = [
   'next_event: read_key: "C-p"',
   "publish_ui_update: picker_render",
   "publish_ui_update: minibuffer_clear",
-  "publish_ui_update: move_cursor",
+  "publish_ui_update: render",
   'next_event: read_key: "C-_"',
   'next_event: read_key: "F7"',
   "event received: paste",
@@ -180,6 +180,7 @@ abort "curses smoke exited #{exit_status.inspect}; missing #{missing_entries.ins
   exit_status&.zero? && missing_entries.empty? && !log.include?("Editor runtime failed")
 picker_renders = log.scan("publish_ui_update: picker_render").length
 abort "curses picker navigation did not render each selection change; files: #{smoke_dir}" if picker_renders < 3
+abort "curses cursor modeline did not reach the second row; files: #{smoke_dir}" unless captured.include?("2:1")
 
 puts "curses live smoke passed (picker C-n/C-p, M-</M->, C-n, typing, bracketed paste, C-_, C-x u, " \
      "C-c r d, F7 save, quit cancel); " \

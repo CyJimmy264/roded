@@ -60,9 +60,7 @@ module Roded
       end
 
       def horizontal_origin(item, width)
-        point = item[:point]
-        line = item[:lines][point[:row]].to_s
-        Roded::Frontends::CursesTextGeometry.horizontal_origin(line, point[:col], item[:left_column], width)
+        @frontend.send(:horizontal_viewport).origin(item, width)
       end
 
       def visible_origin(point, origin, span)

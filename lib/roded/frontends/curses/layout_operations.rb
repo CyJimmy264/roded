@@ -5,6 +5,7 @@ module Roded
       private
 
       def render_layout(snapshot)
+        horizontal_viewport.retain(snapshot[:windows])
         return if CursesCursorRedraw.new(self).call(@layout_snapshot, snapshot)
 
         @layout_snapshot = snapshot
@@ -62,11 +63,12 @@ module Roded
       def window_origin(item, width, height)
         text_height = [height - 1, 0].max
         first_line = visible_origin(item[:point][:row], item[:top_line], text_height)
-        active_line = item[:lines][item[:point][:row]].to_s
-        left_column = CursesTextGeometry.horizontal_origin(
-          active_line, item[:point][:col], item[:left_column], width
-        )
+        left_column = horizontal_viewport.origin(item, width)
         [first_line, left_column]
+      end
+
+      def horizontal_viewport
+        @horizontal_viewport ||= CursesHorizontalViewport.new
       end
 
       def draw_window_lines(item, first_line, left_column, rectangle)
