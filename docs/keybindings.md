@@ -1,19 +1,10 @@
-# Keybindings для первой рабочей версии
+# Keybindings Roded 0.2.0
 
-Это целевая спецификация, а не утверждение о текущей поддержке. Выполняющий
-goal агент добавляет реализацию, справку и проверки. Источники просмотрены
-3 октября 2026 года:
+Клавиатура, M-x и Ruby API используют общий реестр команд. Таблицы описывают
+стандартные bindings; пользовательская конфигурация может их переопределить.
+`C-h b` / `M-x describe-bindings` показывают фактическую конфигурацию.
 
-- `/home/mveynberg/.config/emacs-vanilla/init.el` и `custom.el`;
-- явные пользовательские keybindings в `/home/mveynberg/.spacemacs.d/init.el`.
-
-Vanilla UI: `spacemacs-dark`, без menu/tool/scroll bars и line numbers, column
-number в modeline. Не требуется устанавливать Emacs или переносить Lisp.
-Vanilla behavior: `C-s` → consult-line, `C-x b` → consult-buffer,
-`M-y` → consult-yank-pop, подсказки prefixes. Magit, kmacro, Corfu и persistent
-recentf/savehist/save-place не обязательны для этой версии.
-
-## Обязательные основные bindings
+## Основные bindings
 
 | Клавиши | Команда / поведение |
 | --- | --- |
@@ -79,7 +70,7 @@ Ctrl/Shift/Super и punctuation сохраняются при нормализа
 events и фактическое выполнение команд. OS может перехватить shortcut до Qt:
 такой случай документируется отдельно от возможностей приложения.
 
-| Исходный binding | Поведение в первой версии | Доступный fallback |
+| Исходный binding | Поведение | Доступный fallback |
 | --- | --- | --- |
 | `F7`, `M-s-j` | Save buffer | `C-x C-s` |
 | `M-s-k` | Kill current buffer | `C-x k` |
@@ -109,28 +100,7 @@ mode. `insert-binding-irb` только вставляет текст в ред�
 REPL открывается через `ruby-repl` и не зависит от этой команды.
 Время вставляется в локальной timezone процесса; это документируется.
 
-## Отложенные исходные bindings
+## Не реализованные подсистемы
 
-Эти bindings прочитаны, но их подсистемы не обязательны для goal. Не делать
-пустые команды с успешным результатом и не перехватывать клавиши под заглушки.
-
-| Исходные bindings | Причина отложения |
-| --- | --- |
-| Vanilla `C-x g`, `C-c k` | Magit и keyboard macros |
-| `s-F1` … `s-F7`, `C-M-Menu` | Perspectives/project layouts |
-| `s-Return`, `M-s-h`, `s-Tab` | Org editing/journal/overview |
-| `s-'`, `s-(`, `C-s-{`, `C-M-t`, leader `xtt` | Structural editing/transpose |
-| `M-Q` | Reflow/unfill paragraph |
-| `M-s-[`, `M-s-]`, `s-{`, `s-}`, `M-s--` | Code folding |
-| `M-s-g`, `M-s-l` | Jump-to-definition / jump history |
-| `M-s-i` | Внешний formatter; базовый indent остаётся обязательным |
-| `C-Menu` | Picker файлов Git diff |
-| `s-Menu`, `M-s-Menu` | Regex/symbol search по всему проекту; buffer search обязателен |
-| `s-p`, `s-n` | Spell checking |
-| `F5` | Treemacs sidebar |
-| `F6` | Специфическая команда очистки LSP state |
-| `s-/` | Hippie-expand/code completion |
-| Leader `atj` | Systemd journal viewer |
-
-User keymap может переопределять target bindings. Справка отображает фактическую
-конфигурацию, terminal aliases и доступные команды, а не только эту таблицу.
+LSP, Magit, макросы, Org, folding, структурное редактирование, project perspectives,
+completion и sidebar не входят в 0.2.0. Для них нет bindings-заглушек.

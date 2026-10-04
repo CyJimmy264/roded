@@ -1,9 +1,10 @@
 PATH
   remote: .
   specs:
-    roded (0.1.0)
-      curses
-      logger
+    roded (0.2.0)
+      curses (~> 1.5)
+      logger (~> 1.6)
+      prism (~> 1.6)
       qt (~> 0.2.0)
       unicode-display_width (~> 3.2)
 

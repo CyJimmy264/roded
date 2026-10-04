@@ -1,138 +1,79 @@
-# Qt frontend: исходные данные и контракт реализации
+# Qt frontend
 
-Это дополнение к `GOAL.md`, не готовая реализация. Пользователь явно включил
-Qt frontend, Super shortcuts и допустил локальные hacks при пробелах своего
-gem, с обязательным TODO о будущей доработке Qt.
+Roded 0.2.0 uses the Ruby `qt` gem 0.2.x and Qt 6 Widgets on Linux.
+The tested development environment uses Ruby 3.4.2, qt 0.2.0 and Qt Widgets 6.11.2;
+live checks use XCB on a private Xvfb. A desktop launch needs a working display
+and the Qt runtime required by the installed gem.
 
-## Источники и подтверждённая поверхность API
-
-3 октября 2026 года прочитаны:
-
-- `/home/mveynberg/Code/Ruby/qt/README.md`, gemspec и Ruby/runtime sources;
-- generated widgets/constants/event payload schemas в локальном `qt/build`;
-- `/home/mveynberg/Code/Ruby/qtimetrap/lib/qtimetrap.rb`, container и примеры
-  использования событий/timers в `app/views` / `app/components`.
-
-На момент первоначального probe использовался gem **0.1.9**. Сейчас Roded
-зависит от **qt ~> 0.2.0**; исправления binding и удалённые обходы перечислены
-в `docs/qt-workarounds.md`. Для API поведения ориентироваться на runtime probe
-и integration specs установленной версии.
-
-В локальных sources есть `QApplication`, `QTimer`, `QShortcut`,
-`QPlainTextEdit`, `QTextEdit`, `QTextCursor`, `on(:key_press)` и subscriptions
-через `connect`. Key payload schema включает `key`, `text`, `modifiers`,
-`is_auto_repeat`. Event handler может вернуть `:consume` для перехвата события.
-Constants включают Control/Alt/Shift/MetaModifier.
-
-Однако наличие класса не означает полноту его binding. Например, native text
-cursor/format/extra-selection API и virtual overrides следует проверять по
-доступным методам и тестам, а не по полной документации C++ Qt. Здесь Qt API
-не запускался и не компилировался, это проверка sources.
-
-Qt различает AltModifier и MetaModifier; см.
-[Qt keyboard modifiers](https://doc.qt.io/qt-6/qt.html#KeyboardModifier-enum).
-В Roded на Linux: Emacs `M-` = Alt, Emacs `s-` = Super / Qt MetaModifier.
-Не потерять это различие при использовании QKeySequence, где имя Meta имеет
-собственное Qt значение. Кейсы Alt+Super, Ctrl+Super, Shift+Super и punctuation
-проверить отдельными примерами, включая `M-s-j`, `s-l`, `s-,`, `s-.`.
-
-`qtimetrap` — пример рабочего boot/event/style слоя, не шаблон структуры Roded.
-Полезны `app.exec`, `QTimer`, Ruby subscriptions и раздельные view models;
-DI framework, Rails-like layout и polling каждого domain объекта копировать
-не требуется. Политика hacks из чужого AGENTS.md не распространяется на Roded:
-пользователь специально разрешил обходы здесь. Исходные проекты остаются
-справочниками; основной результат и коммиты создаются в Roded.
-
-## Ранний API probe и вертикальный сценарий
-
-До реализации полного Qt UI проверить минимальным воспроизводимым приложением:
-
-1. QApplication/window lifecycle и GUI thread.
-2. Key/text/modifier events, consume, repeat, Unicode и punctuation.
-3. Реально доступные способы рисовать текст, spans, cursor, selection и scroll.
-4. Resize/focus/close, возможность отменить close.
-5. Доставку UI-state из core через GUI-thread scheduling, без deadlocks.
-
-Итог probe — небольшой работающий Roded Qt slice: открыть один buffer,
-ввести текст через core, увидеть update, вызвать test command с Super,
-корректно закрыть окно. Не отложить эту проверку до конца переписывания core.
-Prototype затем либо интегрировать, либо удалить; не оставлять вторую editor
-implementation и второй state store.
-
-## Границы модели и widgets
-
-Native text widgets можно использовать как presentation. Их default editing,
-native undo, context menu и shortcuts не должны изменять документ в обход core.
-Выбрать один проверяемый способ input translation/snapshot application;
-подавлять render feedback loops. Не делать постоянный sync двух независимых
-авторитетных документов через timer. При readonly display/custom drawing
-реализовать реальный cursor, selection, copy/paste и accessibility/focus basics
-в пределах минимального GUI, не выдавать статический QLabel за editor.
-
-Qt callbacks/widgets/QApplication живут в GUI/main thread. Core может владеть
-отдельным потоком или последовательно выполняться в GUI dispatcher, но это
-должно быть явно определено вместе с REPL execution/interrupt policy. Старый
-runtime, вызывающий каждый frontend.handle_command из background main loop,
-для Qt без адаптации непригоден. Marshal snapshots через поддерживаемый
-dispatcher или bounded QTimer mailbox; timer здесь — integration detail,
-а не domain polling/новая event bus.
-
-В обязательном объёме — один frontend за запуск с общим core. Одновременный
-Qt+curses в одном процессе не требуется, но типы событий и snapshots допускают
-несколько независимых источников. OS desktop frame и Roded editor window/split
-должны называться различно в коде и документации.
-
-## Workarounds
-
-Missing API сначала подтвердить в **используемой версии** gem: available methods,
-generated sources, runtime payload, минимальный reproducer. Затем выбрать
-наименьший рабочий workaround в `lib/roded/frontends/qt` или его support слоях.
-Предпочесть поддержанный альтернативный widget/API и Ruby adapter. Если нужен
-низкоуровневый обход, изолировать его с guards по версии/ABI, проверкой lifetime
-и регрессионным test; не размазывать raw pointers/FFI по editor core.
-
-Обязательная форма комментария рядом с обходом:
-
-```ruby
-# TODO(qt): HACK — qt <version> does not expose <exact API/capability>.
-# Workaround: <what this code does and its constraints>.
-# Extend qt with <required binding/runtime support>, then replace this with <normal API>.
+```sh
+bin/setup
+bundle exec bin/roded --frontend qt [file ...]
 ```
 
-При создании первого workaround добавить `docs/qt-workarounds.md`: место кода,
-version/API gap, reproducer, workaround, ограничения, test и способ удаления.
-Документ не нужен пустым ради галочки. TODO допустимы к завершению goal,
-если обязательная функция реально работает и проверена. TODO вместо функции
-или suppress ошибки с fake success не удовлетворяют goal.
+No local absolute path to the Qt source checkout is required. When adding an
+API call, inspect/probe the installed gem's generated Ruby/native bindings:
+a C++ Qt method is not necessarily exposed by this Ruby binding.
 
-Не менять installed gem/global config или чужой репозиторий как скрытую часть
-сборки. Local dependency override допустим как документированный development
-вариант; обычная установка должна быть воспроизводима с опубликованным gem.
-Нативное приложение не должно crash из-за незафиксированного ABI предположения.
-При действительно невозможном обходе сохранить reproducer и конкретный запрос
-к binding; не подменять Qt другим GUI toolkit.
+## Presentation and input
 
-## Проверка готовности
+Each editor pane retains a read-only, no-wrap QPlainTextEdit document. Core text
+and token spans are shared immutable snapshot data; native documents are per pane.
+Changes update affected blocks, structural edits use edit blocks, and changes to
+more than 64 rows rebuild the document. Plain panes copy as plain text.
+Within-row caret-only movement on unchanged, unselected text updates the old/new
+character formats without replacing the row. Other overlays use block HTML.
 
-Общий acceptance scenario из GOAL выполняется в curses и Qt. Для Qt дополнительно:
-real-widget offscreen integration, живой desktop smoke, физические Super keys,
-Alt/Super distinction, mouse caret/selection/wheel, clipboard, close cancellation,
-Unicode offset conversion, native editing interception и exception shutdown.
-Зафиксировать Qt/gem/backend versions, результаты probes и screenshots.
-Offscreen modifiers доказывают input translation; физические shortcuts отдельно
-доказывают доставку events в пользовательском окружении.
+Core columns count Unicode codepoints; Qt offsets count UTF-16 units with expanded
+tabs. QtCursorMapper/QtDocumentIndex translate positions in both directions,
+including blank rows, end-of-line caret cells, combining marks and surrogate pairs.
+The current row has a full-width background and a contrasting block caret.
+Mouse press/drag/release hit testing produces core point/mark events.
 
-Clipboard использует `QApplication.clipboard.text`/`set_text`, caret ставится
-через `QTextCursor` с переводом core codepoint column в UTF-16 offset, split
-ratio применяется через `QSplitter.set_sizes`, а отмена native close
-возвращает `:reject`. Детали и regression specs — в
-`docs/qt-workarounds.md`. Наличие этих API не закрывает оставшиеся acceptance
-checks. Qt caret отображается контрастным block поверх символа; строка с point
-получает приглушённый фон на всю ширину видимой области, а пустая строка —
-видимый block caret. Пустые visual paragraphs сохраняют геометрию Qt через
-служебный неразрывный пробел; mapper исключает его из core positions. Mouse
-press/drag/release hit-test-ятся
-по реальному QTextEdit, переводятся обратно в core point/mark и повторно
-рендерятся из общего snapshot. Изолированный Xvfb smoke проверяет mouse
-selection/copy, wheel, edit/save, split и synthetic Super events; физические
-Super shortcuts отдельно проверяются на desktop.
+QtTextEditor intercepts native editing and routes keys through the shared core.
+Native undo and the text context menu are disabled. Clipboard reads/writes use
+QApplication.clipboard. Alt represents Emacs Meta; Qt MetaModifier represents
+Super on Linux. Split sizes reflect the core split tree and ratios.
+Native close can be rejected while the core offers save/discard/cancel.
+
+## Scheduling and scrolling
+
+Widgets and callbacks run on the GUI thread. QtUiDispatcher coalesces pending
+updates, preserves explicit refresh requests and wakes through a queued native
+single-shot call. There is no periodic idle polling timer.
+QtEventLoop releases Ruby's GVL around QApplication.exec so core/input/highlighter
+threads can run between GUI callbacks; see [adaptations](qt-workarounds.md).
+
+Scroll restoration uses one connected single-shot timer per pane. When rendering,
+only Roded's horizontal feedback is suspended: native valueChanged signals must
+reach Qt so unchanged neighboring rows scroll with the current row. The settled
+origin is reported to core; intermediate programmatic origins are suppressed.
+
+Fusion is the default style because Breeze's Alt mnemonic handling caused costly
+viewport repainting in measurements. Explicit QT_STYLE_OVERRIDE is respected.
+The existing renderer remains in use; [KWrite research](qt-rendering-alternatives.md)
+is retained for future decisions supported by measurements or concrete features.
+
+## Regression checks
+
+The checkout's specs force QT_QPA_PLATFORM=offscreen and private XDG config.
+Standalone probes need private config too. Live checks run under private Xvfb:
+
+```sh
+script/qt_live_smoke.sh
+script/qt_two_file_acceptance_smoke.sh
+RODED_BENCHMARK_PROFILE=ruby script/benchmark_qt_live_smoke.sh
+xvfb-run -a -s '-screen 0 1280x800x24' bundle exec ruby benchmark/qt_horizontal_scroll_smoke.rb
+```
+
+Retain QApplication/widgets and pump events on the GUI thread for live-widget
+checks. Inspect visible caret, row background, modeline and scrolling, not only
+native document contents. The horizontal check compares neighboring-row X11
+pixels before/after movement and against a complete viewport repaint.
+Manual event pumping cannot establish native-loop scheduling; use the native
+[latency harness](benchmarks.md) or `benchmark/qt_event_loop_probe.rb` for that.
+
+Xvfb proves synthetic X11 delivery. A desktop window manager may intercept
+physical Super shortcuts; retain the standard bindings/M-x fallbacks.
+New binding adaptations belong in the Qt adapter, with version/API evidence,
+lifetime handling, a reproducer and regression coverage. Do not patch the
+installed gem or an unrelated source checkout as an implicit build step.

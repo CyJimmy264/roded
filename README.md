@@ -154,11 +154,12 @@ compare an optimization against a saved baseline. See
 
 The test suite uses offscreen Qt widgets for integration tests. Live frontend
 smoke checks use a private PTY or Xvfb with private Qt config directories; they
-do not need the user's desktop session. Current versions, commands, observations,
-screenshots, and remaining environment-specific checks are recorded in
-[`docs/working-editor-validation.md`](docs/working-editor-validation.md).
+do not need the user's desktop session. See [architecture](docs/architecture.md),
+[Qt setup and checks](docs/qt-frontend.md), and the [release procedure](docs/releasing.md).
+Release notes are in [CHANGELOG](CHANGELOG.md); benchmark evidence is retained in
+[the optimization report](docs/optimization-final-report-2026-10-05.md).
 
-Roded's first working version does not include LSP, collaboration, Vim/Evil
+Roded 0.2.0 does not include LSP, collaboration, Vim/Evil
 mode, structural editing, folding, or a plugin framework. Other unimplemented
 items remain roadmap work rather than advertised features.
 

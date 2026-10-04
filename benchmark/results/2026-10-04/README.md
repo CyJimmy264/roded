@@ -1,6 +1,6 @@
 # Recorded long-document runs
 
-See [methodology and interpretation](../../../docs/benchmark-results-2026-10-04.md).
+See [methodology and interpretation](../../../docs/optimization-final-report-2026-10-05.md).
 These JSON files are unchanged copies of the measured reports, including every
 operation, environment, source revision and dirty-checkout flag.
 `manifest.json` records file hashes and observation counts.

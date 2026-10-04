@@ -24,12 +24,13 @@ The current evidence points to our presentation path as a problem; it does not
 establish that Qt itself cannot meet the input-latency target. QPlainTextEdit is
 already used by Roded. However, our renderer inserts HTML into QTextDocument
 blocks to represent the caret, current line, selection and search highlights.
-Moving point therefore changes document formatting and replaces block contents.
-Changes involving more than 64 rows rebuild the whole document. Each pane owns a
-separate native document. The dispatcher also waits for a 12 ms timer tick.
+Within-row unselected caret movement now changes only old/new character formats;
+other overlays still update block contents. Changes involving more than 64 rows
+rebuild the whole document. Each pane owns a separate native document. The
+dispatcher wakes on queued work rather than the former 12 ms polling tick.
 
 The existing reset benchmarks explicitly drain that dispatcher, so they exclude
-this timer, real keyboard delivery and the desktop compositor. They must not be
+normal GUI wakeup, real keyboard delivery and the desktop compositor. They must not be
 used as evidence that the running frontend has reached VS Code-like latency.
 
 ## Confirmed Ruby binding event-loop defect
@@ -46,7 +47,7 @@ ticker and a native Qt timer that enters Ruby only to finish after about 400 ms.
 The original binding permits one ticker wakeup, with an approximately 400 ms gap.
 Releasing the GVL permits hundreds of wakeups. This is a scheduling regression
 probe, not a keyboard-to-pixel latency measurement. It also deliberately has fewer
-Ruby callbacks than the production UI, whose dispatcher runs every 12 ms.
+Ruby callbacks than the editor UI; the production dispatcher is now event driven.
 
 Roded's QtEventLoop adapter reattaches only this entry point with `blocking: true`.
 It retains QApplication's original `exec` wrapper, window showing and disposal;

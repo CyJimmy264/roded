@@ -296,7 +296,7 @@ behavioral harness spec, run the relevant frontend smoke check, and regenerate
 both reports after changing the harness because its implementation hash changes.
 
 Recorded runs, their limitations and remaining bottlenecks are in
-[the 2026-10-04 results](benchmark-results-2026-10-04.md).
+[the optimization report](optimization-final-report-2026-10-05.md).
 
 ### Deep columns, large windows and actual files
 
@@ -306,9 +306,10 @@ the report stores the generated text hash. Default fixture v1 content is unchang
 The independent word oracle checks arbitrary word boundaries, including Unicode
 and crossings between rows. The caret must appear in the actual X11 frame.
 
-Use --file AGENTS.md --start-row 30 --start-col 340 to reproduce an actual file,
-plus repeated --extra-file GOAL.md / --extra-file lib/roded/application.rb
-arguments for previously visited buffers. Row and column are zero-based. Source
+Use --file PATH --start-row ROW --start-col COLUMN to measure an actual file,
+plus repeated --extra-file README.md / --extra-file lib/roded/application.rb
+arguments for previously visited buffers. Choose a valid position in the current
+file; historical AGENTS/GOAL fixtures in the archive predate documentation cleanup. Row and column are zero-based. Source
 files are only read; the child edits its in-memory copies. Reports include content
 hashes for every source, actual Qt style and window geometry. The visited buffers
 are prepared before the timed key sequence. --buffers repeats the main fixture;
