@@ -32,6 +32,15 @@ def assert_caret_geometry(editor)
         "scroll=#{editor.vertical_scroll_bar.value}, step=#{editor.vertical_scroll_bar.single_step}"
 end
 
+def capture_frame(scenario)
+  directory = ENV.fetch("RODED_BENCHMARK_SCREENSHOT_DIR", nil)
+  return unless directory
+
+  FileUtils.mkdir_p(directory)
+  path = File.join(directory, "#{scenario.name.tr(".", "_")}.png")
+  raise "could not capture visible Xvfb frame" unless system("import", "-window", "root", path)
+end
+
 Roded::Benchmarking::Isolation.run(xvfb: true) do
   fixture = Roded::Benchmarking::Fixture.new(line_count: 1500, profile: "plain")
   work = Roded::Benchmarking::Workspace.new(layer: "qt", fixture:, buffer_count: 4, window_count: 1)
@@ -46,6 +55,7 @@ Roded::Benchmarking::Isolation.run(xvfb: true) do
     raise "operation failed: #{scenario.name}" unless scenario.verify.call(work)
 
     assert_visible_frame(work)
+    capture_frame(scenario)
     editor = work.frontend.frontend.view.editor
     if scenario.name == "scroll.page_down"
       raise "vertical viewport did not scroll" unless editor.vertical_scroll_bar.value.positive?

@@ -1,20 +1,32 @@
 require_relative "tab_expander"
 require_relative "eol_caret_renderer"
+require_relative "editor_overlay_ranges"
 
 module Roded
   module Frontends
     # Builds Qt rich text from immutable core snapshots and visual overlays.
     class QtEditorHtmlRenderer
+      include QtEditorOverlayRanges
+
+      attr_reader :lines, :snapshot
+
       def initialize(text, snapshot)
-        @lines = text.split("\n", -1)
+        @lines = snapshot[:lines] || text.split("\n", -1)
         @lines = [""] if @lines.empty?
         @snapshot = snapshot
         @range = ordered_range(snapshot[:mark], snapshot[:point])
       end
 
       def render
-        blocks = @lines.each_with_index.map { |line, row| render_block(line, row) }.join
-        "<div style=\"white-space: pre; font-family: monospace; margin: 0;\">#{blocks}</div>"
+        "<div style=\"white-space: pre; font-family: monospace; margin: 0;\">#{blocks.join}</div>"
+      end
+
+      def blocks
+        @blocks ||= @lines.each_index.map { |row| block_html(row) }
+      end
+
+      def block_html(row)
+        render_block(@lines.fetch(row), row)
       end
 
       private
@@ -108,29 +120,6 @@ module Roded
 
         "color: #282c34; background-color: #61afef;"
       end
-
-      def selected_columns(line, row)
-        return unless @range
-
-        range_columns(line, row, @range.first, @range.last)
-      end
-
-      def highlight_columns(line, row)
-        highlight = @snapshot[:highlight]
-        return unless highlight
-
-        range_columns(line, row, highlight[:start], highlight[:finish])
-      end
-
-      def range_columns(line, row, first, last)
-        return unless row.between?(first[:row], last[:row])
-
-        start_column = row == first[:row] ? first[:col] : 0
-        end_column = row == last[:row] ? last[:col] : line.length
-        [start_column, end_column.clamp(0, line.length)]
-      end
-
-      def covers?(range, first, last) = range && first >= range.first && last <= range.last
 
       def escape_html(text)
         text.gsub("&", "&amp;").gsub("<", "&lt;").gsub(">", "&gt;")

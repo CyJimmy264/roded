@@ -92,18 +92,8 @@ module Roded
         @window_layout.add_widget(@echo_area.widget)
       end
 
-      def pane_for(id)
-        @panes[id] ||= @pane_pool.pop || QtEditorPane.new(@window)
-      end
-
-      def migrate_single_pane(records)
-        return unless @panes.key?(:single) && !records.key?(:single) && records.any?
-
-        @panes[records.keys.first] = @panes.delete(:single)
-      end
-
       def bind_panes(records)
-        records.each_key { |id| bind_pane(id, pane_for(id)) }
+        records.each { |id, snapshot| bind_pane(id, pane_for(id, snapshot)) }
       end
 
       def bind_pane(id, pane)

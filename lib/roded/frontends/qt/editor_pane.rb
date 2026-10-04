@@ -4,6 +4,7 @@ require_relative "mouse_input_adapter"
 require_relative "layout_spacing"
 require_relative "horizontal_scroll_operations"
 require_relative "vertical_scroll_operations"
+require_relative "document_renderer"
 
 module Roded
   module Frontends
@@ -12,13 +13,12 @@ module Roded
       include QtHorizontalScrollOperations
       include QtVerticalScrollOperations
 
-      attr_reader :container, :editor
+      attr_reader :container, :editor, :snapshot, :document_renderer
 
-      def initialize(parent)
+      def initialize(parent, template: nil)
         @container = QWidget.new(parent)
         @layout = QVBoxLayout.new(@container)
-        @editor = QTextEdit.new(@container)
-        @mouse_input = QtMouseInputAdapter.new(@editor)
+        initialize_editor(template)
         configure_editor
         @modeline = QLabel.new(@container)
         QtLayoutSpacing.configure_pane(@container, @layout, @editor, @modeline)
@@ -70,15 +70,23 @@ module Roded
 
       private
 
+      def initialize_editor(template)
+        @editor = QTextEdit.new(@container)
+        @document_renderer = QtDocumentRenderer.new(@editor)
+        @document_renderer.copy_from(template.document_renderer) if template
+        @mouse_input = QtMouseInputAdapter.new(@editor)
+      end
+
       def render_text(snapshot, text)
-        @editor.set_html(QtEditorHtmlRenderer.new(text, snapshot).render)
-        QtCursorMapper.place(@editor, snapshot, text)
+        @document_renderer.render(snapshot, text)
+        QtCursorMapper.place(@editor, snapshot, text,
+                             row_position: @document_renderer.row_position(snapshot[:point][:row]))
       end
 
       def render_modeline(snapshot)
         @modeline.set_text(snapshot[:modeline] || modeline_for(snapshot))
-        @modeline.repaint
-        @container.repaint
+        @modeline.update
+        @container.update
       end
 
       def subscribe_keys

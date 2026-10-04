@@ -1,0 +1,97 @@
+require "spec_helper"
+require "qt"
+require_relative "../lib/roded/frontends/qt/editor_pane"
+
+module QtDocumentRendererSpecSupport
+  def snapshot(lines, point, **overlays)
+    { text: lines.join("\n"), lines:, point:, mark: nil, highlight: nil,
+      tokens: Roded::SyntaxHighlighter.new.spans(:ruby, lines) }.merge(overlays)
+  end
+
+  def expect_native_frame(state)
+    @renderer.render(state, state[:text])
+    expect_matching_content(state)
+    expect_native_positions(state[:lines])
+    expect(@editor.to_html.scan("background-color:#61afef").length).to eq(1)
+  end
+
+  def expect_matching_content(state)
+    @reference.set_html(Roded::Frontends::QtEditorHtmlRenderer.new(state[:text], state).render)
+    expect(@editor.to_plain_text).to eq(@reference.to_plain_text)
+    expect(@editor.document.block_count).to eq(state[:lines].length)
+  end
+
+  def expect_native_positions(lines)
+    lines.each_index do |row|
+      cursor = @editor.text_cursor
+      Roded::Frontends::QtCursorMapper.move_to_row(cursor, row)
+      expect(@renderer.row_position(row)).to eq(cursor.position)
+    end
+  end
+end
+
+RSpec.shared_context "Qt native document rendering" do
+  include QtDocumentRendererSpecSupport
+
+  before(:context) { @qt_application = QApplication.new(0, ["roded-document-spec"]) }
+  before do
+    @editor = QTextEdit.new
+    @reference = QTextEdit.new
+    @editor.set_undo_redo_enabled(false)
+    @renderer = Roded::Frontends::QtDocumentRenderer.new(@editor)
+  end
+  after do
+    [@editor, @reference].each(&:close)
+    QApplication.process_events
+  end
+  after(:context) { @qt_application.quit }
+end
+
+RSpec.describe Roded::Frontends::QtDocumentRenderer, "incremental content" do
+  include_context "Qt native document rendering"
+
+  it "preserves native blocks, Unicode, tabs and caret markers through edits and undo" do
+    original = ["def привет", "\t🙂é<&", "", "end", ""]
+    expect_native_frame(snapshot(original, { row: 1, col: 2 }))
+    changed = original.dup
+    changed[1] = "\t🙂🙂<&"
+    expect_native_frame(snapshot(changed, { row: 1, col: changed[1].length }))
+    expect_native_frame(snapshot(changed, { row: 3, col: 3 }))
+    expect_native_frame(snapshot(original, { row: 0, col: 0 }))
+  end
+
+  it "preserves prefix and suffix blocks across insertions, deletions and empty-document transitions" do
+    states = [[""], ["first", ""], ["new", "first", ""], ["new", "first", "middle", "last", ""],
+              ["new", "last", ""], [""], ["🙂", "\t", "end"]]
+    states.each { |lines| expect_native_frame(snapshot(lines, { row: lines.length - 1, col: lines.last.length })) }
+  end
+end
+
+RSpec.describe Roded::Frontends::QtDocumentRenderer, "overlays and copies" do
+  include_context "Qt native document rendering"
+
+  it "removes selection and search highlights after their ranges change" do
+    lines = ["def one", "two", "end"]
+    state = snapshot(lines, { row: 2, col: 2 }, mark: { row: 0, col: 0 },
+                                                highlight: { start: { row: 1, col: 0 }, finish: { row: 1, col: 3 } })
+    expect_native_frame(state)
+    expect(@editor.to_html).to include("background-color:#e5c07b", "background-color:#3e4451")
+    expect_native_frame(snapshot(lines, { row: 0, col: 1 }))
+    expect(@editor.to_html).not_to include("background-color:#e5c07b", "background-color:#3e4451")
+  end
+
+  it "keeps a split document and its UTF-16 index independent of subsequent source edits" do
+    lines = ["🙂", "", "last"]
+    state = snapshot(lines, { row: 0, col: 1 })
+    expect_native_frame(state)
+    copy = Roded::Frontends::QtDocumentRenderer.new(@reference)
+    copy.copy_from(@renderer)
+    copy.render(state, state[:text])
+    copied_text = @reference.to_plain_text
+    changed = snapshot(["a longer first line", "", "last"], { row: 0, col: 0 })
+    @renderer.render(changed, changed[:text])
+    expect(@reference.to_plain_text).to eq(copied_text)
+    expect(copy.row_position(1)).to eq(4)
+    expect(@renderer.row_position(1)).to eq(20)
+  end
+end

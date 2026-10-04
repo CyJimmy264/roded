@@ -1,12 +1,24 @@
+require_relative "horizontal_cursor_geometry"
+
 module Roded
   module Frontends
     # Maps core character positions to offsets in Qt's UTF-16 text document.
     class QtCursorMapper
-      def self.place(editor, snapshot, text)
+      extend QtHorizontalCursorGeometry
+
+      def self.place(editor, snapshot, text, row_position: nil)
         cursor = editor.text_cursor
-        cursor.set_position(utf16_offset(text, snapshot.fetch(:point)))
+        point = snapshot.fetch(:point)
+        lines = snapshot[:lines] || lines_for(text)
+        row_position ? cursor.set_position(row_position) : move_to_row(cursor, point.fetch(:row))
+        cursor.set_position(cursor.position + line_offset(lines.fetch(point[:row]), point.fetch(:col)))
         editor.set_text_cursor(cursor)
         editor.ensure_cursor_visible
+      end
+
+      def self.move_to_row(cursor, row)
+        cursor.set_position(0)
+        cursor.move_position(::Qt::QTextCursor::NextBlock, ::Qt::QTextCursor::MoveAnchor, row) if row.positive?
       end
 
       def self.position_at(editor, horizontal, vertical, text, snapshot = nil)
@@ -15,47 +27,6 @@ module Roded
         point.set_y(vertical.to_i)
         cursor = editor.cursor_for_position(point)
         core_position(text, cursor.position, snapshot)
-      end
-
-      def self.left_column_at_viewport(editor, text, snapshot)
-        row = snapshot.fetch(:point).fetch(:row)
-        column_at_horizontal_offset(editor, text, row, editor.horizontal_scroll_bar.value)
-      end
-
-      def self.horizontal_offset(editor, text, row, column)
-        lines = lines_for(text)
-        line = lines.fetch(row.to_i.clamp(0, lines.length - 1))
-        prefix = QtTabExpander.expand(line, 0, column.to_i.clamp(0, line.length))
-        editor.font_metrics.horizontal_advance(prefix, utf16_length(prefix))
-      end
-
-      def self.horizontal_origin_visible?(editor, text, snapshot, origin)
-        point = snapshot.fetch(:point)
-        row = point.fetch(:row)
-        point_offset = horizontal_offset(editor, text, row, point.fetch(:col))
-        origin_offset = horizontal_offset(editor, text, row, origin)
-        delta = point_offset - origin_offset
-        delta.between?(0, editor.viewport.width)
-      end
-
-      def self.column_at_horizontal_offset(editor, text, row, offset)
-        lines = lines_for(text)
-        line = lines.fetch(row.to_i.clamp(0, lines.length - 1))
-        lower_bound = lower_bound_column(editor, text, row, line.length, offset.to_i)
-        return line.length unless lower_bound
-
-        closest_column(editor, text, row, lower_bound, offset.to_i)
-      end
-
-      def self.lower_bound_column(editor, text, row, length, offset)
-        (0..length).bsearch { |column| horizontal_offset(editor, text, row, column) >= offset }
-      end
-
-      def self.closest_column(editor, text, row, lower_bound, offset)
-        previous = [lower_bound - 1, 0].max
-        [previous, lower_bound].min_by do |column|
-          (horizontal_offset(editor, text, row, column) - offset.to_i).abs
-        end
       end
 
       def self.core_position(text, offset, snapshot = nil)
@@ -111,9 +82,8 @@ module Roded
       end
 
       def self.core_column(line, line_offset)
-        (0..line.length).min_by do |column|
-          (line_offset(line, column) - line_offset).abs
-        end
+        following = (0..line.length).bsearch { |column| line_offset(line, column) >= line_offset } || line.length
+        [[following - 1, 0].max, following].min_by { |column| (line_offset(line, column) - line_offset).abs }
       end
 
       def self.expanded_line(line)
@@ -121,7 +91,7 @@ module Roded
       end
 
       def self.utf16_length(text)
-        text.encode(Encoding::UTF_16LE).bytesize / 2
+        text.ascii_only? ? text.length : text.encode(Encoding::UTF_16LE).bytesize / 2
       end
     end
   end

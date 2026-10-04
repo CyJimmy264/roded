@@ -15,19 +15,23 @@ module Roded
       end
 
       def expand(first, last)
+        fragment = @line[first...last].to_s
+        return fragment unless fragment.include?("\t")
+
         visual_column = display_width(@line[0...first].to_s)
-        @line[first...last].to_s.each_grapheme_cluster.with_object(+"") do |cluster, expanded|
-          visual_column += append_cluster(expanded, cluster, visual_column)
-        end
+        expand_parts(fragment.split("\t", -1), visual_column)
       end
 
       private
 
-      def append_cluster(expanded, cluster, visual_column)
-        return append_tab(expanded, visual_column) if cluster == "\t"
+      def expand_parts(parts, visual_column)
+        parts.each_with_index.with_object(+"") do |(part, index), expanded|
+          expanded << part
+          next if index == parts.length - 1
 
-        expanded << cluster
-        Unicode::DisplayWidth.of(cluster)
+          visual_column += display_width(part)
+          visual_column += append_tab(expanded, visual_column)
+        end
       end
 
       def append_tab(expanded, visual_column)

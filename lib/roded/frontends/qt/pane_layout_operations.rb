@@ -12,6 +12,23 @@ module Roded
 
       private
 
+      def pane_for(id, snapshot = nil)
+        @panes[id] ||= @pane_pool.pop || build_pane(snapshot)
+      end
+
+      def build_pane(snapshot)
+        template = @panes.values.find do |pane|
+          snapshot&.[](:lines) && pane.snapshot && pane.snapshot[:lines].equal?(snapshot[:lines])
+        end
+        QtEditorPane.new(@window, template:)
+      end
+
+      def migrate_single_pane(records)
+        return unless @panes.key?(:single) && !records.key?(:single) && records.any?
+
+        @panes[records.keys.first] = @panes.delete(:single)
+      end
+
       def prepare_panes(records)
         migrate_single_pane(records)
         bind_panes(records)

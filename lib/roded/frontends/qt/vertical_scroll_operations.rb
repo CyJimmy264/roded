@@ -13,9 +13,16 @@ module Roded
 
       def restore_scroll(snapshot)
         scroll_bar = @editor.vertical_scroll_bar
-        top_line = visible_origin(snapshot)
-        scroll_bar.set_value(top_line * scroll_bar.single_step)
-        @editor.viewport.repaint
+        rectangle = @editor.cursor_rect
+        scroll_bar.set_single_step([rectangle.height, 1].max)
+        scroll_bar.set_value(vertical_scroll_offset(snapshot, rectangle, scroll_bar))
+        @editor.viewport.update
+      end
+
+      def vertical_scroll_offset(snapshot, rectangle, scroll_bar)
+        caret_y = scroll_bar.value + rectangle.y - @editor.document.property("documentMargin").round
+        row_delta = snapshot.fetch(:point).fetch(:row) - visible_origin(snapshot)
+        caret_y - (row_delta * scroll_bar.single_step)
       end
 
       def visible_origin(snapshot)
