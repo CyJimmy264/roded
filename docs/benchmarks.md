@@ -134,6 +134,11 @@ highlighting and shutdown are outside the measured intervals. Ruby color settlin
 can occur concurrently; the reported frame requires the new text/caret, not final
 syntax colors.
 
+The readiness timer starts after initial document construction and window show.
+Starting it before construction lets a large Ruby document exhaust the delay and
+report caret coordinates before deferred viewport restoration. The initial pixel
+check rejects that stale geometry; startup remains outside input measurements.
+
 Consecutive typing must remain within the viewport: a horizontal scroll can leave
 the caret at the same screen position and needs a different frame oracle. The
 runner rejects a changed horizontal origin rather than accepting an unchanged

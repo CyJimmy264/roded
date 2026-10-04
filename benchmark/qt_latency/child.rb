@@ -12,7 +12,7 @@ require "json"
 
 module Roded
   module Benchmarking
-    # Runs the real frontend/core loops, with the production 12 ms dispatcher.
+    # Runs the real frontend/core loops and the production UI dispatcher.
     class LatencyChild
       include LatencyHooks
 
@@ -83,7 +83,17 @@ module Roded
           frontend.view.editor.set_focus
           trace.emit("ready", application.editor_snapshot)
         end
-        @timer.start
+        start_timer_when_shown(frontend.view)
+      end
+
+      def start_timer_when_shown(view)
+        timer = @timer
+        show = view.method(:show)
+        # Initial document construction can exceed the readiness delay.
+        view.define_singleton_method(:show) do
+          show.call
+          timer.start
+        end
       end
     end
   end
