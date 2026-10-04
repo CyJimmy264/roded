@@ -43,7 +43,7 @@ module Roded
       end
 
       def absolute_first(segment)
-        segment.first + segment.left_column
+        segment.first_offset + segment.left_column
       end
 
       def absolute_last(segment)
