@@ -31,6 +31,28 @@ RSpec.describe Roded::SyntaxHighlighter do
   end
 end
 
+RSpec.describe Roded::SyntaxHighlighter, "incremental line modes" do
+  %i[json yaml markdown].each do |mode|
+    it "shares unchanged #{mode} rows across uncached Unicode edits and structural changes" do
+      highlighter = described_class.new
+      lines = ["# Title 🙂", 'name: "строка" # comment', "42 `code` **bold**", "[link](target)"]
+      before = highlighter.spans(mode, lines)
+      changed = lines.dup
+      changed[1] = 'name: "другая🙂" # changed'
+      after = highlighter.spans(mode, changed)
+      expect(after).to eq(described_class.new.spans(mode, changed))
+      expect(after[0]).to equal(before[0])
+      expect(after[2]).to equal(before[2])
+      changed.insert(1, "true 123 `new`")
+      inserted = highlighter.spans(mode, changed)
+      expect(inserted).to eq(described_class.new.spans(mode, changed))
+      expect(inserted[3]).to equal(before[2])
+      lines[0].replace("mutated caller line")
+      expect(before[0]).to eq(described_class.new.spans(mode, ["# Title 🙂"])[0])
+    end
+  end
+end
+
 RSpec.describe Roded::SyntaxHighlighter, "tokenizer failures" do
   it "falls back to empty token rows when a tokenizer raises" do
     highlighter = described_class.new
