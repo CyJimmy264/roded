@@ -13,6 +13,13 @@ module QtDocumentRendererSpecSupport
     expect_matching_content(state)
     expect_native_positions(state[:lines])
     expect(@editor.to_html.scan("background-color:#61afef").length).to eq(1)
+    expect_current_line_background(state[:point][:row])
+  end
+
+  def expect_current_line_background(row)
+    paragraphs = @editor.to_html.scan(/<(?:p|pre) [^>]*>/)
+    active = paragraphs.each_index.select { |index| paragraphs[index].include?("background-color:#343a46") }
+    expect(active).to eq([row])
   end
 
   def expect_matching_content(state)
@@ -64,6 +71,13 @@ RSpec.describe Roded::Frontends::QtDocumentRenderer, "incremental content" do
     states = [[""], ["first", ""], ["new", "first", ""], ["new", "first", "middle", "last", ""],
               ["new", "last", ""], [""], ["🙂", "\t", "end"]]
     states.each { |lines| expect_native_frame(snapshot(lines, { row: lines.length - 1, col: lines.last.length })) }
+  end
+
+  it "moves the paragraph background with the caret across nonempty and empty lines" do
+    lines = ["previous paragraph", "", "current paragraph", "next paragraph"]
+    [0, 2, 1, 3, 2, 2].each do |row|
+      expect_native_frame(snapshot(lines, { row:, col: [2, lines[row].length].min }))
+    end
   end
 end
 

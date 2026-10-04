@@ -14,9 +14,18 @@ end
 
 def assert_presentation(work, pane)
   modeline = pane.instance_variable_get(:@modeline)
+  editor = pane.editor
   point = work.window.point
   raise "modeline failed to update" unless modeline.text.include?("#{point[:row] + 1}:#{point[:col] + 1}")
-  raise "caret failed to paint" unless pane.editor.to_html.include?("background-color:#61afef")
+  raise "caret failed to paint" unless editor.to_html.include?("background-color:#61afef")
+
+  assert_current_line_background(editor, point[:row])
+end
+
+def assert_current_line_background(editor, expected_row)
+  paragraphs = editor.to_html.scan(/<(?:p|pre) [^>]*>/)
+  active = paragraphs.each_index.select { |row| paragraphs[row].include?("background-color:#343a46") }
+  raise "current-line background failed to follow the caret: #{active.inspect}" unless active == [expected_row]
 end
 
 def assert_editor_geometry(view, pane)

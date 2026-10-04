@@ -9,6 +9,7 @@ module Roded
         html = (first..new_last).map { |row| renderer.block_html(row) }
         replace_span(first, old_last, html.join)
         @blocks[first..old_last] = html
+        set_row_format(@editor.text_cursor, first, snapshot)
         refresh_shifted_overlays(first, old_last, snapshot, lines, renderer)
       end
 

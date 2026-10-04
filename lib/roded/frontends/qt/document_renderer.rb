@@ -1,6 +1,7 @@
 require_relative "editor_html_renderer"
 require_relative "document_structure_operations"
 require_relative "document_index"
+require_relative "current_line_format"
 
 module Roded
   module Frontends
@@ -92,6 +93,7 @@ module Roded
 
       def update_block(cursor, row, renderer)
         html = renderer.block_html(row)
+        set_row_format(cursor, row, renderer.snapshot)
         return if @blocks[row] == html
 
         replace_block(cursor, row, html)
@@ -107,6 +109,12 @@ module Roded
         end
         cursor.move_position(::Qt::QTextCursor::EndOfBlock, ::Qt::QTextCursor::KeepAnchor, 1)
         cursor.insert_html(html)
+      end
+
+      def set_row_format(cursor, row, snapshot)
+        cursor.set_position(@index.position(row)) if @index
+        QtCursorMapper.move_to_row(cursor, row) unless @index
+        (@line_format ||= QtCurrentLineFormat.new).apply(cursor, active: snapshot[:point][:row] == row)
       end
 
       protected
