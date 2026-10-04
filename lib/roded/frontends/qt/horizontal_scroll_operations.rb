@@ -12,6 +12,7 @@ module Roded
       end
 
       def report_horizontal_scroll
+        return if @horizontal_scroll_feedback_suspended
         return unless @snapshot && @horizontal_scroll_callback
 
         left_column = QtCursorMapper.left_column_at_viewport(@editor, @rendered_text, @snapshot)
@@ -23,7 +24,7 @@ module Roded
       end
 
       def reveal_horizontal_cursor
-        with_horizontal_scroll_signals_blocked do
+        with_horizontal_scroll_feedback_suspended do
           @editor.ensure_cursor_visible
           reveal_caret_cell
         end
@@ -40,13 +41,13 @@ module Roded
         scroll_bar.set_value(scroll_bar.value + overflow)
       end
 
-      def with_horizontal_scroll_signals_blocked
-        scroll_bar = @editor.horizontal_scroll_bar
-        previous_state = scroll_bar.signals_blocked
-        scroll_bar.block_signals(true)
+      def with_horizontal_scroll_feedback_suspended
+        # Qt needs valueChanged to scroll every painted row, including unchanged ones.
+        previous_state = @horizontal_scroll_feedback_suspended
+        @horizontal_scroll_feedback_suspended = true
         yield
       ensure
-        scroll_bar&.block_signals(previous_state)
+        @horizontal_scroll_feedback_suspended = previous_state
       end
 
       def restore_horizontal_scroll(snapshot, text)

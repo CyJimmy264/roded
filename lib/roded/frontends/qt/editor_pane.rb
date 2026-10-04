@@ -49,7 +49,7 @@ module Roded
       end
 
       def render(snapshot)
-        with_horizontal_scroll_signals_blocked { render_snapshot(snapshot) }
+        with_horizontal_scroll_feedback_suspended { render_snapshot(snapshot) }
       end
 
       def render_snapshot(snapshot)

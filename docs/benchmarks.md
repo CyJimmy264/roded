@@ -80,6 +80,16 @@ restoring the next initial position; syntax settling accepts horizontal-scroll
 feedback as well as resize and lexical results. These steps are outside foreground
 timing and prevent old GUI events from changing a later case's viewport.
 
+The horizontal painting regression checks unchanged neighboring rows on a
+1500-line document with 2500+ characters per line. Character and word movement
+scroll in both directions. Captured X11 pixels must move and match a fresh
+viewport repaint; scrollbar values alone cannot detect stale rows. It uses
+ImageMagick `import` and `compare` and private XDG paths:
+
+```sh
+xvfb-run -a -s '-screen 0 1280x800x24' bundle exec ruby benchmark/qt_horizontal_scroll_smoke.rb
+```
+
 The existing `script/curses_live_smoke.rb` and
 `script/curses_scale_live_smoke.rb` cover real terminal behavior separately.
 `script/curses_repeat_live_smoke.rb` verifies held-key scrolling and boundary
