@@ -20,13 +20,19 @@ module Roded
         started = now
         @surface.key(key)
         record = read_record("rendered")
-        raise "unexpected key sequence" unless record.fetch("sequence") == index + 1
-
+        validate_record(record, index)
         wait_frame(record.fetch("caret"), @previous.fetch("caret"))
         sample = measurement(scenario, key, started, record)
         oracle.verify(record, scenario)
         @previous = record
         sample
+      end
+
+      def validate_record(record, index)
+        raise "unexpected key sequence" unless record.fetch("sequence") == index + 1
+        return if record.fetch("horizontal_scroll") == @previous.fetch("horizontal_scroll")
+
+        raise "caret-only frame detection cannot measure horizontal scrolling; reduce typing iterations"
       end
 
       def measurement(scenario, key, started, record)

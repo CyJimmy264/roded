@@ -53,7 +53,8 @@ module Roded
         geometry = caret_geometry(editor)
         raise "caret is outside the visible viewport" unless geometry[:visible]
 
-        puts JSON.generate(record.merge(type:, caret: geometry, **content(active)))
+        puts JSON.generate(record.merge(type:, caret: geometry, **content(active),
+                                        horizontal_scroll: editor.horizontal_scroll_bar.value))
         $stdout.flush
       end
 

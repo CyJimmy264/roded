@@ -122,6 +122,15 @@ highlighting and shutdown are outside the measured intervals. Ruby color settlin
 can occur concurrently; the reported frame requires the new text/caret, not final
 syntax colors.
 
+Consecutive typing must remain within the viewport: a horizontal scroll can leave
+the caret at the same screen position and needs a different frame oracle. The
+runner rejects a changed horizontal origin rather than accepting an unchanged
+caret as a frame. Use separate runs for large paired-workload counts and shorter
+typing counts, for example `--iterations 200 --workloads char,line,edit` and
+`--iterations 100 --workloads typing` with the default font/window. Page, word,
+horizontal scroll, buffers and windows remain covered by the main suite; this
+real-key probe does not yet cover those operations.
+
 Reports have a separate workload/schema and harness digest. They retain individual
 monotonic timestamps for send, Qt key receipt, core start, snapshot posting, widget
 application and frame detection, plus summaries for these intervals. Snapshot
