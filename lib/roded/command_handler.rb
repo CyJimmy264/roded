@@ -72,7 +72,7 @@ module Roded
 
     def execute_custom_command(event) = @context.execute_command(event.payload.fetch(:name))
 
-    def render_event(_event) = @context.publish_ui_update(:render, {})
+    def render_event(_event) = @context.publish_ui_update(:render, { force_redraw: true })
 
     def ignore_event(_event); end
 

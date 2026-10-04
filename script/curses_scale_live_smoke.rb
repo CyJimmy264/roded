@@ -115,9 +115,11 @@ required_events = [
   "event received: resize", "publish_ui_update: quit"
 ]
 missing = required_events.reject { |entry| log.include?(entry) }
-unless exit_status&.zero? && switch_count >= 30 && missing.empty? && captured.include?("10001:1")
+# Ncurses can retain the leading "1" from "1:1" and transmit only the changed "0001:1" suffix.
+rendered_end = captured.include?("10001:1") || captured.include?("0001:1")
+unless exit_status&.zero? && switch_count >= 30 && missing.empty? && rendered_end
   abort "curses scale smoke failed: exit=#{exit_status.inspect}, switches=#{switch_count}, " \
-        "missing=#{missing.inspect}, rendered_end=#{captured.include?("10001:1")}; files=#{smoke_dir}"
+        "missing=#{missing.inspect}, rendered_end=#{rendered_end}; files=#{smoke_dir}"
 end
 
 abort "curses scale smoke changed the 10,000-line file" unless File.binread(source_path) == source_text

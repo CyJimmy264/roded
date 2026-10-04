@@ -32,7 +32,7 @@ module Roded
 
       def render_command(payload)
         snapshot = payload[:editor_snapshot]
-        snapshot ? render_layout(snapshot) : redraw
+        snapshot ? render_layout(snapshot, force: payload[:force_redraw]) : redraw
       end
 
       def show_minibuffer(payload)

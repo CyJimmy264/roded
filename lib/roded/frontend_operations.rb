@@ -38,6 +38,8 @@ module Roded
       return false unless @ui_batch_depth.to_i.positive? && %i[render move_cursor].include?(update.type)
 
       @pending_ui_render = true
+      @pending_ui_force_redraw ||= update.payload[:force_redraw]
+      true
     end
 
     def batch_ui_updates
@@ -51,8 +53,10 @@ module Roded
 
     def finish_ui_batch(completed)
       pending = @pending_ui_render
+      payload = @pending_ui_force_redraw ? { force_redraw: true } : {}
       @pending_ui_render = false
-      publish_ui_update(UIUpdate.new(:render, {})) if completed && pending && !@stop_requested
+      @pending_ui_force_redraw = false
+      publish_ui_update(UIUpdate.new(:render, payload)) if completed && pending && !@stop_requested
     end
 
     def register_frontend_source(frontend)

@@ -5,8 +5,13 @@ module Roded
       private
 
       def draw_modeline(item, row, left, width)
-        writer = proc { write_at(row, left, modeline_text(item), width) }
+        writer = proc { paint_modeline(item, row, left, width) }
         item[:active] ? @screen.attron(::Curses::A_REVERSE, &writer) : writer.call
+      end
+
+      def paint_modeline(item, row, left, width)
+        write_at(row, left, " " * width, width)
+        write_at(row, left, modeline_text(item), width)
       end
 
       def modeline_text(item)

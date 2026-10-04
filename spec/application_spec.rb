@@ -743,6 +743,7 @@ RSpec.describe Roded::Application do
   it "preserves source and view ids when routing key input to the command handler" do
     application = described_class.new
     application.startup
+    application.current_buffer.load_text("first\nsecond")
     commands = []
     handler = Object.new
     handler.define_singleton_method(:handle) { |command| commands << command }

@@ -4,23 +4,6 @@ module Roded
     module CursesLayoutOperations
       private
 
-      def render_layout(snapshot)
-        horizontal_viewport.retain(snapshot[:windows])
-        return if CursesCursorRedraw.new(self).call(@layout_snapshot, snapshot)
-
-        @layout_snapshot = snapshot
-        @screen.clear
-        draw_layout_windows(snapshot)
-        render_overlays
-        @screen.refresh
-      end
-
-      def draw_layout_windows(snapshot)
-        rectangles = layout_rectangles(snapshot[:tree], 0, 0, @screen.maxx, editor_area_height)
-        records = snapshot[:windows].to_h { |item| [item[:id], item] }
-        rectangles.each { |rectangle| draw_window(records[rectangle.window_id], rectangle) }
-      end
-
       def layout_rectangles(tree, left, top, width, height)
         return rectangle_for_window(tree, left, top, width, height) if tree[:window_id]
 
@@ -57,7 +40,6 @@ module Roded
         first_line, left_column = window_origin(item, rectangle.width, rectangle.height)
         draw_window_lines(item, first_line, left_column, rectangle)
         draw_modeline(item, rectangle.top + rectangle.height - 1, rectangle.left, rectangle.width)
-        place_window_cursor(item, first_line, left_column, rectangle) if item[:active]
       end
 
       def window_origin(item, width, height)

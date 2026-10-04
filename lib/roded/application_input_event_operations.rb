@@ -1,3 +1,5 @@
+require_relative "cursor_movement_boundary"
+
 module Roded
   # Dispatches frontend input to the active view and shared buffer.
   module ApplicationInputEventOperations
@@ -71,6 +73,8 @@ module Roded
       window_before = current_window
       prepare_input_context(event, window_before)
       routed_event = dispatch_routed_input(event)
+      return unless routed_event
+
       ensure_current_point_visible
       publish_ui_update(UIUpdate.new(:render, {})) if snapshot_refresh_required?(routed_event, refresh_snapshot)
     end
@@ -96,14 +100,26 @@ module Roded
     end
 
     def dispatch_routed_input(event)
-      routed_event = route_input_event(event)
-      preserve_yank = %i[yank yank_pop].include?(routed_event&.type) || @focus == :minibuffer
-      @last_yank = nil if routed_event && !preserve_yank
-      break_typing_undo_groups unless routed_event&.type == :insert_char
+      routed_event = effective_routed_input(event)
       return unless routed_event
 
+      preserve_yank = %i[yank yank_pop].include?(routed_event.type) || @focus == :minibuffer
+      @last_yank = nil unless preserve_yank
+      break_typing_undo_groups unless routed_event.type == :insert_char
       @command_handler.handle(routed_event)
       routed_event
+    end
+
+    def effective_routed_input(event)
+      routed = route_input_event(event)
+      routed unless cursor_boundary_noop?(routed)
+    end
+
+    def cursor_boundary_noop?(event)
+      return false unless @focus == :buffer && CursorMovementBoundary.call(event&.type, current_window)
+
+      logger.debug { "cursor movement at boundary: #{event.type}" }
+      true
     end
 
     def break_typing_undo_groups

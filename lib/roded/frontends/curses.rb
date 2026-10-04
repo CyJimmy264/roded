@@ -2,6 +2,7 @@ require "curses"
 require_relative "curses/minibuffer"
 require_relative "curses/input_decoder"
 require_relative "curses/cursor_redraw"
+require_relative "curses/pane_redraw"
 require_relative "curses/cursor_snapshot_comparison"
 require_relative "curses/text_geometry"
 require_relative "curses/horizontal_viewport"
@@ -9,6 +10,7 @@ require_relative "curses/render_context"
 require_relative "curses/input_operations"
 require_relative "curses/viewport_operations"
 require_relative "curses/layout_operations"
+require_relative "curses/layout_refresh_operations"
 require_relative "curses/overlay_operations"
 require_relative "curses/command_operations"
 require_relative "curses/buffer_line_operations"
@@ -24,6 +26,7 @@ module Roded
       include CursesInputOperations
       include CursesViewportOperations
       include CursesLayoutOperations
+      include CursesLayoutRefreshOperations
       include CursesOverlayOperations
       include CursesCommandOperations
       include CursesBufferLineOperations
