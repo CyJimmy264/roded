@@ -29,3 +29,13 @@ observations; `qt-damage-hot` has one hundred, at clean `e4296e6`.
 `08df59a`. The `qt-damage-typing-1500` and `exact-edit-typing-*` reports measure
 consecutive input. The 10,000-line exact-edit stream contains one hundred inserts,
 including the repeated-character case that previously failed verification.
+
+`background-ruby-*` reports at clean `59e903f` contain one hundred foreground
+typing observations each, plus two separately recorded waits for final syntax
+coloring. Their harness hash and latency scope differ from the earlier fully
+synchronous Ruby reports; they are not strict before/after comparisons.
+
+`qt-exec-original` / `qt-exec-released`, at clean `a1e5a0d`, are native event-loop
+scheduling probes. They record individual ticker gaps rather than editor
+operations; the manifest lists them separately under `probes`. They demonstrate
+Ruby thread progress, not keyboard-to-visible-frame latency.

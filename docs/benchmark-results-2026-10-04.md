@@ -293,12 +293,57 @@ Markdown here means the Markdown mode applied to the long plain fixture, not a
 Markdown-heavy document. The plain reset-suite input result alone must not be
 used to predict Ruby or other uncached highlighting costs.
 
-## Remaining bottlenecks
+## Deferred Ruby coloring and the real Qt event loop
 
-- Ruby still lexes the whole document after an uncached edit. Native tokens reduce
-  cost, but this remains above 12–30 ms; heredoc documents retain the slower lexer.
-  Incremental lexical checkpoints or revision-checked background highlighting
-  are further work, not features claimed by these measurements.
+`59e903f` publishes text/caret updates immediately after edits to Ruby documents
+of at least 1500 rows. A child interpreter computes coloring; requests coalesce
+per buffer, and only matching revision/job results are applied on the core thread.
+Changed rows temporarily lose coloring while unchanged rows retain the previous
+decoration. Complete lexical context is restored when the result arrives.
+The child sends only changed rows in bounded frames and is reaped on shutdown.
+
+Each clean report below has two samples of fifty consecutive edits. Times are
+milliseconds. The final-color wait is measured separately after each sample and
+includes result delivery and frontend painting:
+
+| Layer / lines | Foreground median | Foreground p95 | Foreground maximum | Final-color waits |
+| --- | --- | --- | --- | --- |
+| [curses / 1500](../benchmark/results/2026-10-04/background-ruby-curses-1500.json) | 10.07 | 12.17 | 16.57 | 258 / 234 |
+| [Qt / 1500](../benchmark/results/2026-10-04/background-ruby-qt-1500.json) | 16.40 | 19.00 | 29.10 | 246 / 247 |
+| [curses / 10,000](../benchmark/results/2026-10-04/background-ruby-curses-10000.json) | 23.52 | 27.51 | 44.30 | 1338 / 1361 |
+| [Qt / 10,000](../benchmark/results/2026-10-04/background-ruby-qt-10000.json) | 35.08 | 37.54 | 41.02 | 1363 / 1339 |
+
+The scope changes from synchronous fully colored frames to initial text/caret
+frames. The new harness SHA-256 is
+`8b9080dfd3ad1299f16f8ce82fe8116f806edfbc0d1d1b250c79b8ba26f04122`.
+Strict comparison with earlier reports is rejected. These figures are not a
+same-work speedup of the lexer. Initial coloring remains synchronous, and Qt
+foreground input on 10,000 rows still exceeds the target before keyboard/timer
+costs are added.
+
+`a1e5a0d` corrects a different defect in qt 0.2.0: its FFI binding held Ruby's
+GVL throughout QApplication.exec. Manual event pumping returned from native code
+and did not expose this. The adapter reattaches only exec with `blocking: true`,
+preserving QApplication's lifecycle and keeping widget calls on the GUI thread.
+The clean [original probe](../benchmark/results/2026-10-04/qt-exec-original.json)
+records one ticker wakeup over 403.36 ms, with a maximum gap of 403.38 ms.
+The [released probe](../benchmark/results/2026-10-04/qt-exec-released.json)
+records 358 wakeups over 403.57 ms, maximum gap 24.05 ms including adapter
+installation/disposal. A native timer calls Ruby only to finish; production has
+additional GUI callbacks. These probes demonstrate Ruby thread progress, not
+keyboard-to-pixel latency, and retain their raw gaps and source metadata.
+
+See the [KWrite source review and alternatives](qt-rendering-alternatives.md) for
+its separate QWidget/QPainter/QTextLayout renderer, damaged-area painting and
+layout reuse. Separating our caret/decorations from HTML edits and measuring the
+normal keyboard-to-frame path remain further work.
+
+## Remaining bottlenecks after the latest changes
+
+- Ruby still lexes the whole document after an uncached edit. Large-document input
+  no longer waits for it, but coloring can lag more than a second on 10,000 rows.
+  Initial coloring remains synchronous; heredocs retain the slower lexer.
+  Incremental lexical checkpoints remain further work.
 - Qt plain layout reduces long-document navigation and buffer-switch costs, but
   first split creation, large block edits and uncached 10,000-line input remain
   expensive. Further document construction and retention changes need separate
@@ -312,14 +357,19 @@ used to predict Ruby or other uncached highlighting costs.
 
 ## Validation and reproduction
 
-`bundle exec rake` passed after the exact-position correction: 435 examples and
-RuboCop across 207 Ruby files.
+`bundle exec rake` passed after the native-loop correction: 447 examples and
+RuboCop across 222 Ruby files.
 Visible Qt checks run under private Xvfb with retained widgets and event pumping;
 they verify editor/caret geometry, one paragraph background at the cursor row,
 modelines, scrolling, buffers, splits and multiline edits. Both plain and Ruby
 fixtures passed. Optional screenshot assertions check the actual row background,
 cleared neighboring rows and block-caret pixels for fourteen operations in each
 profile; the plain and Ruby checks run sequentially under private Xvfb.
+The Ruby profile additionally checks a quote edit that changes following lexical
+context, compares final spans with the complete lexer and checks native colors.
+Tests cover stale results, mode changes, heredoc/Unicode/history, worker failure
+and real core-loop cleanup. Xvfb keyboard checks pass for typing, save, undo,
+close confirmation and a 10,000-line file with 31 buffers.
 Private PTY checks verify input/quit, large buffer/window use,
 rapid movement without terminal clears, and zero rendering/output for repeated
 `C-p` at the document boundary.
