@@ -1443,6 +1443,11 @@ File save здесь сохраняет текстовое представле�
   used their private offscreen platform/config setup; the curses spec used a
   screen double. The separate Xvfb and PTY live UI results remain documented
   above.
-- `bundle exec rake`: **302 examples, 0 failures**; RuboCop inspected **155
+- `bundle exec rake`: **303 examples, 0 failures**; RuboCop inspected **156
   files** with **0 offenses** after extracting the new spec helpers. `git diff
   --check` also passes.
+- README documents the default `~/.cache/roded/roded.log` path and the
+  `RODED_LOG_PATH` / `RODED_LOG_LEVEL` overrides. `spec/logging_spec.rb` confirms
+  a diagnostic goes to the configured log file without stdout/stderr output:
+  `bundle exec rspec spec/logging_spec.rb` — **1 example, 0 failures**;
+  targeted RuboCop also passes.

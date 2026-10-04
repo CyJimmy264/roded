@@ -126,6 +126,10 @@ loaded. `C-h b` shows the resulting active keymap. See
 [`docs/keybindings.md`](docs/keybindings.md) for the key names and available
 commands.
 
+Application diagnostics are written to `~/.cache/roded/roded.log` by default,
+separately from minibuffer messages. Set `RODED_LOG_PATH` to choose another
+file and `RODED_LOG_LEVEL=DEBUG` to include input/event details while debugging.
+
 Run the automated checks with:
 
 ```sh
