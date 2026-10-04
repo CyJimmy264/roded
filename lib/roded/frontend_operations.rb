@@ -11,10 +11,9 @@ module Roded
     def publish_ui_update(update)
       raise ArgumentError, "expected UIUpdate, got #{update.class}" unless update.is_a?(UIUpdate)
 
-      if update.type == :render && current_window
-        payload = update.payload.merge(editor_snapshot: editor_snapshot).freeze
-        update = UIUpdate.new(:render, payload)
-      end
+      return if ui_update_deferred?(update)
+
+      update = with_editor_snapshot(update)
       logger.debug("publish_ui_update: #{update.type}")
       @frontends.each { |frontend| deliver_ui_update(frontend, update) }
     end
@@ -28,6 +27,33 @@ module Roded
     end
 
     private
+
+    def with_editor_snapshot(update)
+      return update unless update.type == :render && current_window
+
+      UIUpdate.new(:render, update.payload.merge(editor_snapshot: editor_snapshot).freeze)
+    end
+
+    def ui_update_deferred?(update)
+      return false unless @ui_batch_depth.to_i.positive? && %i[render move_cursor].include?(update.type)
+
+      @pending_ui_render = true
+    end
+
+    def batch_ui_updates
+      @ui_batch_depth = @ui_batch_depth.to_i + 1
+      yield
+      completed = true
+    ensure
+      @ui_batch_depth -= 1
+      finish_ui_batch(completed) if @ui_batch_depth.zero?
+    end
+
+    def finish_ui_batch(completed)
+      pending = @pending_ui_render
+      @pending_ui_render = false
+      publish_ui_update(UIUpdate.new(:render, {})) if completed && pending && !@stop_requested
+    end
 
     def register_frontend_source(frontend)
       source_id = frontend.respond_to?(:input_source_id) ? frontend.input_source_id : frontend.object_id

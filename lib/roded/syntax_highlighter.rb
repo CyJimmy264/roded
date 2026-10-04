@@ -30,16 +30,26 @@ module Roded
     end
 
     def spans(mode, lines)
-      stable_lines = Array(lines).map { |line| line.to_s.dup.freeze }.freeze
-      key = [mode.to_sym, stable_lines].freeze
-      return @cache.fetch(key) if @cache.key?(key)
+      return plain_spans(lines.length) if mode.to_sym == :plain
 
-      cache_result(key, generate_spans(mode, stable_lines))
+      cached_spans(mode, lines)
     rescue StandardError
       Array(lines).map { [].freeze }.freeze
     end
 
     private
+
+    def cached_spans(mode, lines)
+      stable_lines = Array(lines).map { |line| line.to_s.dup.freeze }.freeze
+      key = [mode.to_sym, stable_lines].freeze
+      @cache.fetch(key) { cache_result(key, generate_spans(mode, stable_lines)) }
+    end
+
+    def plain_spans(count)
+      @plain_spans ||= {}
+      @plain_spans.shift if @plain_spans.length >= 12 && !@plain_spans.key?(count)
+      @plain_spans[count] ||= Array.new(count, [].freeze).freeze
+    end
 
     def ruby_spans(lines, rows)
       @ruby_tokenizer.spans(lines, rows)

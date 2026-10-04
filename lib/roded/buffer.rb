@@ -27,7 +27,7 @@ module Roded
     include BufferPositionChangeOperations
 
     attr_accessor :filename, :readonly, :file_revision, :major_mode
-    attr_reader :line_ending, :final_newline, :name
+    attr_reader :line_ending, :final_newline, :name, :revision
 
     def initialize(name = nil)
       @name = name
@@ -49,6 +49,7 @@ module Roded
       @filename = nil
       @major_mode = nil
       @file_revision = nil
+      @revision = 0
       @lines = [String.new("")]
       @line_ending = "\n"
       @final_newline = false

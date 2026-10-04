@@ -35,12 +35,14 @@ module Roded
       return display_message("Cannot delete the only window.") if windows.length < 2
 
       session.window_layout.remove(current_window)
+      current_window.detach
       activate_window(windows.first)
     end
 
     def delete_other_windows
       return unless current_window
 
+      windows.reject { |window| window.equal?(current_window) }.each(&:detach)
       session.window_layout.keep(current_window)
       render_active_window
     end

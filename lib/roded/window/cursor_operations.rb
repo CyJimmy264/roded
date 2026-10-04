@@ -30,27 +30,24 @@ module Roded
     end
 
     def move_cursor_document_start
-      move_cursor_to_offset(0)
+      prepare_cursor_movement
+      self.point = { row: 0, col: 0 }
     end
 
     def move_cursor_document_end
-      move_cursor_to_offset(@buffer.lines.join("\n").length)
+      prepare_cursor_movement
+      lines = @buffer.lines
+      self.point = { row: lines.length - 1, col: lines.last.length }
     end
 
     def move_cursor_word_forward
-      chars = @buffer.lines.join("\n").each_char.to_a
-      offset = cursor_offset
-      offset += 1 while offset < chars.length && !word_character?(chars[offset])
-      offset += 1 while offset < chars.length && word_character?(chars[offset])
-      move_cursor_to_offset(offset)
+      prepare_cursor_movement
+      self.point = forward_word_position
     end
 
     def move_cursor_word_backward
-      chars = @buffer.lines.join("\n").each_char.to_a
-      offset = cursor_offset
-      offset -= 1 while offset.positive? && !word_character?(chars[offset - 1])
-      offset -= 1 while offset.positive? && word_character?(chars[offset - 1])
-      move_cursor_to_offset(offset)
+      prepare_cursor_movement
+      self.point = backward_word_position
     end
 
     def move_cursor_up
@@ -82,27 +79,30 @@ module Roded
       @highlight = nil
     end
 
-    def cursor_offset
-      @buffer.lines.take(@point[:row]).sum(&:length) + @point[:row] + @point[:col]
+    def forward_word_position
+      lines = @buffer.lines
+      row, col = @point.values_at(:row, :col)
+      while row < lines.length
+        match = /[\p{Alnum}_]+/.match(lines[row], col)
+        return { row:, col: match.end(0) } if match
+
+        row += 1
+        col = 0
+      end
+      { row: lines.length - 1, col: lines.last.length }
     end
 
-    def move_cursor_to_offset(offset)
-      prepare_cursor_movement
-      chars = @buffer.lines.join("\n").each_char.to_a
-      @point = position_at_offset(chars, offset.clamp(0, chars.length))
-      clamp_point
-      remember_position
-    end
+    def backward_word_position
+      lines = @buffer.lines
+      row, col = @point.values_at(:row, :col)
+      while row >= 0
+        match = /[\p{Alnum}_]+[^\p{Alnum}_]*\z/.match(lines[row][0, col])
+        return { row:, col: match.begin(0) } if match
 
-    def position_at_offset(chars, offset)
-      preceding = chars.take(offset).join
-      parts = preceding.split("\n", -1)
-      parts = [""] if parts.empty?
-      { row: parts.length - 1, col: parts.last.length }
-    end
-
-    def word_character?(character)
-      character&.match?(/\A[\p{Alnum}_]\z/)
+        row -= 1
+        col = lines[row].length if row >= 0
+      end
+      { row: 0, col: 0 }
     end
 
     def move_cursor_by_page(delta)

@@ -9,9 +9,9 @@ module Roded
 
     def handle_event(event)
       validate_input_event(event)
-      return dispatch_special_input_event(event) if special_input_event?(event)
-
-      process_frontend_input(event)
+      batch_ui_updates do
+        special_input_event?(event) ? dispatch_special_input_event(event) : process_frontend_input(event)
+      end
     ensure
       clear_active_input_context
     end
@@ -60,7 +60,7 @@ module Roded
     end
 
     def update_horizontal_origin(window, payload)
-      maximum = window.buffer.lines.map(&:length).max.to_i
+      maximum = window.buffer.maximum_line_length
       window.left_column = payload.fetch(:left_column).to_i.clamp(0, maximum)
     end
 

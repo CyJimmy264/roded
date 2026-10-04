@@ -4,7 +4,7 @@ module Roded
     def lines=(lines)
       return if readonly
 
-      new_lines = Array(lines).map(&:to_s)
+      new_lines = Array(lines).map { |line| line.to_s.dup.freeze }
       new_lines = [""] if new_lines.empty?
       record_edit(0, @lines.length, new_lines.length) { @lines = new_lines }
     end
@@ -15,6 +15,7 @@ module Roded
       @final_newline = text.end_with?("\n")
       @lines = text.gsub("\r\n", "\n").split("\n", -1)
       @lines = [""] if @lines.empty?
+      invalidate_document_snapshots
       reset_edit_history
       @edit_observers.each { |observer| observer.buffer_reloaded(self) if observer.respond_to?(:buffer_reloaded) }
       mark_saved
@@ -22,19 +23,31 @@ module Roded
     end
 
     def lines
-      @lines.map { |line| line.dup.freeze }.freeze
+      return @lines_snapshot if @lines_snapshot
+
+      @lines_snapshot = @lines.map(&:freeze).freeze
     end
 
     def to_s
-      @lines.join(@line_ending)
+      text_snapshot.dup
+    end
+
+    def text_snapshot
+      @text_snapshot ||= @lines.join(@line_ending).freeze
+    end
+
+    def maximum_line_length
+      @maximum_line_length ||= @lines.map(&:length).max.to_i
     end
 
     def modified?
-      to_s != @saved_text
+      @modified_snapshot = text_snapshot != @saved_text if @modified_snapshot.nil?
+      @modified_snapshot
     end
 
     def mark_saved
-      @saved_text = to_s
+      @saved_text = text_snapshot
+      @modified_snapshot = false
     end
 
     def final_newline=(value)
@@ -57,6 +70,14 @@ module Roded
     end
 
     private
+
+    def invalidate_document_snapshots
+      @revision += 1
+      @lines_snapshot = nil
+      @text_snapshot = nil
+      @modified_snapshot = nil
+      @maximum_line_length = nil
+    end
 
     def reset_edit_history
       @undo_stack.clear

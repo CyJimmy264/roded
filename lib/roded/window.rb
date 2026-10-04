@@ -23,6 +23,8 @@ module Roded
     end
 
     def buffer=(buffer)
+      return if buffer.equal?(@buffer)
+
       remember_position
       @buffer = buffer
       @buffer.add_edit_observer(self)
@@ -34,6 +36,17 @@ module Roded
 
       buffer.remove_edit_observer(self)
       @position_memory.delete(buffer)
+    end
+
+    def detach
+      @buffer.remove_edit_observer(self)
+      @position_memory.each_key { |buffer| buffer.remove_edit_observer(self) }
+      @position_memory.clear
+    end
+
+    def attach
+      @position_memory[@buffer] = [@point.dup, @mark&.dup]
+      @position_memory.each_key { |buffer| buffer.add_edit_observer(self) }
     end
 
     def point=(position)

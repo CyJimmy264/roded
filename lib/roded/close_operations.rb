@@ -123,6 +123,7 @@ module Roded
 
     def remove_buffer(buffer)
       session.remove_buffer(buffer)
+      @document_snapshots&.delete(buffer)
       unregister_frontends(buffer)
       preserve_writable_buffer
       replace_closed_buffer_views(buffer)

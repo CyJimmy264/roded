@@ -1,6 +1,10 @@
+require_relative "window_layout/snapshot_operations"
+
 module Roded
   # Represents nested splits and calculates their non-overlapping rectangles.
   class WindowLayout
+    include WindowLayoutSnapshotOperations
+
     Split = Data.define(:direction, :first, :second, :ratio) do
       def initialize(direction:, first:, second:, ratio: 0.5)
         super
@@ -10,6 +14,7 @@ module Roded
 
     def initialize(window)
       @root = window
+      window.attach
     end
 
     def split(window, new_window, direction)
@@ -21,32 +26,30 @@ module Roded
         Split.new(direction:, first: window, second: new_window)
       end
       raise ArgumentError, "window is not in this layout" unless replaced
+
+      new_window.attach
+      invalidate_snapshots
     end
 
     def remove(window)
       @root, removed = prune(@root, window)
+      invalidate_snapshots if removed
       removed
     end
 
     def keep(window)
       @root = window
+      invalidate_snapshots
     end
 
     def resize_columns(window, amount)
       @root, resized = WindowLayoutResizer.new(@root).resize(window, amount.to_f)
+      invalidate_snapshots if resized
       resized
-    end
-
-    def windows
-      leaves(@root)
     end
 
     def rectangles(width, height)
       place(@root, Rectangle.new(x: 0, y: 0, width:, height:))
-    end
-
-    def snapshot_tree
-      serialize(@root)
     end
 
     private
@@ -82,13 +85,6 @@ module Roded
       Split.new(direction: node.direction, first:, second:, ratio: node.ratio)
     end
 
-    def leaves(node)
-      return [] unless node
-      return [node] unless node.is_a?(Split)
-
-      leaves(node.first) + leaves(node.second)
-    end
-
     def place(node, rectangle)
       return [] unless node
       return [[node, rectangle]] unless node.is_a?(Split)
@@ -118,16 +114,6 @@ module Roded
     end
 
     def split_width(length, ratio) = length < 2 ? length / 2 : (length * ratio).round.clamp(1, length - 1)
-
-    def serialize(node)
-      return { window_id: node.object_id }.freeze unless node.is_a?(Split)
-
-      {
-        direction: node.direction,
-        first: serialize(node.first),
-        second: serialize(node.second), ratio: node.ratio
-      }.freeze
-    end
   end
 end
 

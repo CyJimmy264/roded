@@ -15,6 +15,14 @@ module Roded
     end
 
     def publish_edit(edit, undo_group: nil)
+      invalidate_document_snapshots
+      store_edit(edit, undo_group)
+      @redo_stack.clear
+      notify_position_change(edit.position_change)
+      notify_observers
+    end
+
+    def store_edit(edit, undo_group)
       if @undo_group_depth.positive?
         @undo_group_edits << edit
       elsif undo_group == :typing
@@ -22,9 +30,6 @@ module Roded
       else
         @undo_stack << [edit]
       end
-      @redo_stack.clear
-      notify_position_change(edit.position_change)
-      notify_observers
     end
 
     def append_typing_edit(edit)
@@ -55,6 +60,7 @@ module Roded
       previous = direction == :before
       replace_edit_lines(edit, previous)
       restore_edit_metadata(edit, previous)
+      invalidate_document_snapshots
     end
 
     def replace_edit_lines(edit, previous)

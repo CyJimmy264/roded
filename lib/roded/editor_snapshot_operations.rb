@@ -22,15 +22,20 @@ module Roded
 
     def window_snapshot(window)
       buffer = window.buffer
-      lines = buffer.lines
+      document_snapshot(buffer).merge(id: window.object_id)
+                               .merge(window_state_snapshot(window, buffer)).freeze
+    end
+
+    def document_snapshot(buffer)
+      @document_snapshots ||= {}.compare_by_identity
       mode = buffer.mode
-      {
-        id: window.object_id,
-        text: buffer.to_s.dup.freeze,
-        lines: lines.map { |line| line.dup.freeze }.freeze,
-        mode: mode,
-        tokens: @syntax_highlighter.spans(mode, lines)
-      }.merge(window_state_snapshot(window, buffer)).freeze
+      cached = @document_snapshots[buffer]
+      return cached[:content] if cached && cached[:revision] == buffer.revision && cached[:mode] == mode
+
+      lines = buffer.lines
+      content = { text: buffer.text_snapshot, lines:, mode:, tokens: @syntax_highlighter.spans(mode, lines) }.freeze
+      @document_snapshots[buffer] = { revision: buffer.revision, mode:, content: }
+      content
     end
 
     def window_state_snapshot(window, buffer)
