@@ -17,7 +17,8 @@ module Roded
 
       def initialize(arguments)
         @config = { lines: 1500, profile: "plain", iterations: 40, warmup: 4,
-                    workloads: LatencyWorkload::NAMES, original: false }
+                    workloads: LatencyWorkload::NAMES, original: false, dispatcher_ms: nil }
+        @idle_samples = []
         @output = "tmp/benchmarks/qt-key-latency.json"
         parser.parse!(arguments)
         validate(arguments)
@@ -28,7 +29,7 @@ module Roded
         results = Dir.mktmpdir("roded-key-latency-") { |directory| measure(fixture, directory) }
         report = { schema_version: 1, workload: "qt_x11_key_to_caret_frame", config: @config,
                    fixture: fixture.metadata, environment: environment,
-                   latency_harness_sha256: harness_digest, results: }
+                   latency_harness_sha256: harness_digest, idle_process_cpu: @idle_samples, results: }
         Report.write(@output, report)
         results.each { |row| puts "#{row[:scenario]}: #{row[:metrics].slice(:median_ms, :p95_ms, :max_ms)}" }
         puts "Report: #{File.expand_path(@output)}"
@@ -39,11 +40,16 @@ module Roded
       def measure(fixture, directory)
         @config[:workloads].flat_map do |name|
           warn "Measuring real Qt keys: #{name} (#{fixture.line_count} #{fixture.profile} rows)"
-          session = LatencySession.new(fixture, count: @config[:iterations],
-                                                warmup: @config[:warmup], original: @config[:original])
-          session.run(name, File.join(directory, "#{name}.log")).group_by { |sample| sample[:scenario] }
+          samples = measure_workload(fixture, name, File.join(directory, "#{name}.log"))
+          samples.group_by { |sample| sample[:scenario] }
                  .map { |scenario, samples| summarize(scenario, samples) }
         end
+      end
+
+      def measure_workload(fixture, name, error_path)
+        session = LatencySession.new(fixture, count: @config[:iterations], warmup: @config[:warmup],
+                                              original: @config[:original], dispatcher_ms: @config[:dispatcher_ms])
+        session.run(name, error_path).tap { @idle_samples << session.idle_cpu.merge(workload: name) }
       end
 
       def summarize(scenario, samples)
@@ -75,9 +81,11 @@ module Roded
 
       def validate(arguments)
         valid = arguments.empty? && @config[:lines] >= 1500 && @config[:iterations].positive? &&
-                @config[:warmup] >= 0 && valid_workloads?
+                @config[:warmup] >= 0 && valid_workloads? && valid_interval?
         raise OptionParser::InvalidArgument, "invalid fixture, counts or workload" unless valid
       end
+
+      def valid_interval? = @config[:dispatcher_ms].nil? || @config[:dispatcher_ms].between?(1, 1000)
 
       def valid_workloads?
         Fixture::PROFILES.include?(@config[:profile]) && !@config[:workloads].empty? &&
@@ -90,6 +98,7 @@ module Roded
           count_options(options)
           options.on("--original") { @config[:original] = true }
           options.on("--output PATH") { |value| @output = value }
+          options.on("--dispatcher-ms N", Integer) { |value| @config[:dispatcher_ms] = value }
         end
       end
 

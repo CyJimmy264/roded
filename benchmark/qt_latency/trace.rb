@@ -53,12 +53,23 @@ module Roded
         geometry = caret_geometry(editor)
         raise "caret is outside the visible viewport" unless geometry[:visible]
 
-        puts JSON.generate(record.merge(type:, caret: geometry, **content(active),
-                                        horizontal_scroll: editor.horizontal_scroll_bar.value))
+        puts JSON.generate(record.merge(type:, caret: geometry, **content(active), **view_state(editor, type)))
         $stdout.flush
       end
 
       private
+
+      def view_state(editor, type)
+        { horizontal_scroll: editor.horizontal_scroll_bar.value }.merge(ready_metadata(type))
+      end
+
+      def ready_metadata(type)
+        return {} unless type == "ready"
+
+        dispatcher = @frontend.instance_variable_get(:@ui_dispatcher)
+        timer = dispatcher.instance_variable_get(:@timer)
+        { dispatcher_interval_ms: timer.interval, dispatcher_single_shot: timer.is_single_shot }
+      end
 
       def target(snapshot)
         active = snapshot.fetch(:windows).find { |item| item[:id] == snapshot[:active_window_id] }

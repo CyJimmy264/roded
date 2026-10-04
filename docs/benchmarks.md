@@ -150,6 +150,15 @@ only the controller's pixel check establishes the frame. There is no desktop
 compositor, physical keyboard or display scanout here. These numbers cannot be
 treated as directly comparable to published measurements from other editors.
 
+`--dispatcher-ms N` overrides the native UI timer interval in the benchmark child
+only. Reports record the actual interval and whether the timer is single-shot.
+Before each key group, a separate control thread supplies the editor's process CPU
+clock on either side of a one-second idle window. `idle_process_cpu` stores elapsed
+wall/CPU time and usage as a percentage of one CPU core. This excludes the separate
+controller and lexer processes and is measured before foreground timing. The probe
+uses the production dispatcher by default; changing a timer interval is a controlled
+experiment, not a production setting.
+
 ## Scenarios and state
 
 The catalog in `benchmark/roded/scenarios.rb` contains 34 scenarios:

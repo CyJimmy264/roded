@@ -16,10 +16,11 @@ module Roded
     class LatencyChild
       include LatencyHooks
 
-      def run(lines:, profile:)
+      def run(lines:, profile:, dispatcher_ms: nil)
         fixture = Fixture.new(line_count: lines, profile:)
         application = build_application(fixture)
         frontend = Frontends::Qt.new(application)
+        set_dispatcher_interval(frontend, dispatcher_ms) if dispatcher_ms
         application.add_frontend(frontend)
         trace = LatencyTrace.new(frontend)
         instrument(application, frontend, trace)
@@ -30,11 +31,32 @@ module Roded
       private
 
       def run_frontend(frontend, application)
-        @shutdown_reader = Thread.new { application.push_event(InputEvent.new(:quit, {})) if $stdin.gets }
+        @shutdown_reader = Thread.new { control_requests(application) }
         frontend.run
       ensure
         @shutdown_reader&.kill
         @shutdown_reader&.join
+      end
+
+      def set_dispatcher_interval(frontend, milliseconds)
+        frontend.instance_variable_get(:@ui_dispatcher).instance_variable_get(:@timer).set_interval(milliseconds)
+      end
+
+      def control_requests(application)
+        while (request = $stdin.gets)
+          if request.strip == "cpu"
+            emit_cpu_sample
+          else
+            application.push_event(InputEvent.new(:quit, {}))
+            break
+          end
+        end
+      end
+
+      def emit_cpu_sample
+        puts JSON.generate(type: "cpu", monotonic_ns: Process.clock_gettime(Process::CLOCK_MONOTONIC, :nanosecond),
+                           cpu_ns: Process.clock_gettime(Process::CLOCK_PROCESS_CPUTIME_ID, :nanosecond))
+        $stdout.flush
       end
 
       def build_application(fixture)
@@ -70,6 +92,9 @@ end
 if $PROGRAM_NAME == __FILE__
   Roded::Frontends::QtEventLoop.define_singleton_method(:run, &:exec) if ARGV.include?("--original")
   Roded::Benchmarking::Isolation.run(xvfb: true) do
-    Roded::Benchmarking::LatencyChild.new.run(lines: Integer(ARGV.fetch(0)), profile: ARGV.fetch(1))
+    interval = ARGV.fetch(2, "default")
+    interval = interval == "default" ? nil : Integer(interval)
+    Roded::Benchmarking::LatencyChild.new.run(lines: Integer(ARGV.fetch(0)), profile: ARGV.fetch(1),
+                                              dispatcher_ms: interval)
   end
 end

@@ -2,18 +2,23 @@ require "open3"
 require_relative "surface"
 require_relative "workload"
 require_relative "measurement_operations"
+require_relative "idle_cpu_operations"
 
 module Roded
   module Benchmarking
     # Serializes keystrokes only after detecting each changed caret in the frame.
     class LatencySession
       include LatencyMeasurementOperations
+      include LatencyIdleCpuOperations
 
-      def initialize(fixture, count:, warmup:, original:)
+      attr_reader :idle_cpu
+
+      def initialize(fixture, count:, warmup:, original:, dispatcher_ms:)
         @fixture = fixture
         @count = count
         @warmup = warmup
         @original = original
+        @dispatcher_ms = dispatcher_ms
       end
 
       def run(name, error_path)
@@ -37,7 +42,8 @@ module Roded
       end
 
       def arguments
-        values = [RbConfig.ruby, File.join(__dir__, "child.rb"), @fixture.line_count.to_s, @fixture.profile]
+        values = [RbConfig.ruby, File.join(__dir__, "child.rb"), @fixture.line_count.to_s,
+                  @fixture.profile, @dispatcher_ms&.to_s || "default"]
         values << "--original" if @original
         values
       end
