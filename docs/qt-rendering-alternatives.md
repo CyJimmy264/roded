@@ -12,6 +12,29 @@ The existing reset benchmarks explicitly drain that dispatcher, so they exclude
 this timer, real keyboard delivery and the desktop compositor. They must not be
 used as evidence that the running frontend has reached VS Code-like latency.
 
+## Confirmed Ruby binding event-loop defect
+
+The installed qt 0.2.0 gem's `Qt::Bridge.attach_api` attaches all generated FFI
+functions without a `blocking: true` option, including `qt_ruby_qapplication_exec`.
+That function enters QApplication's native event loop. Holding Ruby's GVL during
+that call prevents core, input-reader and highlighting-IPC threads from progressing
+between Ruby GUI callbacks. Manual `process_events` benchmarks return from native
+code repeatedly and therefore fail to expose this defect.
+
+The [real event-loop probe](../benchmark/qt_event_loop_probe.rb) runs a 1 ms Ruby
+ticker and a native Qt timer that enters Ruby only to finish after about 400 ms.
+The original binding permits one ticker wakeup, with an approximately 400 ms gap.
+Releasing the GVL permits hundreds of wakeups. This is a scheduling regression
+probe, not a keyboard-to-pixel latency measurement. It also deliberately has fewer
+Ruby callbacks than the production UI, whose dispatcher runs every 12 ms.
+
+Roded's QtEventLoop adapter reattaches only this entry point with `blocking: true`.
+It retains QApplication's original `exec` wrapper, window showing and disposal;
+widget operations and callbacks still belong to the GUI thread. The installed gem
+is unchanged. Native input/save/undo/quit checks run separately in private Xvfb.
+This specific binding defect should be fixed before deciding whether to replace
+the text engine. The renderer issues below remain independently relevant.
+
 ## What KWrite actually uses
 
 Read from the KDE source mirrors on 2026-10-04:

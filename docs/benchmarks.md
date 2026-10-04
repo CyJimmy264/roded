@@ -79,6 +79,21 @@ The existing `script/curses_live_smoke.rb` and
 no-ops in a private PTY: no terminal clear during movement and no rendering or
 terminal output for further `C-p` presses at the beginning of the document.
 
+The production Qt event loop needs a separate check: qt 0.2's original FFI binding
+holds Ruby's GVL in `QApplication.exec`, which manual event pumping does not expose.
+The adapter releases it so core/input threads can run between GUI callbacks.
+Run these probes sequentially; they report raw ticker gaps and source metadata:
+
+```sh
+bundle exec ruby benchmark/qt_event_loop_probe.rb --original --qt-xvfb
+bundle exec ruby benchmark/qt_event_loop_probe.rb --qt-xvfb
+script/qt_live_smoke.sh
+script/qt_scale_live_smoke.sh
+```
+
+The ticker probe proves Ruby thread progress in the native loop. It does not
+include real keystrokes or painted editor frames and is not an input-latency score.
+
 ## Scenarios and state
 
 The catalog in `benchmark/roded/scenarios.rb` contains 34 scenarios:

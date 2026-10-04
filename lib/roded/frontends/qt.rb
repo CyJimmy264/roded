@@ -7,6 +7,7 @@ require_relative "qt/editor_window"
 require_relative "qt/clipboard_bridge"
 require_relative "qt/buffer_snapshot"
 require_relative "qt/ui_dispatcher"
+require_relative "qt/event_loop"
 
 module Roded
   module Frontends
@@ -68,7 +69,7 @@ module Roded
         render_initial_layout
         start_core
         @view.show
-        @qt_application.exec
+        QtEventLoop.run(@qt_application)
         @core_thread.join
       ensure
         @application.restore_signal_handlers
