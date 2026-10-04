@@ -31,13 +31,16 @@ module Roded
       def schedule_scroll_restore
         return if @scroll_timer&.is_active
 
-        @scroll_timer ||= QTimer.new(@editor)
-        @scroll_timer.set_single_shot(true)
-        @scroll_timer.connect("timeout") do |_payload|
-          restore_pending_viewport
-        end
-        @scroll_timer.set_interval(0)
+        @scroll_timer ||= build_scroll_restore_timer
         @scroll_timer.start
+      end
+
+      def build_scroll_restore_timer
+        QTimer.new(@editor).tap do |timer|
+          timer.set_single_shot(true)
+          timer.set_interval(0)
+          timer.connect("timeout") { |_payload| restore_pending_viewport }
+        end
       end
 
       def restore_pending_viewport
