@@ -72,6 +72,7 @@ module Roded
       state[:position] = match
       query = state.fetch(:query)
       move_to_position(*match, highlight: match_range(match, query))
+      match
     end
 
     def replace_query_match
